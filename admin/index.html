@@ -2119,7 +2119,7 @@ function initGoogle() {
   if (saved && jwtExp(saved) - Date.now() > 120000) { idToken = saved; boot(); }
   else google.accounts.id.prompt();
 }
-$$('[data-logout]').forEach(function (b) { b.onclick = function () { $('userMenu').hidden = true; signOut(''); }; });
+$$('[data-logout]').forEach(function (b) { b.onclick = function () { $('userMenu').hidden = true; signOut(''); location.href = '/'; }; });
 (function waitForGoogle(n) {
   if (window.google && google.accounts && google.accounts.id) return initGoogle();
   if (n > 100) { $('gbtn').innerHTML = ''; return showLogin('Login Google gagal dimuat. Cek koneksi internet lalu muat ulang halaman.'); }
