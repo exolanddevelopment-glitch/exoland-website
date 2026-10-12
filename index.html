@@ -202,6 +202,11 @@
   .stamp.done { color:#6d28d9; }
   .stamp.void { color:#b42318; font-size:15px; }
   .r-sign { display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:center; margin-top:14px; }
+  .r-no small { display:block; font-size:11px; color:var(--muted); font-style:italic; }
+  .r-sigblock { margin:16px 0 0 auto; width:230px; display:grid; justify-items:center; text-align:center; font-size:13px; color:#3f3f46; }
+  .r-sigblock img { height:64px; max-width:200px; object-fit:contain; mix-blend-mode:multiply; margin:6px 0 2px; }
+  .r-sigblock i { display:block; width:100%; border-top:1.5px solid #18181b; }
+  .r-sigblock b { margin-top:4px; color:#18181b; }
   .r-sign label { margin:0; }
   .r-sign select { padding:8px 10px; }
 
@@ -398,7 +403,7 @@
           <div class="receipt" aria-label="Kwitansi">
             <div class="r-head">
               <div><div class="r-title">Kwitansi</div><div class="r-co">Exotic Land Development</div></div>
-              <div class="r-no">No.<b class="pending">dibuat saat disimpan</b></div>
+              <div class="r-no">No.<b class="num pending" id="sNo">pilih penyewa dulu</b><small id="sNoNote" hidden>perkiraan, final saat disimpan</small></div>
             </div>
             <dl style="margin:0">
               <div class="r-line"><dt>Tanggal</dt><dd class="num" id="sTanggal">-</dd></div>
@@ -409,6 +414,8 @@
             </dl>
             <div class="r-amount"><span>Rp</span><b class="num" id="sJumlah">0</b></div>
             <div class="r-words" id="sTerbilang"></div>
+            <div class="r-sign"><label for="sSign">Tanda tangan</label><select id="sSign" data-sign-select></select></div>
+            <div class="r-sigblock" id="sSigBlock" hidden><span class="num" id="sSigDate"></span><img id="sSigImg" alt=""><i></i><b id="sSigName"></b></div>
             <div class="stamp pending" id="sBukti">BUKTI MENYUSUL</div>
             <div id="warns"></div>
             <div id="confirmBox" hidden>
@@ -431,7 +438,8 @@
           <div class="r-words" id="dnWords"></div>
           <div class="msg okmsg" style="margin-top:14px">Pembayaran tersimpan.</div>
           <div class="msg warn" id="doneNoProof" hidden>Bukti belum ada. Tambahkan nanti di menu Tambah bukti.</div>
-          <div class="r-sign" data-sign-row hidden><label for="dnSign">Tanda tangan</label><select id="dnSign"></select></div>
+<div class="r-sign"><label for="dnSign">Tanda tangan</label><select id="dnSign" data-sign-select></select></div>
+            <div class="r-sigblock" id="dnSigBlock" hidden><span class="num" id="dnSigDate"></span><img id="dnSigImg" alt=""><i></i><b id="dnSigName"></b></div>
           <button class="btn" id="dnDownload" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Unduh kwitansi</button>
           <button class="btn sec" id="again" type="button">Catat pembayaran lain</button>
           <button class="btn sec" id="goProof" type="button" hidden>Tambah bukti sekarang</button>
@@ -488,7 +496,8 @@
                 <div class="stamp void">BATAL</div>
                 <p class="muted" id="dVoidInfo" style="margin:8px 0 0"></p>
               </div>
-              <div class="r-sign" data-sign-row hidden><label for="dSign">Tanda tangan</label><select id="dSign"></select></div>
+<div class="r-sign"><label for="dSign">Tanda tangan</label><select id="dSign" data-sign-select></select></div>
+            <div class="r-sigblock" id="dSigBlock" hidden><span class="num" id="dSigDate"></span><img id="dSigImg" alt=""><i></i><b id="dSigName"></b></div>
               <button class="btn" id="dDownload" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Unduh kwitansi</button>
 
               <hr class="sep">
@@ -690,12 +699,18 @@ function listFiles(input, box) {
 }
 
 /* ---------- kwitansi image (download) ---------- */
-function signOptions(sel) {
+function signOptions(sel, keep) {
+  var prev = keep !== undefined ? keep : sel.value;
   sel.innerHTML = '';
   var o = document.createElement('option'); o.value = ''; o.textContent = 'Tidak ada'; sel.appendChild(o);
-  signers.forEach(function (s) { var x = document.createElement('option'); x.value = s.email; x.textContent = s.nama; sel.appendChild(x); });
-  $$('[data-sign-row]').forEach(function (r) { r.hidden = !signers.length; });
+  signers.forEach(function (s) {
+    var x = document.createElement('option'); x.value = s.email;
+    x.textContent = s.hasSig ? s.nama : s.nama + ' (belum unggah)'; x.disabled = !s.hasSig; sel.appendChild(x);
+  });
+  var okPrev = signers.some(function (s) { return s.email === prev && s.hasSig; });
+  sel.value = okPrev ? prev : '';
 }
+function refreshSignSelects() { ['s', 'dn', 'd'].forEach(function (k) { signOptions($(k + 'Sign')); showSig(k); }); }
 function loadSignature(email) {
   if (!email) return Promise.resolve(null);
   if (sigCache[email]) return Promise.resolve(sigCache[email]);
@@ -708,64 +723,76 @@ function loadSignature(email) {
     });
   });
 }
+/** Shows the chosen signature on the kwitansi card (k = 's' preview, 'dn' after saving, 'd' Tambah bukti). */
+function showSig(k, dateText) {
+  var sel = $(k + 'Sign'), box = $(k + 'SigBlock');
+  if (dateText) box.setAttribute('data-date', dateText);
+  var email = sel.value, signer = signers.filter(function (x) { return x.email === email; })[0];
+  if (!email || !signer) { box.hidden = true; return; }
+  $(k + 'SigDate').textContent = box.getAttribute('data-date') || longDate(new Date());
+  $(k + 'SigName').textContent = signer.nama;
+  loadSignature(email).then(function (img) { if (sel.value !== email) return; $(k + 'SigImg').src = img.src; box.hidden = false; })
+    .catch(function (e) { box.hidden = true; toast(errText(e)); });
+}
 function wrapText(ctx, text, x, y, maxW, lh) {
-  var words = String(text).split(' '), line = '', lines = 0;
+  var words = String(text).split(' '), line = '';
   for (var i = 0; i < words.length; i++) {
     var test = line ? line + ' ' + words[i] : words[i];
-    if (ctx.measureText(test).width > maxW && line) { ctx.fillText(line, x, y); y += lh; line = words[i]; lines++; } else line = test;
+    if (ctx.measureText(test).width > maxW && line) { ctx.fillText(line, x, y); y += lh; line = words[i]; } else line = test;
   }
   ctx.fillText(line, x, y);
-  return y + lh;
+  return y;
 }
+/** Draws the kwitansi exactly like the card on screen: same lines, same order, same look. */
 function drawKwitansi(k, sigImg, sigName) {
-  var W = 1400, H = 880, c = document.createElement('canvas'); c.width = W; c.height = H;
-  var x = c.getContext('2d');
-  var serif = '"Fraunces", Georgia, "Times New Roman", serif', sans = '"Inter", Arial, sans-serif';
-  x.fillStyle = '#fbfaf6'; x.fillRect(0, 0, W, H);
-  x.strokeStyle = '#e1dbcc'; x.lineWidth = 3; x.strokeRect(24, 24, W - 48, H - 48);
-  x.fillStyle = '#6d28d9'; x.fillRect(24, 24, 12, H - 48);
-  x.fillStyle = '#18181b'; x.font = '600 64px ' + serif; x.fillText('Kwitansi', 90, 130);
-  x.font = '500 26px ' + sans; x.fillStyle = '#6b6b73'; x.fillText('Exotic Land Development', 92, 172);
-  x.textAlign = 'right'; x.font = '500 24px ' + sans; x.fillText('No.', W - 90, 110);
-  x.fillStyle = '#18181b'; x.font = '700 32px ' + sans; x.fillText(k.kwitansi || '-', W - 90, 152);
+  var W = 1100, P = 70, S = 2;
+  var serif = '"Fraunces", Georgia, "Times New Roman", serif', sans = getComputedStyle(document.body).fontFamily;
+  var rows = [['Tanggal', k.tgl], ['Diterima dari', k.nama], ['Untuk sewa', k.inv + ', unit ' + k.unit], ['Periode', k.mulai + ' – ' + k.sd], ['Metode', k.metode]];
+  var H = 250 + rows.length * 64 + 230 + (sigImg ? 280 : 10) + 40;
+  var c = document.createElement('canvas'); c.width = W * S; c.height = H * S;
+  var x = c.getContext('2d'); x.scale(S, S);
+  x.fillStyle = '#e9e5da'; x.fillRect(0, 0, W, H);
+  // paper with zig-zag top and bottom, like the card
+  x.fillStyle = '#fbfaf6'; x.fillRect(0, 12, W, H - 24);
+  for (var zx = 0; zx < W; zx += 24) { x.beginPath(); x.arc(zx + 12, 12, 12, Math.PI, 0); x.fill(); x.beginPath(); x.arc(zx + 12, H - 12, 12, 0, Math.PI); x.fill(); }
+  x.textBaseline = 'alphabetic';
+  x.fillStyle = '#18181b'; x.font = '600 56px ' + serif; x.fillText('Kwitansi', P, 112);
+  x.fillStyle = '#6b6b73'; x.font = '400 24px ' + sans; x.fillText('Exotic Land Development', P, 150);
+  x.textAlign = 'right'; x.fillText('No.', W - P, 92);
+  x.fillStyle = '#18181b'; x.font = '700 28px ' + sans; x.fillText(k.kwitansi || '-', W - P, 132);
   x.textAlign = 'left';
-  x.strokeStyle = '#e1dbcc'; x.lineWidth = 2; x.beginPath(); x.moveTo(90, 210); x.lineTo(W - 90, 210); x.stroke();
-  var rows = [['Telah diterima dari', k.nama], ['Untuk pembayaran', 'Sewa ' + k.inv + ', unit ' + k.unit + ', periode ' + k.mulai + ' sampai ' + k.sd], ['Tanggal bayar', k.tgl + ' (' + k.metode + ')']];
-  var y = 270;
+  x.strokeStyle = '#e7e2d6'; x.lineWidth = 2; x.beginPath(); x.moveTo(P, 186); x.lineTo(W - P, 186); x.stroke();
+  var y = 246;
   rows.forEach(function (r) {
-    x.font = '500 26px ' + sans; x.fillStyle = '#6b6b73'; x.fillText(r[0], 90, y);
-    x.font = '600 28px ' + sans; x.fillStyle = '#18181b';
-    var ny = wrapText(x, r[1], 400, y, W - 490, 38);
-    x.strokeStyle = '#cfc8b6'; x.setLineDash([3, 6]); x.beginPath(); x.moveTo(400, ny - 26); x.lineTo(W - 90, ny - 26); x.stroke(); x.setLineDash([]);
-    y = ny + 16;
+    x.fillStyle = '#6b6b73'; x.font = '400 26px ' + sans; x.fillText(r[0], P, y);
+    x.fillStyle = '#18181b'; x.font = '500 27px ' + sans;
+    var ly = wrapText(x, r[1], 330, y, W - P - 330, 34);
+    x.strokeStyle = '#cfc8b6'; x.setLineDash([2, 5]); x.beginPath(); x.moveTo(330, ly + 16); x.lineTo(W - P, ly + 16); x.stroke(); x.setLineDash([]);
+    y = ly + 64;
   });
-  x.font = '500 26px ' + sans; x.fillStyle = '#6b6b73'; x.fillText('Uang sejumlah', 90, y + 6);
-  x.font = 'italic 500 28px ' + serif; x.fillStyle = '#3f3f46';
-  y = wrapText(x, cap(terbilang(k.jumlah)), 400, y + 6, W - 490, 38);
-  // amount box
-  var by = Math.max(y + 20, 610);
-  x.fillStyle = '#f1edfd'; x.fillRect(90, by, 560, 110);
-  x.strokeStyle = '#6d28d9'; x.lineWidth = 3; x.strokeRect(90, by, 560, 110);
-  x.fillStyle = '#18181b'; x.font = '600 58px ' + serif; x.fillText(rp(k.jumlah), 120, by + 76);
-  // date + signature
-  x.textAlign = 'center'; var sx = W - 300;
-  x.font = '500 26px ' + sans; x.fillStyle = '#3f3f46'; x.fillText(longDate(parseDmy(k.tgl) || new Date()), sx, by - 40);
+  y += 50;
+  x.fillStyle = '#6b6b73'; x.font = '400 30px ' + sans; x.fillText('Rp', P, y);
+  x.fillStyle = '#18181b'; x.font = '600 84px ' + serif; x.fillText(Math.round(k.jumlah).toLocaleString('id-ID'), P + 52, y);
+  y += 54;
+  x.fillStyle = '#4a4a52'; x.font = 'italic 400 27px ' + serif; y = wrapText(x, cap(terbilang(k.jumlah)), P, y, W - 2 * P, 36);
   if (sigImg) {
-    var h = 120, w = Math.min(320, sigImg.width * (h / sigImg.height));
-    x.globalCompositeOperation = 'multiply'; x.drawImage(sigImg, sx - w / 2, by - 20, w, h); x.globalCompositeOperation = 'source-over';
-    x.strokeStyle = '#18181b'; x.lineWidth = 2; x.beginPath(); x.moveTo(sx - 170, by + 110); x.lineTo(sx + 170, by + 110); x.stroke();
-    x.font = '600 26px ' + sans; x.fillStyle = '#18181b'; x.fillText(sigName || '', sx, by + 146);
+    var cx = W - P - 150; y += 70;
+    x.textAlign = 'center'; x.fillStyle = '#3f3f46'; x.font = '400 24px ' + sans; x.fillText(longDate(parseDmy(k.tgl) || new Date()), cx, y);
+    var h = 110, w = Math.min(280, sigImg.width * (h / sigImg.height));
+    x.globalCompositeOperation = 'multiply'; x.drawImage(sigImg, cx - w / 2, y + 14, w, h); x.globalCompositeOperation = 'source-over';
+    x.strokeStyle = '#18181b'; x.lineWidth = 2; x.beginPath(); x.moveTo(cx - 150, y + 136); x.lineTo(cx + 150, y + 136); x.stroke();
+    x.fillStyle = '#18181b'; x.font = '600 25px ' + sans; x.fillText(sigName || '', cx, y + 172);
+    x.textAlign = 'left';
   }
-  x.textAlign = 'left';
   if (k.status === 'BATAL') {
-    x.save(); x.translate(W / 2, H / 2); x.rotate(-0.18);
-    x.strokeStyle = 'rgba(180,35,24,.85)'; x.lineWidth = 8; x.strokeRect(-260, -80, 520, 160);
-    x.fillStyle = 'rgba(180,35,24,.85)'; x.font = '800 120px ' + sans; x.textAlign = 'center'; x.fillText('BATAL', 0, 44); x.restore();
+    x.save(); x.translate(W / 2, H / 2); x.rotate(-0.2);
+    x.strokeStyle = 'rgba(180,35,24,.85)'; x.lineWidth = 8; x.strokeRect(-230, -75, 460, 150);
+    x.fillStyle = 'rgba(180,35,24,.85)'; x.font = '800 110px ' + sans; x.textAlign = 'center'; x.fillText('BATAL', 0, 40); x.restore();
   }
   return c;
 }
 function downloadKwitansi(k, sel, btn) {
-  var email = sel && !sel.closest('[hidden]') ? sel.value : '';
+  var email = sel ? sel.value : '';
   var signer = signers.filter(function (s) { return s.email === email; })[0];
   var old = btn.innerHTML; btn.disabled = true; btn.textContent = 'Menyiapkan…';
   var fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
@@ -782,6 +809,20 @@ function downloadKwitansi(k, sel, btn) {
   }).catch(function (e) { btn.disabled = false; btn.innerHTML = old; toast('Gagal membuat kwitansi: ' + errText(e)); });
 }
 
+/* ---------- expected kwitansi number (preview) ---------- */
+function peekNumber() {
+  clearTimeout(peekNumber.t);
+  if (!chosen || !$('tanggal').value) { $('sNo').textContent = 'pilih penyewa dulu'; $('sNo').className = 'num pending'; $('sNoNote').hidden = true; return; }
+  var key = chosen.key, tg = $('tanggal').value;
+  $('sNo').textContent = 'menghitung…'; $('sNo').className = 'num pending';
+  peekNumber.t = setTimeout(function () {
+    call('peekKwitansi', { key: key, tanggal: tg }).then(function (no) {
+      if (!chosen || chosen.key !== key || $('tanggal').value !== tg) return;
+      $('sNo').textContent = no || '-'; $('sNo').className = 'num'; $('sNoNote').hidden = !no;
+    }).catch(function () { $('sNo').textContent = 'dibuat saat disimpan'; $('sNoNote').hidden = true; });
+  }, 350);
+}
+
 /* ---------- CATAT PEMBAYARAN ---------- */
 function resetForm() {
   var d = new Date();
@@ -789,7 +830,7 @@ function resetForm() {
   $('mulai').value = iso(d);
   $('periode').value = 1; $('jumlah').value = ''; jumlahTouched = false; $('catatan').value = ''; $('foto').value = ''; $('fotoList').innerHTML = '';
   $('confirm').checked = false; chosen = null; pastPays = [];
-  $('chosenBox').hidden = true; $('pickBox').hidden = false; $('q').value = ''; renderList(); check();
+  $('chosenBox').hidden = true; $('pickBox').hidden = false; $('q').value = ''; renderList(); check(); peekNumber();
 }
 
 function renderList() {
@@ -815,6 +856,7 @@ function choose(t) {
   $('cNama').textContent = t.nama;
   fillMeta($('cInfo'), [t.inv, 'Unit ' + t.unit + ', ' + rp(t.harga) + ' per ' + cycleWord(t.siklus)]);
   setAvatar($('cAvatar'), t.nama, t.inv);
+  setTimeout(peekNumber, 0);
   $('pickBox').hidden = true; $('chosenBox').hidden = false;
   $('periodeLbl').textContent = unitLabel(t.siklus);
   $('periode').value = 1; jumlahTouched = false;
@@ -844,6 +886,7 @@ function check() {
   $('sBukti').textContent = nFiles ? 'BUKTI ' + nFiles + ' FILE' : 'BUKTI MENYUSUL';
   $('sBukti').className = 'stamp ' + (nFiles ? 'done' : 'pending');
   var tg = parseIso($('tanggal').value); $('sTanggal').textContent = tg ? dmy(tg) : '-';
+  $('sSigBlock').setAttribute('data-date', tg ? longDate(tg) : ''); if (!$('sSigBlock').hidden) $('sSigDate').textContent = tg ? longDate(tg) : '';
   if (chosen) {
     var expected = chosen.harga * n;
     if (!jumlahTouched && chosen.harga) $('jumlah').value = expected.toLocaleString('id-ID');
@@ -884,7 +927,8 @@ function showDone(k, hasProof) {
   $('dnJumlah').textContent = k.jumlah.toLocaleString('id-ID');
   $('dnWords').textContent = terbilang(k.jumlah);
   $('doneNoProof').hidden = hasProof; $('goProof').hidden = hasProof;
-  signOptions($('dnSign'));
+  signOptions($('dnSign'), $('sSign').value);
+  showSig('dn', longDate(parseDmy(k.tgl) || new Date()));
   $('formView').hidden = true; $('doneView').hidden = false; window.scrollTo(0, 0);
 }
 
@@ -918,6 +962,8 @@ $('foto').addEventListener('change', function () { listFiles($('foto'), $('fotoL
 $('jumlah').addEventListener('input', function () { jumlahTouched = true; });
 $('jumlah').addEventListener('blur', function () { var n = num(this.value); this.value = n ? n.toLocaleString('id-ID') : ''; check(); });
 $('save').onclick = save;
+$('tanggal').addEventListener('change', peekNumber);
+$('change').addEventListener('click', peekNumber);
 $('again').onclick = function () { $('doneView').hidden = true; $('formView').hidden = false; resetForm(); };
 $('goProof').onclick = function () { selId = lastSaved && lastSaved.id; show('bukti'); };
 $('dnDownload').onclick = function () { if (lastSaved) downloadKwitansi(lastSaved, $('dnSign'), this); };
@@ -1010,6 +1056,7 @@ function openDetail(p) {
   $('cancelArea').hidden = v || !me || me.peran !== 'Admin';
   $('cancelBox').hidden = true; $('cancelOpen').hidden = false; $('cancelReason').value = ''; $('cancelErr').hidden = true;
   signOptions($('dSign'));
+  showSig('d', longDate(parseDmy(p.tgl) || new Date()));
   $('bfile').value = ''; $('bfileList').innerHTML = ''; $('berror').hidden = true;
   $('split').classList.add('show-detail');
   renderPays(); checkB();
@@ -1051,6 +1098,7 @@ $('cancelYes').onclick = function () {
     $('cancelErr').textContent = errText(e); $('cancelErr').hidden = false;
   });
 };
+['s', 'dn', 'd'].forEach(function (k) { $(k + 'Sign').addEventListener('change', function () { showSig(k); }); });
 $('dDownload').onclick = function () { var p = current(); if (p) downloadKwitansi(p, $('dSign'), this); };
 
 $('bq').oninput = renderPays;
@@ -1090,7 +1138,7 @@ $('signSave').onclick = function () {
   }).then(function (r) {
     btn.textContent = 'Simpan'; signers = r.signers || []; sigCache = {}; if (me) me.mySignature = true;
     $('signModal').hidden = true; toast('Tanda tangan tersimpan.');
-    signOptions($('dnSign')); signOptions($('dSign'));
+    refreshSignSelects();
   }).catch(function (e) { btn.disabled = false; btn.textContent = 'Simpan'; $('signErr').textContent = errText(e); $('signErr').hidden = false; });
 };
 
@@ -1120,6 +1168,7 @@ function boot() {
       $('view-catat').innerHTML = '<div class="page-head"><div><h1>Selamat datang</h1><p>Menu untuk peran ' + d.peran + ' (Tanya AI) sedang disiapkan. Menu pembayaran hanya untuk Admin dan Staf.</p></div></div>';
       return;
     }
+    refreshSignSelects();
     resetForm();
     refreshBadge();
   }).catch(function (e) {
