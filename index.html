@@ -63,6 +63,8 @@
   .login-card h1 { font-size:24px; font-weight:700; letter-spacing:-.01em; margin:0 0 8px; }
   .login-card p { color:var(--muted); margin:0 0 24px; }
   #gbtn { display:flex; justify-content:center; min-height:44px; }
+  /* Google's button lives in its own light frame; matching its colour scheme stops the browser painting a white box behind it in dark mode */
+  #gbtn, #gbtn iframe { color-scheme:light; }
   .login-err { margin-top:16px; text-align:left; }
 
   /* ---------- shell ---------- */
