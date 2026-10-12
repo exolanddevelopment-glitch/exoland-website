@@ -5,60 +5,165 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Exotic Land Development</title>
 <meta name="description" content="Exotic Land Development — pengelolaan tanah dan properti.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23163d31'/%3E%3Cpath d='M8 15l8-7 8 7v9H8z' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 42 42'%3E%3Cpath d='M4 26l12-6 12 6-12 6z' fill='%236d28d9'/%3E%3Cpath d='M14 20l12-6 12 6-12 6z' fill='%23a78bfa'/%3E%3Cpath d='M9 14l12-6 12 6-12 6z' fill='%23ddd6fe'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet">
 <style>
-  /* Quiet one-screen company page: name, one line of what the company does, a small login link in the corner. */
+  /* Same look as the admin app: charcoal, white, purple, stacked-parcels logo, Bricolage Grotesque. */
   :root {
-    --bg:#10261f; --bg-2:#163d31; --fg:#eef4f1; --muted:#a9c1b7; --line:rgba(238,244,241,.16); --accent:#d9b56a;
-    --display:"Fraunces", Georgia, "Times New Roman", serif; --body:"Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    --bg:#111114; --fg:#ffffff; --muted:#a1a1aa; --line:rgba(255,255,255,.14); --accent:#a78bfa; --accent-2:#6d28d9;
+    --body:"Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   }
   * { box-sizing:border-box; }
   html, body { height:100%; }
-  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.6 var(--body); }
-  .page { min-height:100%; display:grid; grid-template-rows:auto 1fr auto; padding-inline:clamp(16px, 5vw, 64px);
-    background:
-      radial-gradient(1200px 600px at 85% -10%, rgba(217,181,106,.10), transparent 60%),
-      linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 70%); }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.6 var(--body); -webkit-font-smoothing:antialiased; }
+  .page { position:relative; overflow:hidden; min-height:100%; display:grid; grid-template-rows:auto 1fr auto; padding-inline:clamp(16px, 5vw, 64px);
+    background:radial-gradient(900px 620px at 72% 46%, rgba(124,58,237,.26), transparent 62%), var(--bg); }
+  .page > svg.parcels-bg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  .page > header, .page > main, .page > footer { position:relative; z-index:1; }
   header { display:flex; justify-content:space-between; align-items:center; padding-block:22px; gap:16px; }
-  .mark { display:flex; align-items:center; gap:10px; font-weight:600; letter-spacing:.02em; font-size:14px; color:var(--muted); }
-  .mark svg { width:30px; height:30px; flex:none; }
-  .login { color:var(--fg); text-decoration:none; font-size:14px; font-weight:500; border:1px solid var(--line); border-radius:999px; padding:8px 16px; display:inline-flex; align-items:center; gap:8px; }
+  .mark { display:flex; align-items:center; gap:12px; font-weight:800; font-size:21px; letter-spacing:-.03em; color:var(--fg); }
+  .mark svg { width:38px; height:38px; flex:none; }
+  .login { color:var(--fg); text-decoration:none; font-size:14px; font-weight:600; border:1px solid var(--line); border-radius:999px; padding:9px 18px; display:inline-flex; align-items:center; gap:8px; transition:border-color .15s, color .15s; }
   .login:hover { border-color:var(--accent); color:var(--accent); }
   .login:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
-  main { display:flex; flex-direction:column; justify-content:center; padding-block:48px; max-width:900px; }
-  .eyebrow { text-transform:uppercase; letter-spacing:.18em; font-size:12px; color:var(--accent); margin:0 0 18px; }
-  h1 { font-family:var(--display); font-weight:500; font-size:clamp(40px, 8vw, 88px); line-height:1.02; margin:0 0 22px; text-wrap:balance; }
+  main { display:flex; flex-direction:column; justify-content:center; padding-block:48px; max-width:920px; }
+  .eyebrow { display:inline-flex; align-self:flex-start; text-transform:uppercase; letter-spacing:.14em; font-size:12px; font-weight:700; color:#c4b5fd; background:rgba(167,139,250,.14); border-radius:999px; padding:5px 12px; margin:0 0 22px; }
+  h1 { font-weight:800; font-size:clamp(44px, 8.5vw, 96px); letter-spacing:-.045em; line-height:.98; margin:0 0 22px; text-wrap:balance; }
+  h1 span { color:var(--accent); }
   .lead { font-size:clamp(17px, 2.2vw, 20px); color:var(--muted); max-width:34em; margin:0; }
-  .rule { width:64px; height:2px; background:var(--accent); margin:34px 0 0; border:0; }
+  .rule { width:64px; height:3px; border-radius:3px; background:var(--accent); margin:34px 0 0; border:0; }
   footer { border-top:1px solid var(--line); padding-block:20px; font-size:13px; color:var(--muted); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  /* sign-in box: a light card, because Google draws its button on a white frame */
+  .login { background:none; font:inherit; cursor:pointer; }
+  .who { display:none; align-items:center; gap:10px; font-size:14px; color:var(--muted); }
+  .who b { color:var(--fg); font-weight:600; }
+  .who button { background:none; border:0; color:var(--accent); font:inherit; font-size:14px; cursor:pointer; padding:0; }
+  .who button:hover { text-decoration:underline; }
+  .notice { margin:28px 0 0; max-width:34em; border:1px solid rgba(167,139,250,.35); border-radius:12px; padding:14px 16px; font-size:15px; color:var(--fg); background:rgba(167,139,250,.10); }
+  .notice[hidden] { display:none; }
+  .overlay { position:fixed; inset:0; z-index:50; background:rgba(8,8,10,.72); display:grid; place-items:center; padding:16px; }
+  .overlay[hidden] { display:none; }
+  .box { position:relative; width:100%; max-width:420px; background:#fff; color:#18181b; border-radius:18px; padding:32px 28px 28px; box-shadow:0 30px 70px -30px rgba(0,0,0,.8); color-scheme:light; }
+  .box h2 { font-weight:800; font-size:32px; letter-spacing:-.03em; margin:0 0 6px; }
+  .box .logo { width:46px; height:46px; margin-bottom:16px; }
+  .box p { margin:0 0 20px; color:#71717a; font-size:15px; }
+  .box .x { position:absolute; top:12px; right:12px; width:34px; height:34px; border-radius:50%; border:0; background:#f4f4f5; color:#18181b; font-size:20px; line-height:1; cursor:pointer; }
+  .box .x:hover { background:#e4e4e7; }
+  #gbtn { min-height:44px; }
+  .box .err { margin-top:14px; background:#fde3e1; color:#9b2016; border-radius:10px; padding:10px 12px; font-size:14px; }
+  .box .err[hidden] { display:none; }
+  .box .wait { color:#71717a; font-size:14px; }
 </style>
+<script src="/config.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 <div class="page">
+  <svg class="parcels-bg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g fill="none" stroke="rgba(167,139,250,.18)" stroke-width="1.2"><path d="M820 640l260-130 260 130-260 130z"/><path d="M1040 520l260-130 260 130-260 130z"/><path d="M930 420l260-130 260 130-260 130z"/><path d="M-80 820l200-100 200 100-200 100z"/><path d="M1100 60l160-80 160 80-160 80z"/></g></svg>
   <header>
     <div class="mark">
-      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#d9b56a"/><path d="M8 15l8-7 8 7v9H8z" fill="none" stroke="#10261f" stroke-width="2.4" stroke-linejoin="round"/></svg>
-      EXOTIC LAND
+      <svg viewBox="0 0 42 42" aria-hidden="true"><path d="M4 26l12-6 12 6-12 6z" fill="#6d28d9"/><path d="M14 20l12-6 12 6-12 6z" fill="#a78bfa"/><path d="M9 14l12-6 12 6-12 6z" fill="#ddd6fe"/></svg>
+      exotic land
     </div>
-    <a class="login" href="/admin/">
+    <button class="login" id="loginBtn" type="button">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
       Masuk
-    </a>
+    </button>
+    <div class="who" id="who"><span>Masuk sebagai <b id="whoName"></b></span><button type="button" id="logoutBtn">Keluar</button></div>
   </header>
   <main>
     <p class="eyebrow">Tanah &amp; Properti</p>
-    <h1>Exotic Land Development</h1>
+    <h1>Exotic Land <span>Development</span></h1>
     <p class="lead">Pengelolaan dan pengembangan tanah serta properti sewa, dari kota hingga desa.</p>
     <hr class="rule">
+    <p class="notice" id="notice" hidden></p>
   </main>
   <footer>
     <span>© <span id="yr">2026</span> Exotic Land Development</span>
     <span>exoticlanddevelopment.com</span>
   </footer>
 </div>
-<script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+<div class="overlay" id="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="boxTitle">
+  <div class="box">
+    <button class="x" id="closeBtn" type="button" aria-label="Tutup">×</button>
+    <svg class="logo" viewBox="0 0 42 42" aria-hidden="true"><path d="M4 26l12-6 12 6-12 6z" fill="#6d28d9"/><path d="M14 20l12-6 12 6-12 6z" fill="#a78bfa"/><path d="M9 14l12-6 12 6-12 6z" fill="#ddd6fe"/></svg>
+    <h2 id="boxTitle">Masuk</h2>
+    <p>Masuk dengan akun Google Anda.</p>
+    <div id="gbtn"><span class="wait">Memuat tombol login…</span></div>
+    <div class="err" id="err" hidden></div>
+  </div>
+</div>
+<script>
+document.getElementById('yr').textContent = new Date().getFullYear();
+/* Sign in here. The engine checks the email against the Akses sheet:
+   registered (Admin, Staf, Manajemen) -> go to /admin, already signed in.
+   not registered -> stay on this page, signed in as a normal visitor. */
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var ready = false, token = null;
+  function cfgOk() { return window.APP_CONFIG && APP_CONFIG.GOOGLE_CLIENT_ID && APP_CONFIG.GOOGLE_CLIENT_ID.indexOf('TEMPEL') !== 0; }
+  function jwt(t) { try { return JSON.parse(decodeURIComponent(escape(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))))); } catch (e) { return {}; } }
+  function showErr(m) { $('err').textContent = m; $('err').hidden = !m; }
+  function open() { $('overlay').hidden = false; showErr(''); render(); }
+  function close() { $('overlay').hidden = true; }
+  function render() {
+    if (!ready) return;
+    $('gbtn').innerHTML = '';
+    google.accounts.id.renderButton($('gbtn'), { theme: 'outline', size: 'large', shape: 'pill', text: 'signin_with', locale: 'id', width: 300 });
+  }
+  function visitor(t, msg) {
+    var info = jwt(t);
+    try { sessionStorage.setItem('pub', t); } catch (e) {}
+    $('loginBtn').style.display = 'none'; $('who').style.display = 'flex';
+    $('whoName').textContent = info.name || info.email || '';
+    if (msg) { $('notice').textContent = msg; $('notice').hidden = false; }
+  }
+  function check(t, action) {
+    action = action || 'whoAmI';
+    $('gbtn').innerHTML = '<span class="wait">Memeriksa akses…</span>';
+    fetch(APP_CONFIG.API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: action, token: t, args: null }) })
+      .then(function (r) { if (!r.ok) throw new Error('Server tidak merespons (' + r.status + ').'); return r.json(); })
+      .then(function (j) {
+        if (j.ok) {
+          try { sessionStorage.setItem('idt', t); sessionStorage.removeItem('pub'); } catch (e) {}
+          location.href = '/admin/';
+        } else if (j.code === 'DENIED') {
+          close(); visitor(t, 'Halo! Akun ' + (jwt(t).email || '') + ' tidak punya akses ke halaman admin. Kalau Anda karyawan Exotic Land Development, minta admin menambahkan email Anda.');
+        } else if (action === 'whoAmI' && /tidak dikenal/i.test(j.error || '')) { check(t, 'getFormData'); /* older engine without whoAmI */ }
+        else { render(); showErr(j.error || 'Login gagal. Coba lagi.'); }
+      })
+      .catch(function (e) { render(); showErr(e && e.message ? e.message : 'Tidak ada koneksi ke server. Cek internet lalu coba lagi.'); });
+  }
+  function onCredential(resp) { token = resp.credential; check(token); }
+  $('loginBtn').onclick = function () {
+    if (!cfgOk()) { alert('config.js belum diisi.'); return; }
+    var saved = null; try { saved = sessionStorage.getItem('idt'); } catch (e) {}
+    if (saved && (jwt(saved).exp || 0) * 1000 - Date.now() > 120000) { location.href = '/admin/'; return; }
+    open();
+  };
+  $('closeBtn').onclick = close;
+  $('overlay').addEventListener('click', function (e) { if (e.target === this) close(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+  $('logoutBtn').onclick = function () {
+    try { sessionStorage.removeItem('pub'); sessionStorage.removeItem('idt'); google.accounts.id.disableAutoSelect(); } catch (e) {}
+    $('who').style.display = 'none'; $('loginBtn').style.display = ''; $('notice').hidden = true;
+  };
+  (function wait(n) {
+    if (window.google && google.accounts && google.accounts.id && cfgOk()) {
+      google.accounts.id.initialize({ client_id: APP_CONFIG.GOOGLE_CLIENT_ID, callback: onCredential, auto_select: false, cancel_on_tap_outside: true });
+      ready = true;
+      if (!$('overlay').hidden) render();
+      var p = null; try { p = sessionStorage.getItem('pub'); } catch (e) {}
+      if (p && (jwt(p).exp || 0) * 1000 > Date.now()) visitor(p, '');
+      return;
+    }
+    if (n > 150) { $('gbtn').innerHTML = '<span class="wait">Login Google gagal dimuat. Cek internet lalu muat ulang halaman.</span>'; return; }
+    setTimeout(function () { wait(n + 1); }, 100);
+  })(0);
+})();
+</script>
 </body>
 </html>
