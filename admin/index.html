@@ -1312,7 +1312,7 @@ function choose(t) {
     var last = sewa.length ? sewa[0].sdIso : '';
     if (t.lunasIso && t.lunasIso > last) last = t.lunasIso;
     if (last) { var nx = parseIso(last); nx.setDate(nx.getDate() + 1); $('mulai').value = iso(nx); }
-    $('hist').innerHTML = pastPays.length ? '<div style="margin-bottom:4px;color:var(--ink);font-weight:500">Pembayaran terakhir</div>' : (t.lunasIso ? 'Belum ada pembayaran di sistem. Lunas s/d awal: ' + dmy(parseIso(t.lunasIso)) + '.' : 'Belum ada pembayaran tercatat untuk penyewa ini.');
+    $('hist').innerHTML = pastPays.length ? '<div style="margin-bottom:4px;color:var(--ink);font-weight:500">Pembayaran terakhir</div>' : (t.lunasIso ? 'Belum ada pembayaran di website. Dari data sewa, lunas s/d ' + dmy(parseIso(t.lunasIso)) + '.' : 'Belum ada pembayaran tercatat untuk penyewa ini.');
     pastPays.forEach(function (x) {
       var d = document.createElement('div'); d.className = 'h-row num';
       var l = document.createElement('span'); l.textContent = x.sdIso ? x.mulai + ' – ' + x.sd : (x.jenis || '-');
@@ -1646,7 +1646,7 @@ function cycleCat(t) { var m = months(t.siklus); return m >= 12 ? 'tahunan' : m 
 /** Colour of one tenant row: white (fine), orange (soon), red (very soon or late), grey (no data). */
 function dueLevel(t, today) {
   var lunas = tenantLunas(t), A = (dashData && dashData.alarm) || {};
-  if (!lunas) return { lv: 'grey', txt: 'Isi lunas awal', due: null, days: 1e9 };
+  if (!lunas) return { lv: 'grey', txt: 'Data kurang', due: null, days: 1e9 };
   var due = addDays(lunas, 1), days = dayDiff(today, due), m = months(t.siklus), red, orange;
   if (m >= 12) { red = today >= addMonths(due, -((A.tahunan || {}).redMonths || 1)); orange = today >= addMonths(due, -((A.tahunan || {}).orangeMonths || 3)); }
   else if (m >= 3) { red = days <= ((A.enamBulan || {}).redDays || 7); orange = today >= addMonths(due, -((A.enamBulan || {}).orangeMonths || 1)); }
@@ -1765,7 +1765,7 @@ function renderBills(w, t) {
   $('stBar').style.width = (total ? paid / total * 100 : 0) + '%';
   var notes = [];
   if (late) notes.push('Belum dibayar termasuk tunggakan dari periode sebelumnya ' + rp(late) + '.');
-  if (noData) notes.push(noData + ' penyewa belum dihitung karena "Lunas s/d awal" (kolom R DBStatusSewa) masih kosong.');
+  if (noData) notes.push(noData + ' penyewa belum dihitung karena tanggalnya kosong di DBStatusSewa (lihat Pengaturan → Pemeriksaan data).');
   $('stNote').textContent = notes.join(' ');
 }
 
@@ -1843,7 +1843,7 @@ function calEvents(from, to) {
           add(due, paid ? 'done' : due < t ? 'red' : '', x.nama + ' · ' + x.inv + ' ' + x.unit, (paid ? 'Sudah dibayar · ' : due < t ? 'Telat · ' : 'Jatuh tempo sewa · ') + rp(x.harga) + ' (' + x.siklus + ')');
         }
       }
-      var s = parseIso(x.selesaiIso); if (s) add(s, 'orange', 'Kontrak berakhir: ' + x.nama, x.inv + ' ' + x.unit);
+      var s = parseIso(x.selesaiIso); if (s && mo < 3) add(s, 'orange', 'Kontrak berakhir: ' + x.nama, x.inv + ' ' + x.unit); // 6-monthly / yearly: end date = paid until, already shown as due date
     });
     (dashData.hgb || []).forEach(function (h) { var d = parseIso(h.iso); if (d) add(d, 'teal', 'HGB berakhir: ' + h.inv, h.alamat); });
   }
