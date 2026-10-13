@@ -469,6 +469,67 @@
   .occ-stats b { display:block; font-size:22px; color:var(--ink); font-weight:800; }
   .occ-stats .pct b { color:var(--accent); }
   @media (max-width:899px) { .health.five { grid-template-columns:1fr 1fr; } .occ-stats { grid-template-columns:1fr 1fr; } .fgrid { grid-template-columns:1fr; } }
+  /* locks, denied, view-only */
+  .nav.locked, .tab.locked { opacity:.55; }
+  .nav.locked.on { opacity:1; }
+  .lock-ic { margin-left:auto; font-size:12px; }
+  .tab .lock-ic { position:absolute; top:2px; right:calc(50% - 22px); font-size:10px; }
+  .denied { min-height:60vh; display:grid; place-content:center; justify-items:center; text-align:center; gap:4px; }
+  .denied-ic { width:86px; height:86px; border-radius:50%; background:var(--subtle); border:1px solid var(--line); display:grid; place-items:center; font-size:38px; margin-bottom:14px; }
+  .denied h1 { font-size:32px; font-weight:800; letter-spacing:-.03em; margin:0; }
+  .denied p { color:var(--muted); max-width:46ch; margin:6px 0 0; }
+  .denied b { color:var(--ink); }
+  .viewonly { display:inline-flex; align-items:center; gap:6px; vertical-align:middle; margin-left:12px; font-size:12.5px; font-weight:700; letter-spacing:0; background:#dbeafe; color:#1e40af; border-radius:999px; padding:4px 12px; }
+  :root[data-theme="dark"] .viewonly { background:#1e3a5f; color:#93c5fd; }
+  /* access cards */
+  .ucard { display:grid; grid-template-columns:230px minmax(0,1fr); gap:18px; border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:16px; margin-bottom:12px; }
+  .ucard.off { opacity:.65; } .ucard.dirty { border-color:var(--accent); }
+  .ucard .who { display:flex; flex-direction:column; gap:4px; min-width:0; }
+  .who-top { display:flex; align-items:center; gap:8px; flex-wrap:wrap; } .who-top b { font-size:15px; }
+  .ucard .em { color:var(--muted); font-size:12.5px; overflow-wrap:anywhere; }
+  .ucard .who input { margin-top:4px; padding:7px 9px; font-size:13px; }
+  .owner-note { align-self:center; }
+  .pgrid { display:grid; grid-template-columns:repeat(auto-fill, minmax(165px, 1fr)); gap:8px; }
+  .pcell { display:flex; flex-direction:column; gap:5px; font-size:12.5px; font-weight:600; }
+  .ufoot { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-top:12px; padding-top:12px; border-top:1px solid var(--line); }
+  .ufoot select { width:auto; padding:6px 9px; font-size:12.5px; } .ufoot .grow { flex:1; }
+  @media (max-width: 760px) { .ucard { grid-template-columns:1fr; } .pgrid { grid-template-columns:1fr 1fr; } }
+  /* access matrix */
+  table.acc { font-size:13px; } .acc th.c, .acc td.c { text-align:center; } .acc td { vertical-align:middle; }
+  .acc .who b { display:block; } .acc .who > span { display:block; color:var(--muted); font-size:12px; }
+  .acc .who input { margin-top:4px; padding:6px 8px; font-size:13px; }
+  .owner { display:inline-block; color:var(--tint-ink); background:var(--tint); border-radius:999px; padding:2px 10px; font-size:11.5px !important; font-weight:700; }
+  .acc-tools { display:flex; gap:8px; align-items:center; margin-top:6px; }
+  .acc-tools select { width:auto; padding:5px 8px; font-size:12.5px; }
+  .mini-check { display:inline-flex; align-items:center; gap:4px; margin:0; font-size:12.5px; font-weight:500; }
+  .mini-check input { width:auto; }
+  .acc tr.off td { opacity:.6; } .acc tr.dirty td { background:color-mix(in srgb, var(--accent) 7%, var(--surface)); }
+  .lvl { display:inline-flex; border:1px solid var(--line); border-radius:999px; padding:2px; background:var(--bg); }
+  .lvl { align-self:flex-start; } .lvl button { border:0; background:none; padding:3px 9px; border-radius:999px; font-size:11.5px; color:var(--muted); cursor:pointer; }
+  .lvl button:disabled { cursor:default; }
+  .lvl button.on.lv-no { background:#52525b; color:#fff; } .lvl button.on.lv-view { background:#1e40af; color:#fff; } .lvl button.on.lv-edit { background:var(--accent); color:var(--accent-ink); font-weight:700; }
+  .acc-legend { display:flex; gap:18px; flex-wrap:wrap; color:var(--muted); font-size:12.5px; margin-top:12px; } .acc-legend b { color:var(--ink); }
+  /* viewer */
+  .viewer-card { max-width:min(1100px, 100%); width:100%; height:min(88vh, 900px); display:flex; flex-direction:column; padding:16px; }
+  .viewer-head { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+  .viewer-head h2 { margin:0; font-size:16px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; flex:1; }
+  .viewer-actions { display:flex; gap:6px; } .viewer-actions a { text-decoration:none; display:inline-flex; align-items:center; }
+  .viewer-body { flex:1; min-height:0; display:grid; place-items:center; background:var(--subtle); border-radius:12px; overflow:auto; }
+  .viewer-body img { max-width:100%; max-height:100%; object-fit:contain; }
+  .viewer-body iframe { width:100%; height:100%; border:0; background:#fff; }
+  /* drop zones */
+  .drop { position:relative; border:1.5px dashed var(--line); border-radius:12px; background:var(--subtle); padding:16px 12px; text-align:center; cursor:pointer; transition:border-color .15s, background .15s; }
+  .drop:hover, .drop:focus-visible { border-color:var(--accent); outline:none; }
+  .drop.over { border-color:var(--accent); background:var(--tint); }
+  .drop .drop-input { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+  .drop-txt { display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--muted); font-size:13px; }
+  .drop-txt b { color:var(--accent); }
+  .file { align-items:center; }
+  .file .thumb { width:34px; height:34px; border-radius:6px; object-fit:cover; flex:none; }
+  .file .thumb.pdf { display:grid; place-items:center; background:var(--err-bg); color:var(--err); font-size:10px; font-weight:800; }
+  .file span { flex:1; }
+  .file-x { border:0; background:none; color:var(--muted); font-size:18px; line-height:1; cursor:pointer; padding:0 4px; }
+  .file-x:hover { color:var(--err); }
   .tl { display:grid; gap:6px; margin-top:8px; }
   .tl-item { display:grid; gap:1px; text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:8px 12px; cursor:pointer; color:var(--ink); }
   .tl-item:hover { border-color:color-mix(in srgb, var(--ink) 30%, var(--line)); }
@@ -578,11 +639,11 @@
       <button class="nav" data-view="tugas" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>
         Tugas <span class="badge" data-task-badge hidden></span></button>
-      <div class="nav-group" data-pay-only>Keuangan</div>
-      <button class="nav" data-view="catat" data-pay-only type="button">
+      <div class="nav-group">Keuangan</div>
+      <button class="nav" data-view="catat" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
         Catat pembayaran</button>
-      <button class="nav" data-view="bukti" data-pay-only type="button">
+      <button class="nav" data-view="bukti" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>
         Riwayat pembayaran <span class="badge" data-badge hidden></span></button>
       <div class="nav-group">Properti</div>
@@ -592,8 +653,8 @@
       <button class="nav" data-view="penyewa" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>
         Penyewa <span class="badge" data-tn-badge hidden></span></button>
-      <div class="nav-group" data-admin-only>Admin</div>
-      <button class="nav" data-view="set" data-admin-only type="button">
+      <div class="nav-group">Admin</div>
+      <button class="nav" data-view="set" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
         Pengaturan</button>
     </nav>
@@ -731,7 +792,7 @@
     <!-- ================= PENGATURAN ================= -->
     <section id="view-set" hidden>
       <div class="page-head" style="max-width:1320px">
-        <div><h1>Pengaturan</h1><p>Catatan aktivitas, pemeriksaan data, dan error. Hanya untuk Admin.</p></div>
+        <div><h1>Pengaturan</h1><p>Catatan aktivitas, pemeriksaan data, error, dan siapa boleh membuka apa.</p></div>
       </div>
       <div class="set-tabs" role="tablist">
         <button class="set-tab on" data-st="log" type="button">Log aktivitas</button>
@@ -774,8 +835,10 @@
         <p class="hint"><b>Sistem</b> = program bermasalah (kirim ke Claude untuk diperbaiki). <b>Validasi</b> = isian ditolak, misalnya jumlah kosong.</p>
       </div>
       <div class="set-pane" id="st-users" hidden>
+        <div class="toolbar" id="usersTools"><button class="btn" id="userAdd" type="button" style="width:auto;margin:0;padding:10px 16px">+ Tambah pengguna</button></div>
         <div class="tbl-wrap" id="usersBox"><div class="empty">Memuat…</div></div>
-        <p class="hint">Untuk menambah atau menonaktifkan orang, ubah sheet <b>Akses</b> di spreadsheet (dan tambahkan emailnya sebagai Test user di Google Cloud).</p>
+        <div class="acc-legend"><span><b>—</b> menu tetap terlihat, isinya "Akses ditolak"</span><span><b>Lihat</b> bisa membuka, tidak bisa mengubah</span><span><b>Ubah</b> bisa membuka dan mengubah</span><span><b>Batal &amp; arsip</b> boleh membatalkan kwitansi, mengarsipkan, menghapus tugas</span></div>
+        <p class="hint" id="usersHint">Orang baru juga harus ditambahkan sebagai <b>Test user</b> di Google Cloud (OAuth consent screen), supaya bisa login.</p>
       </div>
       <div class="set-pane" id="st-soon" hidden>
         <div class="card soon-page">
@@ -840,12 +903,13 @@
               <div id="tnDocsWrap">
                 <h3 class="tn-h3">Dokumen (Google Drive)</h3>
                 <p class="hint" style="margin:0 0 8px">Foto KTP, foto penyewa, scan kontrak. Disimpan di folder Drive khusus penyewa ini (opsional).</p>
-                <div class="doc-list" id="tnDocs"></div>
+                <div class="doc-list" id="tnDocs" data-ctx="penyewa"></div>
                 <div id="tnDocUp">
-                  <div class="row" style="margin-top:10px">
+                  <div style="margin-top:10px">
                     <div class="fld"><label for="tnDocJenis">Jenis</label><select id="tnDocJenis"><option>KTP</option><option>Foto penyewa</option><option>Kontrak</option><option>Lainnya</option></select></div>
                     <div class="fld"><label for="tnDocFile">File (foto atau PDF)</label><input id="tnDocFile" type="file" accept="image/*,application/pdf" multiple></div>
                   </div>
+                  <div class="files" id="tnDocList"></div>
                   <div id="tnDocErr" class="msg err" hidden></div>
                   <div class="tn-actions"><button class="btn sec" id="tnDocUpload" type="button" disabled>Unggah</button><button class="btn sec" id="tnFolder" type="button">Buka folder Drive</button></div>
                 </div>
@@ -922,12 +986,13 @@
               <div id="tdDocsWrap">
                 <h3 class="tn-h3">Dokumen (Google Drive)</h3>
                 <p class="hint" style="margin:0 0 8px">Sertifikat, AJB, PBB, foto lokasi. Disimpan di folder Drive khusus tanah ini (opsional).</p>
-                <div class="doc-list" id="tdDocs"></div>
+                <div class="doc-list" id="tdDocs" data-ctx="tanah"></div>
                 <div id="tdDocUp">
-                  <div class="row" style="margin-top:10px">
+                  <div style="margin-top:10px">
                     <div class="fld"><label for="tdDocJenis">Jenis</label><select id="tdDocJenis"><option>Sertifikat</option><option>AJB</option><option>PBB</option><option>Foto</option><option>Lainnya</option></select></div>
                     <div class="fld"><label for="tdDocFile">File (foto atau PDF)</label><input id="tdDocFile" type="file" accept="image/*,application/pdf" multiple></div>
                   </div>
+                  <div class="files" id="tdDocList"></div>
                   <div id="tdDocErr" class="msg err" hidden></div>
                   <div class="tn-actions"><button class="btn sec" id="tdDocUpload" type="button" disabled>Unggah</button><button class="btn sec" id="tdFolder" type="button">Buka folder Drive</button></div>
                 </div>
@@ -938,6 +1003,15 @@
         </div>
       </div>
       <datalist id="kotaList"></datalist><datalist id="tipeList"></datalist>
+    </section>
+
+    <!-- ================= AKSES DITOLAK ================= -->
+    <section id="view-denied" hidden>
+      <div class="denied">
+        <div class="denied-ic" aria-hidden="true">🔒</div>
+        <h1>Akses ditolak</h1>
+        <p>Halaman <b id="deniedPage"></b> tidak termasuk akses akun Anda. Hubungi <span id="deniedOwner">Pemilik</span> jika Anda perlu membuka halaman ini.</p>
+      </div>
     </section>
 
     <!-- ================= COMING SOON PAGES ================= -->
@@ -1139,13 +1213,13 @@
     <button class="tab on" data-view="dash" type="button">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
       Dashboard</button>
-    <button class="tab" data-view="catat" data-pay-only type="button">
+    <button class="tab" data-view="catat" type="button">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
       Catat</button>
-    <button class="tab" data-view="bukti" data-pay-only type="button">
+    <button class="tab" data-view="bukti" type="button">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>
       Riwayat <span class="badge" data-badge hidden></span></button>
-    <button class="tab" data-view="kal" data-nonpay-only type="button" hidden>
+    <button class="tab" data-view="kal" type="button" hidden>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
       Kalender</button>
     <button class="tab" data-view="tugas" type="button">
@@ -1208,6 +1282,20 @@
       <button class="btn" id="taskSave" type="button">Simpan</button>
     </div>
     <button class="btn danger" id="taskDel" type="button" hidden>Hapus tugas</button>
+  </div>
+</div>
+
+<div class="modal viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-labelledby="viewerTitle">
+  <div class="modal-card viewer-card">
+    <div class="viewer-head">
+      <h2 id="viewerTitle">Dokumen</h2>
+      <div class="viewer-actions">
+        <a class="mini-btn" id="viewerDrive" target="_blank" rel="noopener" hidden>Buka di Drive</a>
+        <a class="mini-btn dark" id="viewerDl" hidden>Unduh</a>
+        <button class="mini-btn" id="viewerClose" type="button">Tutup</button>
+      </div>
+    </div>
+    <div class="viewer-body" id="viewerBody"></div>
   </div>
 </div>
 
@@ -1323,15 +1411,36 @@ var SOON = {
 
 };
 var curView = 'dash';
-function canPay() { return me && (me.peran === 'Admin' || me.peran === 'Staf'); }
-function isAdmin() { return me && me.peran === 'Admin'; }
+/* ---------- access per page: "-" (Akses ditolak), "L" (lihat), "U" (ubah). The engine checks it again on every call. ---------- */
+var PAGE_NAME = { dash: 'Dashboard', kal: 'Kalender', tugas: 'Tugas', catat: 'Catat pembayaran', bukti: 'Riwayat pembayaran', penyewa: 'Penyewa', tanah: 'Data tanah', set: 'Pengaturan' };
+function lv(page) { return me && me.perms ? (me.perms[page] || '-') : '-'; }
+function canPay() { return lv('catat') === 'U'; }
+function isAdmin() { return !!(me && (me.owner || me.heavy)); }
+function applyLocks() {
+  $$('[data-view]').forEach(function (b) {
+    var page = b.getAttribute('data-view'); if (!PAGE_NAME[page]) return;
+    var locked = lv(page) === '-';
+    b.classList.toggle('locked', locked);
+    var ic = b.querySelector('.lock-ic');
+    if (locked && !ic) { ic = el('span', 'lock-ic', '🔒'); ic.setAttribute('aria-label', 'Terkunci'); b.appendChild(ic); }
+    if (!locked && ic) ic.remove();
+  });
+}
 function show(view) {
   if (SOON[view]) { $('soonTitle').textContent = SOON[view][0]; $('soonSub').textContent = SOON[view][1]; $('soonText').textContent = SOON[view][2]; }
   var sec = SOON[view] ? 'soon' : view;
-  if ((sec === 'catat' || sec === 'bukti') && !canPay()) sec = view = 'dash';
-  if (sec === 'set' && !isAdmin()) sec = view = 'dash';
+  var denied = PAGE_NAME[view] && lv(view) === '-';
+  if (denied) { $('deniedPage').textContent = PAGE_NAME[view]; $('deniedOwner').textContent = me && me.ownerName ? me.ownerName : 'Pemilik'; sec = 'denied'; }
   curView = view;
-  VIEWS.forEach(function (v) { $('view-' + v).hidden = v !== sec; });
+  VIEWS.concat(['denied']).forEach(function (v) { $('view-' + v).hidden = v !== sec; });
+  $$('.viewonly').forEach(function (x) { x.remove(); });
+  if (!denied && PAGE_NAME[view] && lv(view) === 'L') {
+    var head = $('view-' + view).querySelector('.page-head');
+    if (head) { var vb = el('span', 'viewonly', '👁 Hanya lihat'); vb.title = 'Anda bisa membuka halaman ini, tetapi tidak bisa mengubah apa pun.'; (head.querySelector('h1') || head).appendChild(vb); }
+  }
+  $$('[data-view]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-view') === view); });
+  $('userMenu').hidden = true;
+  if (denied) { window.scrollTo(0, 0); return; }
   $$('[data-view]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-view') === view); });
   $('userMenu').hidden = true;
   if (view === 'bukti') loadPayments();
@@ -1396,11 +1505,14 @@ function readFiles(input, opts) {
 }
 function listFiles(input, box) {
   box.innerHTML = '';
-  Array.prototype.forEach.call(input.files || [], function (f) {
+  Array.prototype.forEach.call(input.files || [], function (f, i) {
     var d = document.createElement('div'); d.className = 'file';
+    if (/^image\//.test(f.type)) { var im = new Image(); im.src = URL.createObjectURL(f); im.alt = ''; im.className = 'thumb'; d.appendChild(im); }
+    else d.appendChild(el('span', 'thumb pdf', 'PDF'));
     var a = document.createElement('span'); a.textContent = f.name;
     var b = document.createElement('small'); b.textContent = Math.max(1, Math.round(f.size / 1024)) + ' KB';
-    d.appendChild(a); d.appendChild(b); box.appendChild(d);
+    var x = el('button', 'file-x', '×'); x.type = 'button'; x.title = 'Hapus file ini'; x.onclick = function () { removeFile(input, i); };
+    d.appendChild(a); d.appendChild(b); d.appendChild(x); box.appendChild(d);
   });
 }
 
@@ -1652,6 +1764,7 @@ function check() {
   $('confirmBox').hidden = !w.length;
   if (w.length && !$('confirm').checked) ok = false;
   $('save').disabled = !ok;
+  $('save').hidden = lv('catat') !== 'U';
 }
 
 function showDone(k, hasProof) {
@@ -1793,13 +1906,15 @@ function openDetail(p) {
   var pr = $('dProofs'); pr.innerHTML = '';
   if (!p.bukti.length) { var m = document.createElement('div'); m.className = 'msg warn'; m.style.marginTop = '0'; m.textContent = 'Belum ada bukti.'; pr.appendChild(m); }
   p.bukti.forEach(function (u, i) {
-    var a = document.createElement('a'); a.href = u; a.target = '_blank'; a.rel = 'noopener';
+    var a = document.createElement('a'); a.href = '#';
     a.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>';
-    a.appendChild(document.createTextNode('Bukti ' + (i + 1) + ' (buka di Drive)')); pr.appendChild(a);
+    a.appendChild(document.createTextNode('Lihat bukti ' + (i + 1)));
+    a.onclick = function (e) { e.preventDefault(); openFile(driveId(u), 'bukti', 'Bukti ' + (i + 1) + ' · ' + p.nama, u); };
+    pr.appendChild(a);
   });
   if (p.buktiUpd) { var s = document.createElement('div'); s.className = 'muted'; s.textContent = 'Terakhir ditambah ' + p.buktiUpd + ' oleh ' + p.buktiOleh; pr.appendChild(s); }
-  $('addProofBox').hidden = v;
-  $('cancelArea').hidden = v || !me || me.peran !== 'Admin';
+  $('addProofBox').hidden = v || lv('bukti') !== 'U';
+  $('cancelArea').hidden = v || lv('bukti') !== 'U' || !isAdmin();
   $('cancelBox').hidden = true; $('cancelOpen').hidden = false; $('cancelReason').value = ''; $('cancelErr').hidden = true;
   signOptions($('dSign'));
   showSig('d', longDate(parseDmy(p.tgl) || new Date()));
@@ -2177,7 +2292,8 @@ function loadTasks() {
     .catch(function (e) { emptyBox($('taskList'), 'Gagal memuat: ' + errText(e)); });
 }
 function myOpen() { return tasks.filter(function (k) { return k.ke === user && k.status !== 'Selesai'; }); }
-function setTaskBadge() { var n = myOpen().length; $$('[data-task-badge]').forEach(function (b) { b.textContent = n; b.hidden = !n; }); }
+function setTaskBadge() {
+  $('taskNew').hidden = lv('tugas') !== 'U'; var n = myOpen().length; $$('[data-task-badge]').forEach(function (b) { b.textContent = n; b.hidden = !n; }); }
 function renderTasks() {
   var t = today0(), q = $('tq').value.toLowerCase().trim();
   var late = tasks.filter(function (k) { return k.status !== 'Selesai' && taskLevel(k, t).lv === 'red'; });
@@ -2217,7 +2333,7 @@ function renderTasks() {
     box.appendChild(b);
   });
 }
-function canEditTask(k) { return !k || isAdmin() || k.oleh === user || k.ke === user; }
+function canEditTask(k) { return lv('tugas') === 'U' && (!k || isAdmin() || k.oleh === user || k.ke === user); }
 function openTask(k) {
   editTask = k || null;
   var sel = $('tKe'); sel.innerHTML = '';
@@ -2306,13 +2422,7 @@ function renderSet(tab) {
     box3.appendChild(table(['Waktu', 'Siapa', 'Aksi', 'Jenis', 'Pesan'], rows3.map(function (r) {
       return [{ t: r.waktu, cls: 'nowrap num' }, { t: r.email, cls: 'nowrap' }, { t: r.aksi, cls: 'nowrap' }, { node: el('span', 'lv ' + r.jenis, r.jenis) }, { t: r.pesan, cls: 'detail' }];
     })));
-  } else if (tab === 'users') {
-    var box4 = $('usersBox'); box4.innerHTML = '';
-    if (!d.length) return emptyBox(box4, 'Sheet Akses kosong.');
-    box4.appendChild(table(['Nama', 'Email', 'Peran', 'Aktif', 'Tanda tangan'], d.map(function (r) {
-      return [r.nama, r.email, r.peran, { node: el('span', 'st ' + (r.aktif ? 'white' : 'grey'), r.aktif ? 'Aktif' : 'Nonaktif') }, r.ttd ? 'Sudah diunggah' : '-'];
-    })));
-  }
+  } else if (tab === 'users') renderUsers(d);
 }
 $$('.set-tab').forEach(function (b) { b.onclick = function () { openSetTab(b.getAttribute('data-st')); }; });
 $('logQ').oninput = function () { renderSet('log'); };
@@ -2582,7 +2692,8 @@ function renderDocs(t, d, box) {
   if (d.error) box.appendChild(el('div', 'msg warn', d.error));
   if (!d.files.length) box.appendChild(el('div', 'muted', d.url ? 'Folder masih kosong.' : 'Belum ada dokumen. Folder Drive dibuat otomatis saat pertama kali mengunggah.'));
   d.files.forEach(function (f) {
-    var a = document.createElement('a'); a.href = f.url; a.target = '_blank'; a.rel = 'noopener';
+    var a = document.createElement('a'); a.href = '#';
+    a.onclick = function (e) { e.preventDefault(); openFile(f.id, box.getAttribute('data-ctx') || 'penyewa', f.name, f.url); };
     a.innerHTML = /pdf/.test(f.mime) ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>'
       : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg>';
     a.appendChild(el('span', '', f.name)); a.appendChild(el('small', '', f.date));
@@ -2593,7 +2704,7 @@ function renderDocs(t, d, box) {
 function loadDocs(t) {
   var edit = tnData.canEdit && !t.arsip;
   $('tnDocsWrap').hidden = false; $('tnDocUp').hidden = !edit;
-  $('tnFolderView').hidden = edit || !t.folder;
+  $('tnFolderView').hidden = edit || !t.folder || !me.owner; $('tnFolder').hidden = !me.owner;
   $('tnDocFile').value = ''; $('tnDocUpload').disabled = true; $('tnDocErr').hidden = true;
   $('tnDocs').innerHTML = ''; $('tnDocs').appendChild(el('div', 'muted', t.folder ? 'Memuat dokumen…' : 'Belum ada dokumen. Folder Drive dibuat otomatis saat pertama kali mengunggah.'));
   if (!t.folder) return;
@@ -2601,7 +2712,7 @@ function loadDocs(t) {
   call('getTenantDocs', { key: key }).then(function (d) { if (tnSel && tnSel.key === key) renderDocs(t, d); })
     .catch(function (e) { if (tnSel && tnSel.key === key) { $('tnDocs').innerHTML = ''; $('tnDocs').appendChild(el('div', 'msg err', 'Gagal memuat dokumen: ' + errText(e))); } });
 }
-$('tnDocFile').addEventListener('change', function () { $('tnDocUpload').disabled = !(this.files || []).length; });
+$('tnDocFile').addEventListener('change', function () { $('tnDocUpload').disabled = !(this.files || []).length; listFiles(this, $('tnDocList')); });
 $('tnDocUpload').onclick = function () {
   var t = tnSel, btn = this; if (!t) return;
   btn.disabled = true; btn.textContent = 'Mengunggah…'; $('tnDocErr').hidden = true;
@@ -2610,7 +2721,7 @@ $('tnDocUpload').onclick = function () {
     if (big) throw new Error('File terlalu besar.');
     return call('uploadTenantDocs', { key: t.key, jenis: $('tnDocJenis').value, files: files });
   }).then(function (d) {
-    btn.textContent = 'Unggah'; $('tnDocFile').value = '';
+    btn.textContent = 'Unggah'; $('tnDocFile').value = ''; $('tnDocList').innerHTML = '';
     if (tnSel && tnSel.key === t.key) renderDocs(t, d);
     tnData.tenants.forEach(function (x) { if (x.key === t.key) x.folder = d.url; });
     toast('Dokumen tersimpan di Drive.');
@@ -2921,7 +3032,7 @@ function landArchiveSubmit() {
 /* land documents */
 function loadLandDocs(p) {
   var edit = tdData.canEdit && !p.arsip;
-  $('tdDocUp').hidden = !edit; $('tdFolderView').hidden = edit || !p.folder;
+  $('tdDocUp').hidden = !edit; $('tdFolderView').hidden = edit || !p.folder || !me.owner; $('tdFolder').hidden = !me.owner;
   $('tdDocFile').value = ''; $('tdDocUpload').disabled = true; $('tdDocErr').hidden = true;
   var box = $('tdDocs'); box.innerHTML = ''; box.appendChild(el('div', 'muted', p.folder ? 'Memuat dokumen…' : 'Belum ada dokumen. Folder Drive dibuat otomatis saat pertama kali mengunggah.'));
   if (!p.folder) return;
@@ -2932,12 +3043,12 @@ function loadLandDocs(p) {
 function renderDocsInto(box, owner, d) {
   renderDocs(owner, d, box);
 }
-$('tdDocFile').addEventListener('change', function () { $('tdDocUpload').disabled = !(this.files || []).length; });
+$('tdDocFile').addEventListener('change', function () { $('tdDocUpload').disabled = !(this.files || []).length; listFiles(this, $('tdDocList')); });
 $('tdDocUpload').onclick = function () {
   var p = tdSel, btn = this; if (!p) return;
   btn.disabled = true; btn.textContent = 'Mengunggah…'; $('tdDocErr').hidden = true;
   readFiles($('tdDocFile')).then(function (files) { return call('uploadLandDocs', { row: p.row, inv: p.inv, jenis: $('tdDocJenis').value, files: files }); })
-    .then(function (d) { btn.textContent = 'Unggah'; $('tdDocFile').value = ''; if (tdSel && tdSel.row === p.row) renderDocsInto($('tdDocs'), p, d); p.folder = d.url; toast('Dokumen tersimpan di Drive.'); })
+    .then(function (d) { btn.textContent = 'Unggah'; $('tdDocFile').value = ''; $('tdDocList').innerHTML = ''; if (tdSel && tdSel.row === p.row) renderDocsInto($('tdDocs'), p, d); p.folder = d.url; toast('Dokumen tersimpan di Drive.'); })
     .catch(function (e) { btn.textContent = 'Unggah'; btn.disabled = false; $('tdDocErr').textContent = errText(e); $('tdDocErr').hidden = false; });
 };
 $('tdFolder').onclick = function () {
@@ -2976,6 +3087,165 @@ function renderOcc() {
   if (kos.length) body.appendChild(el('p', 'hint', 'Kosong: ' + kos.slice(0, 8).join(', ') + (kos.length > 8 ? ' dan ' + (kos.length - 8) + ' lainnya' : '')));
 }
 $('occArea').onchange = renderOcc;
+/* ====================== PENGGUNA & AKSES ====================== */
+var ACC_PAGES = ['dash', 'kal', 'tugas', 'catat', 'bukti', 'penyewa', 'tanah', 'set'];
+var ACC_SHORT = { dash: 'Dashboard', kal: 'Kalender', tugas: 'Tugas', catat: 'Catat bayar', bukti: 'Riwayat bayar', penyewa: 'Penyewa', tanah: 'Data tanah', set: 'Pengaturan' };
+var TEMPLATES = {
+  'Staf keuangan': { dash: 'L', kal: 'L', tugas: 'U', catat: 'U', bukti: 'U', penyewa: 'U', tanah: 'L', set: '-' },
+  'Staf tanah': { dash: '-', kal: '-', tugas: 'U', catat: '-', bukti: '-', penyewa: '-', tanah: 'U', set: '-' },
+  'Manajemen': { dash: 'L', kal: 'L', tugas: 'L', catat: '-', bukti: 'L', penyewa: 'L', tanah: 'L', set: '-' },
+  'Semua (ubah)': { dash: 'U', kal: 'U', tugas: 'U', catat: 'U', bukti: 'U', penyewa: 'U', tanah: 'U', set: 'L' },
+  'Tidak ada': { dash: '-', kal: '-', tugas: '-', catat: '-', bukti: '-', penyewa: '-', tanah: '-', set: '-' }
+};
+var newUserRow = false;
+function lvlCtl(val, disabled, onChange) {
+  var w = el('div', 'lvl'); w.setAttribute('role', 'radiogroup');
+  [['-', '—'], ['L', 'Lihat'], ['U', 'Ubah']].forEach(function (o) {
+    var b = el('button', 'lv-' + (o[0] === '-' ? 'no' : o[0] === 'L' ? 'view' : 'edit') + (val === o[0] ? ' on' : ''), o[1]); b.type = 'button'; b.disabled = disabled;
+    b.setAttribute('data-v', o[0]);
+    b.onclick = function () { w.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); }); onChange(o[0]); };
+    w.appendChild(b);
+  });
+  return w;
+}
+function renderUsers(d) {
+  var box = $('usersBox'); box.innerHTML = '';
+  var edit = d.canEdit;
+  $('usersTools').hidden = !edit;
+  var rows = d.users.slice().sort(function (a, b) { return (b.owner ? 1 : 0) - (a.owner ? 1 : 0) || (b.aktif ? 1 : 0) - (a.aktif ? 1 : 0); });
+  if (newUserRow) rows.unshift({ isNew: true, email: '', nama: '', peran: '', aktif: true, heavy: false, perms: Object.assign({}, TEMPLATES['Staf keuangan']) });
+  rows.forEach(function (u) {
+    var card = el('div', 'ucard' + (u.aktif ? '' : ' off') + (u.isNew ? ' dirty' : '')), cur = { email: u.email, nama: u.nama, peran: u.peran, aktif: u.aktif, heavy: u.heavy, perms: Object.assign({}, u.perms) };
+    var saveBtn = null;
+    function dirty() { if (saveBtn) saveBtn.disabled = false; card.classList.add('dirty'); }
+    var who = el('div', 'who');
+    if (u.isNew) {
+      who.appendChild(el('b', '', 'Pengguna baru'));
+      var em = inp('email', '', { placeholder: 'email@gmail.com', 'aria-label': 'Email' }), nm = inp('text', '', { placeholder: 'Nama', 'aria-label': 'Nama' }), pr = inp('text', '', { placeholder: 'Label peran (opsional)', 'aria-label': 'Peran' });
+      em.oninput = function () { cur.email = em.value; }; nm.oninput = function () { cur.nama = nm.value; }; pr.oninput = function () { cur.peran = pr.value; };
+      who.appendChild(em); who.appendChild(nm); who.appendChild(pr);
+    } else {
+      var top = el('div', 'who-top'); top.appendChild(el('b', '', u.nama || u.email));
+      if (u.owner) top.appendChild(el('span', 'owner', 'Pemilik'));
+      else if (!u.aktif) top.appendChild(el('span', 'chip', 'Nonaktif'));
+      else if (u.peran && !edit) top.appendChild(el('span', 'chip', u.peran));
+      who.appendChild(top); who.appendChild(el('span', 'em', u.email));
+      if (!u.owner && edit) { var pr2 = inp('text', u.peran, { placeholder: 'Label peran (opsional)', 'aria-label': 'Peran ' + u.nama }); pr2.oninput = function () { cur.peran = pr2.value; dirty(); }; who.appendChild(pr2); }
+    }
+    card.appendChild(who);
+    if (u.owner) { card.appendChild(el('div', 'muted owner-note', 'Semua halaman dan semua tindakan, termasuk mengatur pengguna. Tidak bisa diubah.')); box.appendChild(card); return; }
+    var right = el('div', 'uright');
+    var grid = el('div', 'pgrid');
+    ACC_PAGES.forEach(function (p) { var c = el('div', 'pcell'); c.appendChild(el('span', '', ACC_SHORT[p])); c.appendChild(lvlCtl(u.perms[p] || '-', !edit, function (v) { cur.perms[p] = v; dirty(); })); grid.appendChild(c); });
+    right.appendChild(grid);
+    var foot = el('div', 'ufoot');
+    var hl = el('label', 'mini-check'); var hc = document.createElement('input'); hc.type = 'checkbox'; hc.checked = !!u.heavy; hc.disabled = !edit; hc.onchange = function () { cur.heavy = hc.checked; dirty(); };
+    hl.appendChild(hc); hl.appendChild(document.createTextNode(' Boleh batal kwitansi & arsip')); foot.appendChild(hl);
+    if (edit) {
+      var ak = el('label', 'mini-check'); var ac = document.createElement('input'); ac.type = 'checkbox'; ac.checked = !!u.aktif; ac.onchange = function () { cur.aktif = ac.checked; dirty(); };
+      ak.appendChild(ac); ak.appendChild(document.createTextNode(' Aktif')); foot.appendChild(ak);
+      var tpl = document.createElement('select'); tpl.setAttribute('aria-label', 'Pakai template');
+      [['', 'Pakai template…']].concat(Object.keys(TEMPLATES).map(function (k) { return [k, k]; })).forEach(function (o) { var x = el('option', '', o[1]); x.value = o[0]; tpl.appendChild(x); });
+      tpl.onchange = function () { if (!tpl.value) return; cur.perms = Object.assign({}, TEMPLATES[tpl.value]); card.querySelectorAll('.lvl').forEach(function (w, i) { var v = cur.perms[ACC_PAGES[i]]; w.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-v') === v); }); }); tpl.value = ''; dirty(); };
+      foot.appendChild(tpl);
+      var sp = el('span', 'grow'); foot.appendChild(sp);
+      if (u.isNew) { var cx = el('button', 'mini-btn', 'Batal'); cx.type = 'button'; cx.onclick = function () { newUserRow = false; renderUsers(setCache.users); }; foot.appendChild(cx); }
+      saveBtn = el('button', 'mini-btn dark', u.isNew ? 'Tambah' : 'Simpan'); saveBtn.type = 'button'; saveBtn.disabled = !u.isNew;
+      saveBtn.onclick = function () {
+        saveBtn.disabled = true; saveBtn.textContent = 'Menyimpan…';
+        call('setAccess', cur).then(function (r) { if (u.isNew) newUserRow = false; setCache.users.users = r.users; renderUsers(setCache.users); toast('Akses ' + (cur.nama || cur.email) + ' tersimpan.'); })
+          .catch(function (e) { saveBtn.disabled = false; saveBtn.textContent = u.isNew ? 'Tambah' : 'Simpan'; toast(errText(e)); });
+      };
+      foot.appendChild(saveBtn);
+    }
+    right.appendChild(foot); card.appendChild(right); box.appendChild(card);
+  });
+  if (!edit) $('usersHint').textContent = 'Hanya Pemilik yang bisa mengubah akses.';
+}
+$('userAdd').onclick = function () { newUserRow = true; renderUsers(setCache.users); var e = $('usersBox').querySelector('input[type=email]'); if (e) e.focus(); };
+
+/* ====================== FILE VIEWER (inside the website, no Drive access needed) ====================== */
+function driveId(u) { var m = String(u).match(/\/d\/([-\w]{20,})/) || String(u).match(/[?&]id=([-\w]{20,})/); return m ? m[1] : ''; }
+var viewerUrl = null;
+function openFile(id, ctx, title, driveUrl) {
+  if (!id) { toast('File tidak dikenali.'); return; }
+  $('viewerTitle').textContent = title || 'Dokumen';
+  var body = $('viewerBody'); body.innerHTML = ''; body.appendChild(el('div', 'muted', 'Memuat file…'));
+  $('viewerDrive').hidden = !(me && me.owner && driveUrl); $('viewerDrive').href = driveUrl || '#';
+  $('viewerDl').hidden = true; $('viewer').hidden = false;
+  call('getFile', { id: id, ctx: ctx }).then(function (f) {
+    var bin = atob(f.data), arr = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    if (viewerUrl) URL.revokeObjectURL(viewerUrl);
+    viewerUrl = URL.createObjectURL(new Blob([arr], { type: f.mime }));
+    body.innerHTML = '';
+    if (/^image\//.test(f.mime)) { var img = new Image(); img.src = viewerUrl; img.alt = f.name; body.appendChild(img); }
+    else if (/pdf/.test(f.mime)) { var fr = document.createElement('iframe'); fr.src = viewerUrl; fr.title = f.name; body.appendChild(fr); }
+    else body.appendChild(el('div', 'muted', 'File ini tidak bisa ditampilkan. Gunakan tombol Unduh.'));
+    $('viewerDl').href = viewerUrl; $('viewerDl').download = f.name; $('viewerDl').hidden = false;
+  }).catch(function (e) { body.innerHTML = ''; body.appendChild(el('div', 'msg err', errText(e))); });
+}
+$('viewerClose').onclick = function () { $('viewer').hidden = true; $('viewerBody').innerHTML = ''; };
+$('viewer').addEventListener('click', function (e) { if (e.target === this) $('viewerClose').onclick(); });
+
+/* ====================== DRAG & DROP / PASTE for file inputs (like GitHub) ====================== */
+function acceptOk(input, f) {
+  var acc = (input.getAttribute('accept') || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+  if (!acc.length) return true;
+  return acc.some(function (a) { return a.slice(-2) === '/*' ? f.type.indexOf(a.slice(0, -1)) === 0 : f.type === a; });
+}
+function addFiles(input, files) {
+  var dt = new DataTransfer(), bad = 0;
+  if (input.multiple) Array.prototype.forEach.call(input.files || [], function (f) { dt.items.add(f); });
+  Array.prototype.forEach.call(files, function (f) {
+    if (!acceptOk(input, f)) { bad++; return; }
+    var name = f.name && f.name !== 'image.png' ? f.name : 'tempel-' + new Date().toISOString().slice(0, 19).replace(/[:T]/g, '') + '.' + ((f.type.split('/')[1] || 'png').replace('jpeg', 'jpg'));
+    var file = f.name === name ? f : new File([f], name, { type: f.type });
+    if (!input.multiple) { dt = new DataTransfer(); }
+    dt.items.add(file);
+  });
+  if (bad) toast(bad + ' file dilewati: hanya foto' + (/pdf/.test(input.getAttribute('accept') || '') ? ' atau PDF' : '') + '.');
+  input.files = dt.files;
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+}
+function removeFile(input, idx) {
+  var dt = new DataTransfer();
+  Array.prototype.forEach.call(input.files || [], function (f, i) { if (i !== idx) dt.items.add(f); });
+  input.files = dt.files;
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+}
+function makeDrop(input) {
+  var zone = el('div', 'drop'); zone.tabIndex = 0; zone.setAttribute('role', 'button');
+  zone.setAttribute('aria-label', 'Pilih, seret, atau tempel file');
+  input.parentNode.insertBefore(zone, input);
+  input.classList.add('drop-input'); zone.appendChild(input);
+  var txt = el('div', 'drop-txt');
+  txt.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>';
+  txt.appendChild(el('span', '', 'Seret file ke sini, tempel (Ctrl+V), atau '));
+  var pick = el('b', '', 'pilih file'); txt.lastChild.appendChild(pick);
+  zone.appendChild(txt);
+  zone.addEventListener('click', function (e) { if (e.target !== input) input.click(); });
+  zone.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } });
+  ['dragenter', 'dragover'].forEach(function (ev) { zone.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.add('over'); }); });
+  ['dragleave', 'dragend'].forEach(function (ev) { zone.addEventListener(ev, function () { zone.classList.remove('over'); }); });
+  zone.addEventListener('drop', function (e) { e.preventDefault(); zone.classList.remove('over'); if (e.dataTransfer && e.dataTransfer.files.length) addFiles(input, e.dataTransfer.files); });
+  zone._input = input;
+  return zone;
+}
+['foto', 'bfile', 'tnDocFile', 'tdDocFile', 'signFile'].forEach(function (id) { if ($(id)) makeDrop($(id)); });
+// stop the browser from opening a file dropped next to a zone
+['dragover', 'drop'].forEach(function (ev) { window.addEventListener(ev, function (e) { if (!e.target.closest || !e.target.closest('.drop')) e.preventDefault(); }); });
+// paste: goes to the focused drop zone, or the visible one on the current screen
+document.addEventListener('paste', function (e) {
+  var files = e.clipboardData && e.clipboardData.files;
+  if (!files || !files.length) return;
+  var zones = $$('.drop').filter(function (z) { return z.offsetParent !== null && !z._input.disabled; });
+  if (!$('signModal').hidden) zones = zones.filter(function (z) { return $('signModal').contains(z); });
+  var target = zones.filter(function (z) { return z === document.activeElement || z.contains(document.activeElement); })[0] || zones[0];
+  if (!target) return;
+  e.preventDefault(); addFiles(target._input, files); toast('File ditempel.');
+});
+
 /* ---------- signature dialog ---------- */
 function openSign() {
   $('userMenu').hidden = true;
@@ -2986,7 +3256,7 @@ function openSign() {
 $$('[data-sign-open]').forEach(function (b) { b.onclick = openSign; });
 $('signClose').onclick = function () { $('signModal').hidden = true; };
 $('signModal').addEventListener('click', function (e) { if (e.target === this) this.hidden = true; });
-document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { $('signModal').hidden = true; $('userMenu').hidden = true; $('taskModal').hidden = true; $('tnModal').hidden = true; } });
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { $('viewer').hidden = true; $('signModal').hidden = true; $('userMenu').hidden = true; $('taskModal').hidden = true; $('tnModal').hidden = true; } });
 $('signFile').onchange = function () {
   var f = this.files[0]; $('signSave').disabled = !f;
   if (!f) return;
@@ -3022,15 +3292,15 @@ function boot() {
     $$('[data-me-name]').forEach(function (e) { e.textContent = d.nama; });
     $$('[data-me-role]').forEach(function (e) { e.textContent = d.peran; });
     $('todayLbl').textContent = longDate(new Date());
-    var pay = d.peran === 'Admin' || d.peran === 'Staf';
-    $$('#sideNav [data-pay-only], .tabbar [data-pay-only]').forEach(function (b) { b.hidden = !pay; });
-    $$('.tabbar [data-nonpay-only]').forEach(function (b) { b.hidden = pay; });
-    $$('#sideNav [data-admin-only]').forEach(function (b) { b.hidden = d.peran !== 'Admin'; });
-    $$('[data-sign-open]').forEach(function (b) { b.hidden = !pay; });
+    $$('[data-me-role]').forEach(function (e) { e.textContent = d.owner ? 'Pemilik' : (d.peran || ''); });
+    applyLocks();
+    var payAny = lv('catat') !== '-' || lv('bukti') !== '-';
+    $$('[data-sign-open]').forEach(function (b) { b.hidden = !(lv('catat') === 'U' || lv('bukti') === 'U'); });
     $('menuNav').innerHTML = '<nav class="side-nav">' + $('sideNav').innerHTML + '</nav>';
     $('taskDel').hidden = true;
-    if (pay) { refreshSignSelects(); resetForm(); refreshBadge(); }
-    show('dash');
+    if (payAny) { refreshSignSelects(); resetForm(); refreshBadge(); }
+    var first = ['dash', 'tugas', 'catat', 'tanah', 'penyewa', 'bukti', 'kal', 'set'].filter(function (p) { return lv(p) !== '-'; })[0] || 'dash';
+    show(first);
   }).catch(function (e) {
     renderGoogleButton();
     if (!$('login').hidden) { $('loginErr').textContent = errText(e); $('loginErr').hidden = false; }
