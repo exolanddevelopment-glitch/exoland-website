@@ -402,6 +402,49 @@
   .soon-page { max-width:640px; }
   .soon-page .card p { color:var(--muted); margin:10px 0 0; }
 
+  /* ---------- penyewa ---------- */
+  .health { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; max-width:1360px; margin-bottom:14px; }
+  .hc { text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px 16px; cursor:pointer; color:var(--ink); position:relative; overflow:hidden; }
+  .hc::before { content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--line); }
+  .hc.ok::before { background:#22a06b; } .hc.error::before { background:#ef4444; } .hc.kurang::before { background:#f59e0b; } .hc.cek::before { background:#a1a1aa; }
+  .hc span { display:block; font-size:13px; color:var(--muted); font-weight:600; }
+  .hc b { display:block; font-size:28px; font-weight:800; letter-spacing:-.02em; line-height:1.15; }
+  .hc.error b { color:var(--err); } .hc.kurang b { color:var(--warn); } .hc.ok b { color:var(--ok); }
+  .hc small { color:var(--muted); font-size:12px; }
+  .hc:hover { border-color:color-mix(in srgb, var(--ink) 30%, var(--line)); }
+  .hc.on { border-color:var(--accent); box-shadow:0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent); }
+  .grid-bukti.tn-split { grid-template-columns:minmax(0,1fr) minmax(380px, 520px); max-width:1360px; }
+  .tn-tags { display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; }
+  .tag.cek { background:var(--subtle); color:var(--muted); border:1px solid var(--line); }
+  .pay.ended .t-name { color:var(--muted); }
+  .tn-head { display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:12px; align-items:center; }
+  .tn-head h2 { margin:0; font-size:20px; font-weight:800; letter-spacing:-.02em; overflow-wrap:anywhere; }
+  .tn-h3 { font-size:14px; font-weight:700; margin:22px 0 4px; padding-top:16px; border-top:1px solid var(--line-2); }
+  #tnIssues { margin-top:12px; } #tnIssues .muted { font-size:12.5px; margin-top:2px; }
+  .msg.cekmsg { background:var(--subtle); color:var(--ink); border:1px solid var(--line); }
+  .fld { min-width:0; border-radius:10px; }
+  .row > .fld label { margin-top:14px; }
+  .fld .f-msg { font-size:12.5px; line-height:1.4; margin-top:5px; }
+  .fld .f-msg:empty { display:none; }
+  .fld.f-error input, .fld.f-error select { border-color:#ef4444; box-shadow:0 0 0 3px rgba(239,68,68,.15); }
+  .fld.f-error .f-msg, .fld.f-error label { color:var(--err); }
+  .fld.f-kurang input, .fld.f-kurang select, .fld.f-kurang textarea { border-color:#f59e0b; box-shadow:0 0 0 3px rgba(245,158,11,.16); }
+  .fld.f-kurang .f-msg, .fld.f-kurang label { color:var(--warn); }
+  .fld.f-cek input, .fld.f-cek select { border-color:var(--muted); }
+  .fld.f-cek .f-msg { color:var(--muted); }
+  .fld .hint { margin-top:4px; }
+  input:disabled, select:disabled, textarea:disabled { opacity:.75; cursor:default; }
+  .tn-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:16px; }
+  .tn-actions .btn { margin:0; }
+  .tn-actions #tnSave { grid-column:1 / -1; }
+  .tl { display:grid; gap:6px; margin-top:8px; }
+  .tl-item { display:grid; gap:1px; text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:8px 12px; cursor:pointer; color:var(--ink); }
+  .tl-item:hover { border-color:color-mix(in srgb, var(--ink) 30%, var(--line)); }
+  .tl-item.cur { border-color:var(--accent); background:var(--tint); }
+  .tl-item .muted { font-size:12.5px; }
+  @media (max-width:1180px) { .grid-bukti.tn-split { grid-template-columns:1fr; } .tn-split:not(.show-detail) .tn-detailcol { display:none; } .tn-split.show-detail .tn-listcol { display:none; } .tn-split .back { display:inline-block; margin-bottom:12px; } #view-penyewa.detail-open .health, #view-penyewa.detail-open #healthNote, #view-penyewa.detail-open .page-head { display:none; } }
+  @media (max-width:899px) { .health { grid-template-columns:1fr 1fr; } .hc b { font-size:22px; } }
+
   .toast { position:fixed; left:50%; transform:translateX(-50%); bottom:26px; background:#18181b; color:#fff; padding:11px 18px; border-radius:12px; font-size:14px; z-index:70; max-width:calc(100% - 32px); box-shadow:0 12px 30px -12px rgba(0,0,0,.5); }
 
   /* ---------- phone ---------- */
@@ -506,9 +549,9 @@
       <button class="nav" data-view="soon-tanah" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 15l9-4.5 9 4.5-9 4.5z"/><path d="M3 10l9-4.5 9 4.5"/></svg>
         Data tanah <span class="soon">Coming soon</span></button>
-      <button class="nav" data-view="soon-penyewa" type="button">
+      <button class="nav" data-view="penyewa" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>
-        Penyewa <span class="soon">Coming soon</span></button>
+        Penyewa <span class="badge" data-tn-badge hidden></span></button>
       <div class="nav-group" data-admin-only>Admin</div>
       <button class="nav" data-view="set" data-admin-only type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
@@ -702,6 +745,70 @@
           <p>Profil perusahaan (nama, alamat, logo di kwitansi) · Pengaturan kwitansi · Batas alarm jatuh tempo · Notifikasi email · Data &amp; backup · Kelola pengguna langsung dari website.</p>
         </div>
       </div>
+    </section>
+
+    <!-- ================= PENYEWA ================= -->
+    <section id="view-penyewa" hidden>
+      <div class="page-head" style="max-width:1360px">
+        <div><h1>Penyewa</h1><p>Semua kontrak sewa. Perbaiki data yang kurang atau salah di sini, bukan langsung di spreadsheet. Kontrak tidak pernah dihapus.</p></div>
+        <button class="btn" id="tnNew" type="button" style="width:auto;margin:0;padding:11px 18px" hidden>+ Tambah penyewa</button>
+      </div>
+      <div class="health" id="health">
+        <button type="button" class="hc ok" data-health="ok"><span>Lengkap</span><b>–</b><small>tidak ada masalah</small></button>
+        <button type="button" class="hc error" data-health="error"><span>Error</span><b>–</b><small>data jelas salah</small></button>
+        <button type="button" class="hc kurang" data-health="kurang"><span>Data kurang</span><b>–</b><small>ada yang belum diisi</small></button>
+        <button type="button" class="hc cek" data-health="cek"><span>Perlu dicek</span><b>–</b><small>mungkin benar, tolong lihat</small></button>
+      </div>
+      <p class="hint" id="healthNote" style="margin:-6px 0 16px"></p>
+      <div class="grid-bukti tn-split" id="tnSplit">
+        <div class="tn-listcol">
+          <div class="toolbar">
+            <div class="search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              <input id="tnq" type="search" placeholder="Cari nama, unit, ID, atau WhatsApp" autocomplete="off" aria-label="Cari penyewa">
+            </div>
+            <div class="segs" id="tnSegs">
+              <button type="button" data-ts="aktif" class="on">Aktif</button>
+              <button type="button" data-ts="selesai">Selesai</button>
+              <button type="button" data-ts="arsip">Arsip</button>
+              <button type="button" data-ts="semua">Semua</button>
+            </div>
+          </div>
+          <div class="pay-list" id="tnList"><div class="empty">Memuat penyewa…</div></div>
+        </div>
+        <div class="tn-detailcol sticky">
+          <div class="card">
+            <div class="empty" id="tnEmpty">Pilih penyewa di daftar.</div>
+            <div id="tnBody" hidden>
+              <button class="link back" id="tnBack" type="button">← Kembali ke daftar</button>
+              <div class="tn-head">
+                <div class="avatar" id="tnAv"></div>
+                <div style="min-width:0"><h2 id="tnName"></h2><div class="muted" id="tnSub"></div></div>
+                <span class="st" id="tnState"></span>
+              </div>
+              <p class="muted" id="tnInfo" style="margin:10px 0 0"></p>
+              <div class="msg" id="tnIssues" hidden></div>
+              <h3 class="tn-h3" id="tnFormTitle">Data kontrak</h3>
+              <div id="tnForm"></div>
+              <div id="tnErr" class="msg err" hidden></div>
+              <div class="tn-actions">
+                <button class="btn" id="tnSave" type="button" disabled>Simpan perubahan</button>
+                <button class="btn sec" id="tnCancelNew" type="button" hidden>Batal</button>
+                <button class="btn sec" id="tnPay" type="button">Catat pembayaran</button>
+                <button class="btn sec" id="tnChange" type="button">Ubah kontrak</button>
+                <button class="btn danger" id="tnEnd" type="button">Akhiri kontrak</button>
+                <button class="btn sec" id="tnArchive" type="button">Arsipkan</button>
+              </div>
+              <h3 class="tn-h3">Riwayat pembayaran</h3>
+              <div class="tbl-wrap" id="tnPays"></div>
+              <p class="hint" id="tnPaysNote"></p>
+              <h3 class="tn-h3">Riwayat unit ini</h3>
+              <div class="tl" id="tnUnit"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <datalist id="tanahList"></datalist>
     </section>
 
     <!-- ================= COMING SOON PAGES ================= -->
@@ -937,6 +1044,19 @@
   </div>
 </div>
 
+<div class="modal" id="tnModal" hidden role="dialog" aria-modal="true" aria-labelledby="tnmTitle">
+  <div class="modal-card wide">
+    <h2 id="tnmTitle"></h2>
+    <p class="muted" id="tnmText" style="margin:0"></p>
+    <div id="tnmBody"></div>
+    <div id="tnmErr" class="msg err" hidden></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button class="btn sec" id="tnmClose" type="button">Tutup</button>
+      <button class="btn" id="tnmOk" type="button">OK</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal" id="taskModal" hidden role="dialog" aria-modal="true" aria-labelledby="taskTitle">
   <div class="modal-card wide">
     <h2 id="taskTitle">Tugas baru</h2>
@@ -1052,11 +1172,11 @@ $$('[data-theme-switch]').forEach(function (s) {
 applyTheme(document.documentElement.getAttribute('data-theme') || 'light');
 
 /* ---------- navigation ---------- */
-var VIEWS = ['dash', 'kal', 'tugas', 'set', 'soon', 'catat', 'bukti'];
+var VIEWS = ['dash', 'kal', 'tugas', 'set', 'soon', 'catat', 'bukti', 'penyewa'];
 var SOON = {
   'soon-edai': ['Ask EDAI', 'Exotic Land Development AI', 'Tanya apa saja tentang data tanah, penyewa, dan pembayaran dalam bahasa sehari-hari, misalnya "siapa yang telat bayar bulan ini?" atau "berapa pemasukan Meikarta tahun ini?". EDAI menjawab dari database perusahaan.'],
-  'soon-tanah': ['Data tanah', 'Master data semua tanah dan properti', 'Cari, lihat, dan ubah data dari DBTanah langsung di website: legalitas, luas, PBB, masa berlaku HGB, dan dokumen. Setiap perubahan tercatat di Log aktivitas.'],
-  'soon-penyewa': ['Penyewa', 'Kontrak dan riwayat setiap penyewa', 'Daftar penyewa dengan kontrak, riwayat pembayaran, dan tombol Ubah kontrak (misalnya pindah dari Tahunan ke Bulanan) yang tercatat di Log aktivitas.']
+  'soon-tanah': ['Data tanah', 'Master data semua tanah dan properti', 'Cari, lihat, dan ubah data dari DBTanah langsung di website: legalitas, luas, PBB, masa berlaku HGB, dan dokumen. Setiap perubahan tercatat di Log aktivitas.']
+
 };
 var curView = 'dash';
 function canPay() { return me && (me.peran === 'Admin' || me.peran === 'Staf'); }
@@ -1073,6 +1193,7 @@ function show(view) {
   if (view === 'bukti') loadPayments();
   if (view === 'dash' || view === 'kal') loadDash();
   if (view === 'tugas') loadTasks();
+  if (view === 'penyewa') loadTenantsPage();
   if (view === 'set') openSetTab(setTab);
   window.scrollTo(0, 0);
 }
@@ -2040,6 +2161,283 @@ $('errReload').onclick = function () { loadSet('err', true); };
 $$('#cekSegs [data-lv]').forEach(function (b) { b.onclick = function () { cekLevel = b.getAttribute('data-lv'); renderSet('cek'); }; });
 $$('#errSegs [data-ej]').forEach(function (b) { b.onclick = function () { errJenis = b.getAttribute('data-ej'); renderSet('err'); }; });
 
+/* ====================== PENYEWA ====================== */
+var tnData = null, tnSel = null, tnStatus = 'aktif', tnHealth = '', tnDirty = false, tnMode = 'view';
+var SIKLUS_OPTS = ['Bulanan', '3 Bulan', '6 Bulan', 'Tahunan'];
+var KIND_TXT = { error: 'Error', kurang: 'Data kurang', cek: 'Perlu dicek' };
+function loadTenantsPage(keepKey) {
+  if (!tnData) emptyBox($('tnList'), 'Memuat penyewa…');
+  return call('getTenants').then(function (d) {
+    tnData = d;
+    var dl = $('tanahList'); dl.innerHTML = '';
+    (d.tanah || []).forEach(function (c) { var o = document.createElement('option'); o.value = c; dl.appendChild(o); });
+    $('tnNew').hidden = !d.canEdit;
+    renderTnList();
+    var k = keepKey || (tnSel && tnSel.key);
+    var t = k && tnData.tenants.filter(function (x) { return x.key === k; })[0];
+    if (t) openTenant(t); else if (tnMode !== 'new') closeTenant();
+  }).catch(function (e) { emptyBox($('tnList'), 'Gagal memuat: ' + errText(e)); });
+}
+function kindsOf(t) { var k = {}; t.issues.forEach(function (x) { k[x.kind] = (k[x.kind] || 0) + 1; }); return k; }
+function tnInStatus(t) {
+  if (tnStatus === 'arsip') return t.arsip;
+  if (t.arsip) return tnStatus === 'semua' ? false : false;
+  if (tnStatus === 'aktif') return t.aktif;
+  if (tnStatus === 'selesai') return !t.aktif;
+  return true;
+}
+function renderTnList() {
+  if (!tnData) return;
+  var base = tnData.tenants.filter(function (t) { return t.aktif && !t.arsip; });
+  var cnt = { ok: 0, error: 0, kurang: 0, cek: 0 };
+  base.forEach(function (t) { var k = kindsOf(t); if (!t.issues.length) cnt.ok++; ['error', 'kurang', 'cek'].forEach(function (x) { if (k[x]) cnt[x]++; }); });
+  $$('#health [data-health]').forEach(function (b) {
+    var h = b.getAttribute('data-health'); b.querySelector('b').textContent = cnt[h];
+    b.classList.toggle('on', h === tnHealth);
+  });
+  $$('[data-tn-badge]').forEach(function (x) { var n = cnt.error + cnt.kurang; x.textContent = n; x.hidden = !n; x.title = n + ' penyewa perlu diperbaiki'; });
+  $('healthNote').textContent = base.length + ' kontrak aktif. ' + (cnt.error + cnt.kurang ? 'Klik kotak di atas untuk melihat siapa saja, lalu perbaiki satu per satu.' : 'Semua data penting sudah lengkap.');
+  $$('#tnSegs [data-ts]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-ts') === tnStatus); });
+  var q = $('tnq').value.toLowerCase().trim();
+  var list = tnData.tenants.filter(function (t) {
+    if (tnHealth) { if (!(t.aktif && !t.arsip)) return false; var k = kindsOf(t); if (tnHealth === 'ok' ? t.issues.length : !k[tnHealth]) return false; }
+    else if (!tnInStatus(t)) return false;
+    return !q || (t.nama + ' ' + t.inv + ' ' + t.unit + ' ' + t.id + ' ' + t.wa).toLowerCase().indexOf(q) >= 0;
+  });
+  var rank = function (t) { var k = kindsOf(t); return k.error ? 0 : k.kurang ? 1 : k.cek ? 2 : 3; };
+  list.sort(function (a, b) { return (tnHealth ? 0 : rank(a) - rank(b)) || a.nama.localeCompare(b.nama); });
+  var box = $('tnList'); box.innerHTML = '';
+  if (!list.length) { emptyBox(box, q ? 'Tidak ada penyewa yang cocok.' : tnHealth === 'ok' ? 'Belum ada.' : tnHealth ? 'Tidak ada. 👍' : 'Tidak ada kontrak di sini.'); return; }
+  list.forEach(function (t) {
+    var b = el('button', 'pay' + (tnSel && tnSel.key === t.key ? ' on' : '') + (t.aktif ? '' : ' ended')); b.type = 'button';
+    var mid = el('div'); mid.style.minWidth = '0';
+    mid.appendChild(el('div', 't-name', t.nama));
+    mid.appendChild(metaEl([t.inv || '?', 'Unit ' + (t.unit || '?') + (t.id ? ' · ' + t.id : '')]));
+    var right = el('div', 'pay-right');
+    right.appendChild(el('b', '', t.harga ? rp(t.harga) : '-'));
+    var tags = el('div', 'tn-tags');
+    if (t.arsip) tags.appendChild(el('span', 'tag void', 'Arsip'));
+    else if (!t.aktif) tags.appendChild(el('span', 'tag', 'Selesai'));
+    var k = kindsOf(t);
+    if (!t.arsip) {
+      if (k.error) tags.appendChild(el('span', 'tag void', k.error + ' error'));
+      if (k.kurang) tags.appendChild(el('span', 'tag no', k.kurang + ' kurang'));
+      if (k.cek) tags.appendChild(el('span', 'tag cek', k.cek + ' cek'));
+      if (!t.issues.length && t.aktif) tags.appendChild(el('span', 'tag yes', 'Lengkap'));
+    }
+    right.appendChild(tags);
+    b.appendChild(avatarEl(t.nama, t.inv)); b.appendChild(mid); b.appendChild(right);
+    b.onclick = function () { if (tnDirty && !confirm('Perubahan belum disimpan. Tinggalkan?')) return; openTenant(t); };
+    box.appendChild(b);
+  });
+}
+function closeTenant() { tnSel = null; tnMode = 'view'; tnDirty = false; $('tnEmpty').hidden = false; $('tnBody').hidden = true; $('tnSplit').classList.remove('show-detail'); $('view-penyewa').classList.remove('detail-open'); }
+function fieldBox(id, label, input, hint) {
+  var w = el('div', 'fld'); w.setAttribute('data-f', id);
+  var l = el('label', '', label); l.htmlFor = 'f_' + id; w.appendChild(l);
+  input.id = 'f_' + id; w.appendChild(input);
+  if (hint) w.appendChild(el('p', 'hint', hint));
+  w.appendChild(el('div', 'f-msg'));
+  return w;
+}
+function inp(type, val, attrs) { var i = document.createElement('input'); i.type = type; i.value = val === undefined || val === null ? '' : val; for (var k in (attrs || {})) i.setAttribute(k, attrs[k]); return i; }
+function buildForm(t, canEdit) {
+  var f = $('tnForm'); f.innerHTML = '';
+  var s = document.createElement('select'); SIKLUS_OPTS.forEach(function (o) { var x = el('option', '', o); x.value = o; s.appendChild(x); });
+  var curS = t.siklus || ''; if (curS && SIKLUS_OPTS.indexOf(curS) < 0) { var x = el('option', '', curS + ' (lama)'); x.value = curS; s.appendChild(x); }
+  s.value = curS || (tnMode === 'new' ? 'Bulanan' : '');
+  var monthly = months(s.value || 'Bulanan') === 1;
+  var tempoIsDate = /^\d{4}-\d{2}-\d{2}$/.test(t.tempo || '');
+  var inv = inp('text', t.inv, { list: 'tanahList', autocomplete: 'off', placeholder: 'Contoh: Waru 012' });
+  var rows = [
+    ['row', fieldBox('nama', 'Nama penyewa', inp('text', t.nama, { maxlength: 120 })), fieldBox('wa', 'No WhatsApp', inp('tel', t.wa, { placeholder: '08…' }))],
+    ['row', fieldBox('inv', 'Inventaris', inv, 'Kode dari DBTanah, muncul saat diketik.'), fieldBox('unit', 'No Unit', inp('text', t.unit, { placeholder: 'Pakai - kalau tidak ada' }))],
+    ['row', fieldBox('siklus', 'Siklus bayar', s), fieldBox('harga', 'Harga sewa per siklus (Rp)', inp('text', t.harga ? Number(t.harga).toLocaleString('id-ID') : '', { inputmode: 'numeric', class: 'num money' }))],
+    ['row', fieldBox('mulai', 'Tanggal mulai', inp('date', t.mulaiIso)), fieldBox('selesai', 'Tanggal selesai', inp('date', t.selesaiIso), 'Wajib untuk 3 bulan, 6 bulan, dan Tahunan.')],
+    ['row', fieldBox('tempo', monthly ? 'Bayar tiap tanggal' : 'Tanggal jatuh tempo (catatan lama, opsional)',
+        monthly ? inp('number', /^\d+$/.test(String(t.tempo)) ? t.tempo : '', { min: 1, max: 31, inputmode: 'numeric', placeholder: 'Misalnya 22' }) : inp(tempoIsDate ? 'date' : 'text', t.tempo),
+        monthly ? 'Angka saja, 1 sampai 31.' : ''),
+      fieldBox('deposit', 'Deposit (Rp)', inp('text', t.deposit ? Number(t.deposit).toLocaleString('id-ID') : '', { inputmode: 'numeric', class: 'num money' }))],
+    ['one', fieldBox('awal', 'Lunas s/d awal (opsional)', inp('date', t.awalIso), 'Isi hanya untuk penyewa yang sudah telat saat sistem mulai dipakai. Jika kosong, dihitung dari tanggal di atas.')],
+    ['one', fieldBox('catatan', 'Catatan', (function () { var x = document.createElement('textarea'); x.rows = 2; x.maxLength = 500; x.value = t.catatan || ''; return x; })())]
+  ];
+  rows.forEach(function (r) { var d = el('div', r[0] === 'row' ? 'row' : ''); r.slice(1).forEach(function (x) { d.appendChild(x); }); f.appendChild(d); });
+  // highlight problem fields
+  (t.issues || []).forEach(function (x) {
+    var w = f.querySelector('[data-f="' + (x.field === 'status' ? 'selesai' : x.field) + '"]');
+    if (!w) w = f.querySelector('[data-f="awal"]');
+    var cur = w.getAttribute('data-kind'), order = { error: 3, kurang: 2, cek: 1 };
+    if (!cur || order[x.kind] > order[cur]) { w.setAttribute('data-kind', x.kind); w.classList.remove('f-error', 'f-kurang', 'f-cek'); w.classList.add('f-' + x.kind); }
+    var m = w.querySelector('.f-msg'); m.appendChild(el('div', '', '• ' + x.pesan));
+  });
+  $$('#tnForm input, #tnForm select, #tnForm textarea').forEach(function (i) {
+    i.disabled = !canEdit;
+    i.addEventListener('input', function () { tnDirty = true; $('tnSave').disabled = false; });
+    i.addEventListener('change', function () { tnDirty = true; $('tnSave').disabled = false; });
+  });
+  $$('#tnForm .money').forEach(function (i) { i.addEventListener('blur', function () { var n = num(i.value); i.value = n ? n.toLocaleString('id-ID') : ''; }); });
+  s.addEventListener('change', function () { var vals = readForm(); vals.issues = []; buildForm(vals, canEdit); tnDirty = true; $('tnSave').disabled = false; });
+}
+function readForm() {
+  var g = function (id) { var e = $('f_' + id); return e ? e.value : ''; };
+  return { key: tnMode === 'new' ? '' : tnSel.key, nama: g('nama'), wa: g('wa'), inv: g('inv'), unit: g('unit'), siklus: g('siklus'), harga: num(g('harga')),
+    mulaiIso: g('mulai'), selesaiIso: g('selesai'), tempo: g('tempo'), deposit: num(g('deposit')), awalIso: g('awal'), catatan: g('catatan') };
+}
+function openTenant(t) {
+  tnMode = 'view'; tnSel = t; tnDirty = false;
+  $('tnEmpty').hidden = true; $('tnBody').hidden = false;
+  setAvatar($('tnAv'), t.nama, t.inv);
+  $('tnName').textContent = t.nama;
+  $('tnSub').textContent = [t.id || 'Belum punya ID', t.inv + ' ' + t.unit].join(' · ');
+  var st = $('tnState'); st.className = 'st ' + (t.arsip ? 'grey' : t.aktif ? 'white' : 'grey'); st.textContent = t.arsip ? 'Arsip' : t.aktif ? 'Aktif' : 'Selesai';
+  var info = [];
+  if (t.aktif && t.lunasIso) { var l = dueLevel({ siklus: t.siklus || 'Bulanan', lunasIso: t.lunasIso }, today0()); info.push('Lunas s/d ' + dmy(parseIso(t.lunasIso)) + ' · ' + l.txt); }
+  if (!t.aktif && t.alasan) info.push('Diakhiri: ' + t.alasan);
+  if (t.arsip && t.arsipInfo) info.push('Diarsipkan: ' + t.arsipInfo);
+  if (t.dari) info.push('Lanjutan dari ' + t.dari);
+  $('tnInfo').textContent = info.join(' · ');
+  // issues summary
+  var ib = $('tnIssues'); ib.innerHTML = '';
+  if (t.issues.length) {
+    var k = kindsOf(t);
+    ib.appendChild(el('b', '', 'Perlu diperbaiki: ' + ['error', 'kurang', 'cek'].filter(function (x) { return k[x]; }).map(function (x) { return k[x] + ' ' + KIND_TXT[x].toLowerCase(); }).join(', ')));
+    ib.appendChild(el('div', 'muted', 'Kolom yang bermasalah ditandai merah, oranye, atau abu-abu di bawah.'));
+    ib.className = 'msg ' + (k.error ? 'err' : k.kurang ? 'warn' : 'cekmsg'); ib.hidden = false;
+  } else ib.hidden = true;
+  var canEdit = tnData.canEdit && !t.arsip;
+  $('tnFormTitle').textContent = 'Data kontrak';
+  buildForm(t, canEdit);
+  $('tnErr').hidden = true;
+  $('tnSave').hidden = !canEdit; $('tnSave').disabled = true; $('tnSave').textContent = 'Simpan perubahan';
+  $('tnChange').hidden = !(canEdit && t.aktif); $('tnEnd').hidden = !(canEdit && t.aktif);
+  $('tnArchive').hidden = !(tnData.isAdmin && !t.aktif); $('tnArchive').textContent = t.arsip ? 'Pulihkan dari arsip' : 'Arsipkan';
+  $('tnPay').hidden = !(canPay() && t.aktif && !t.arsip);
+  $('tnCancelNew').hidden = true;
+  // payments
+  var pb = $('tnPays'); pb.innerHTML = '';
+  if (!t.pays.length) pb.appendChild(el('div', 'muted', 'Belum ada pembayaran tercatat di website.'));
+  var shown = tnSel && tnSel._all ? t.pays : t.pays.slice(0, 8);
+  if (t.pays.length) pb.appendChild(table(['Tanggal', 'Untuk', 'Periode', { t: 'Jumlah', cls: 'r' }, 'No. kwitansi'], shown.map(function (p) {
+    return [{ t: p.tgl, cls: 'nowrap num' }, p.jenis === 'Lain-lain' && p.ket ? 'Lain-lain: ' + p.ket : p.jenis, { t: p.mulai ? p.mulai + ' – ' + p.sd : '-', cls: 'nowrap num' },
+      { t: rp(p.jumlah), cls: 'r nowrap num' }, { t: p.batal ? (p.kwt || '-') + ' (BATAL)' : (p.kwt || '-'), cls: 'nowrap num' }];
+  }), { rowCls: function (i) { return t.pays[i].batal ? 'lv-grey' : ''; } }));
+  var note = $('tnPaysNote'); note.innerHTML = '';
+  if (shown.length < t.pays.length) { var more = el('button', 'link', 'Tampilkan semua (' + t.nPays + ')'); more.type = 'button'; more.onclick = function () { t._all = true; openTenant(t); }; note.appendChild(more); }
+  else if (t.nPays > t.pays.length) note.textContent = 'Menampilkan ' + t.pays.length + ' terbaru dari ' + t.nPays + ' pembayaran.';
+  // unit timeline
+  var uk = (t.inv + '|' + t.unit).toUpperCase().replace(/[^A-Z0-9|]/g, '');
+  var same = tnData.tenants.filter(function (x) { return (x.inv + '|' + x.unit).toUpperCase().replace(/[^A-Z0-9|]/g, '') === uk; })
+    .sort(function (a, b) { return (b.mulaiIso || '') < (a.mulaiIso || '') ? -1 : 1; });
+  var ub = $('tnUnit'); ub.innerHTML = '';
+  same.forEach(function (x) {
+    var it = el('button', 'tl-item' + (x.key === t.key ? ' cur' : '')); it.type = 'button';
+    it.appendChild(el('b', '', x.nama));
+    it.appendChild(el('span', 'muted', (x.mulaiIso ? dmy(parseIso(x.mulaiIso)) : '?') + ' – ' + (x.selesaiIso ? dmy(parseIso(x.selesaiIso)) : x.aktif ? 'sekarang' : '?') + ' · ' + (x.arsip ? 'Arsip' : x.aktif ? 'Aktif' : 'Selesai') + (x.alasan ? ' (' + x.alasan + ')' : '')));
+    it.onclick = function () { if (x.key !== t.key) openTenant(x); };
+    ub.appendChild(it);
+  });
+  $('tnSplit').classList.add('show-detail'); $('view-penyewa').classList.add('detail-open');
+  renderTnList();
+  if (window.matchMedia('(max-width: 899px)').matches) window.scrollTo(0, 0);
+}
+function newTenant() {
+  tnMode = 'new'; tnSel = null; tnDirty = false;
+  $('tnEmpty').hidden = true; $('tnBody').hidden = false;
+  setAvatar($('tnAv'), '+', 'new'); $('tnAv').textContent = '+';
+  $('tnName').textContent = 'Penyewa baru'; $('tnSub').textContent = 'ID kontrak dibuat otomatis saat disimpan.';
+  $('tnState').className = 'st white'; $('tnState').textContent = 'Baru'; $('tnInfo').textContent = '';
+  $('tnIssues').hidden = true; $('tnFormTitle').textContent = 'Data kontrak';
+  buildForm({ issues: [], siklus: 'Bulanan', mulaiIso: iso(today0()) }, true);
+  $('tnErr').hidden = true; $('tnSave').hidden = false; $('tnSave').disabled = false; $('tnSave').textContent = 'Simpan penyewa';
+  ['tnChange', 'tnEnd', 'tnArchive', 'tnPay'].forEach(function (id) { $(id).hidden = true; });
+  $('tnCancelNew').hidden = false;
+  $('tnPays').innerHTML = ''; $('tnPays').appendChild(el('div', 'muted', 'Belum ada.')); $('tnPaysNote').textContent = ''; $('tnUnit').innerHTML = '';
+  $('tnSplit').classList.add('show-detail'); $('view-penyewa').classList.add('detail-open'); renderTnList();
+  setTimeout(function () { $('f_nama').focus(); }, 30);
+}
+function afterTenantChange(key, msg) {
+  tnDirty = false; toast(msg); dashData = null;
+  call('getFormData').then(function (d) { tenants = d.tenants || []; renderList(); }).catch(function () {});
+  return loadTenantsPage(key);
+}
+$('tnSave').onclick = function () {
+  var btn = this, p = readForm(), isNew = tnMode === 'new';
+  $('tnErr').hidden = true; btn.disabled = true; btn.textContent = 'Menyimpan…';
+  call('saveTenant', p).then(function (r) {
+    btn.textContent = isNew ? 'Simpan penyewa' : 'Simpan perubahan';
+    tnMode = 'view';
+    return afterTenantChange(r.key, r.unchanged ? 'Tidak ada yang berubah.' : isNew ? 'Penyewa baru tersimpan (' + r.key + ').' : 'Perubahan tersimpan.');
+  }).catch(function (e) { btn.disabled = false; btn.textContent = isNew ? 'Simpan penyewa' : 'Simpan perubahan'; $('tnErr').textContent = errText(e); $('tnErr').hidden = false; });
+};
+$('tnCancelNew').onclick = function () { closeTenant(); renderTnList(); };
+$('tnBack').onclick = function () { if (tnDirty && !confirm('Perubahan belum disimpan. Tinggalkan?')) return; closeTenant(); renderTnList(); };
+$('tnNew').onclick = function () { if (tnDirty && !confirm('Perubahan belum disimpan. Tinggalkan?')) return; newTenant(); };
+$('tnPay').onclick = function () { if (tnSel) payFor(tnSel.key); };
+$('tnq').oninput = renderTnList;
+$$('#tnSegs [data-ts]').forEach(function (b) { b.onclick = function () { tnStatus = b.getAttribute('data-ts'); tnHealth = ''; renderTnList(); }; });
+$$('#health [data-health]').forEach(function (b) { b.onclick = function () { var h = b.getAttribute('data-health'); tnHealth = tnHealth === h ? '' : h; renderTnList(); }; });
+
+/* --- dialogs: akhiri / ubah kontrak / arsip --- */
+var tnAction = null;
+function openTnModal(kind) {
+  var t = tnSel; if (!t) return;
+  tnAction = kind;
+  var b = $('tnmBody'); b.innerHTML = '';
+  $('tnmErr').hidden = true; $('tnmOk').disabled = false;
+  if (kind === 'end') {
+    $('tnmTitle').textContent = 'Akhiri kontrak';
+    $('tnmText').textContent = t.nama + ' · ' + t.inv + ' ' + t.unit + '. Data dan pembayarannya tetap tersimpan. Status menjadi "Selesai".';
+    b.appendChild(fieldBox('m_tgl', 'Tanggal berakhir', inp('date', iso(today0()))));
+    var s = document.createElement('select');
+    ['Kontrak habis', 'Penyewa pindah', 'Salah input', 'Lainnya'].forEach(function (o) { var x = el('option', '', o); x.value = o; s.appendChild(x); });
+    b.appendChild(fieldBox('m_alasan', 'Alasan', s));
+    b.appendChild(fieldBox('m_ket', 'Keterangan (opsional)', inp('text', '', { maxlength: 200 })));
+    $('tnmOk').textContent = 'Akhiri kontrak'; $('tnmOk').className = 'btn danger-solid';
+  } else if (kind === 'change') {
+    $('tnmTitle').textContent = 'Ubah kontrak';
+    $('tnmText').textContent = 'Kontrak lama ditutup sehari sebelum kontrak baru mulai, lalu kontrak baru dibuat untuk ' + t.nama + ' di unit yang sama. Masa yang sudah dibayar tetap terhitung.';
+    var start = t.lunasIso ? iso(addDays(parseIso(t.lunasIso), 1)) : iso(today0());
+    var s2 = document.createElement('select'); SIKLUS_OPTS.forEach(function (o) { var x = el('option', '', o); x.value = o; s2.appendChild(x); }); s2.value = SIKLUS_OPTS.indexOf(t.siklus) >= 0 ? t.siklus : 'Bulanan';
+    var r1 = el('div', 'row'); r1.appendChild(fieldBox('m_mulai', 'Kontrak baru mulai', inp('date', start))); r1.appendChild(fieldBox('m_siklus', 'Siklus baru', s2)); b.appendChild(r1);
+    var r2 = el('div', 'row'); r2.appendChild(fieldBox('m_harga', 'Harga baru per siklus (Rp)', inp('text', t.harga ? Number(t.harga).toLocaleString('id-ID') : '', { inputmode: 'numeric' })));
+    r2.appendChild(fieldBox('m_tempo', 'Bayar tiap tanggal (bulanan)', inp('number', parseIso(start) ? parseIso(start).getDate() : '', { min: 1, max: 31 }))); b.appendChild(r2);
+    b.appendChild(fieldBox('m_selesai', 'Tanggal selesai kontrak baru', inp('date', ''), 'Wajib untuk 3 bulan, 6 bulan, dan Tahunan.'));
+    b.appendChild(fieldBox('m_ket', 'Alasan perubahan (opsional)', inp('text', '', { maxlength: 200, placeholder: 'Misalnya: pindah ke bulanan atas permintaan penyewa' })));
+    function sync() { var mo = months($('f_m_siklus').value); $('f_m_tempo').closest('.fld').hidden = mo !== 1; }
+    s2.addEventListener('change', sync); setTimeout(sync, 0);
+    $('tnmOk').textContent = 'Buat kontrak baru'; $('tnmOk').className = 'btn';
+  } else if (kind === 'archive') {
+    if (t.arsip) { $('tnmTitle').textContent = 'Pulihkan dari arsip'; $('tnmText').textContent = t.nama + ' akan muncul lagi di daftar Selesai.'; $('tnmOk').textContent = 'Pulihkan'; $('tnmOk').className = 'btn'; }
+    else {
+      $('tnmTitle').textContent = 'Arsipkan kontrak';
+      $('tnmText').textContent = 'Kontrak ini disembunyikan dari daftar biasa, tapi tidak dihapus. Bisa dilihat di filter "Arsip" dan dipulihkan kapan saja.';
+      b.appendChild(fieldBox('m_ket', 'Alasan diarsipkan', inp('text', '', { maxlength: 200, placeholder: 'Misalnya: data lama, salah input' })));
+      $('tnmOk').textContent = 'Arsipkan'; $('tnmOk').className = 'btn';
+    }
+  }
+  $('tnModal').hidden = false;
+}
+$('tnEnd').onclick = function () { openTnModal('end'); };
+$('tnChange').onclick = function () { if (tnDirty) { toast('Simpan atau batalkan perubahan dulu.'); return; } openTnModal('change'); };
+$('tnArchive').onclick = function () { openTnModal('archive'); };
+$('tnmClose').onclick = function () { $('tnModal').hidden = true; };
+$('tnModal').addEventListener('click', function (e) { if (e.target === this) this.hidden = true; });
+$('tnmOk').onclick = function () {
+  var t = tnSel, btn = this, g = function (id) { var e = $('f_' + id); return e ? e.value : ''; }, req, msg;
+  if (tnAction === 'end') {
+    var al = g('m_alasan') + (g('m_ket').trim() ? ': ' + g('m_ket').trim() : '');
+    req = call('endContract', { key: t.key, tanggal: g('m_tgl'), alasan: al }); msg = 'Kontrak diakhiri.';
+  } else if (tnAction === 'change') {
+    req = call('changeContract', { key: t.key, mulaiIso: g('m_mulai'), siklus: g('m_siklus'), harga: num(g('m_harga')), tempo: g('m_tempo'), selesaiIso: g('m_selesai'), alasan: g('m_ket') });
+    msg = 'Kontrak baru dibuat.';
+  } else {
+    req = call('archiveTenant', t.arsip ? { key: t.key, restore: true } : { key: t.key, alasan: g('m_ket') }); msg = t.arsip ? 'Dipulihkan dari arsip.' : 'Kontrak diarsipkan.';
+  }
+  btn.disabled = true; $('tnmErr').hidden = true;
+  req.then(function (r) { $('tnModal').hidden = true; if (tnAction === 'archive' && !t.arsip) tnStatus = 'arsip'; return afterTenantChange(r.key, msg); })
+    .catch(function (e) { btn.disabled = false; $('tnmErr').textContent = errText(e); $('tnmErr').hidden = false; });
+};
+
 /* ---------- signature dialog ---------- */
 function openSign() {
   $('userMenu').hidden = true;
@@ -2050,7 +2448,7 @@ function openSign() {
 $$('[data-sign-open]').forEach(function (b) { b.onclick = openSign; });
 $('signClose').onclick = function () { $('signModal').hidden = true; };
 $('signModal').addEventListener('click', function (e) { if (e.target === this) this.hidden = true; });
-document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { $('signModal').hidden = true; $('userMenu').hidden = true; $('taskModal').hidden = true; } });
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { $('signModal').hidden = true; $('userMenu').hidden = true; $('taskModal').hidden = true; $('tnModal').hidden = true; } });
 $('signFile').onchange = function () {
   var f = this.files[0]; $('signSave').disabled = !f;
   if (!f) return;
