@@ -448,9 +448,14 @@
   .tl-item:hover { border-color:color-mix(in srgb, var(--ink) 30%, var(--line)); }
   .tl-item.cur { border-color:var(--accent); background:var(--tint); }
   .tl-item .muted { font-size:12.5px; }
-  /* detail panels scroll on their own, so the bottom (buttons, history) is reachable while the list stays put */
-  @media (min-width:1181px) { .tn-detailcol.sticky { max-height:calc(100vh - 48px); overflow-y:auto; overscroll-behavior:contain; border-radius:16px; scrollbar-width:thin; } }
-  @media (min-width:900px) { .bukti-detailcol.sticky { max-height:calc(100vh - 48px); overflow-y:auto; overscroll-behavior:contain; padding:10px 2px; scrollbar-width:thin; } }
+  /* Two panes that each scroll on their own (like an email app): the list on the left, the details on the right.
+     The split gets the height of the screen (set by fitSplit in the script), so nothing needs the page scrollbar. */
+  .fit { overflow:hidden; align-items:stretch !important; }
+  .fit > .tn-listcol, .fit > .bukti-listcol { display:flex; flex-direction:column; min-height:0; }
+  .fit #tnList, .fit #payList { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; }
+  .fit > .tn-detailcol, .fit > .bukti-detailcol { position:static; min-height:0; height:100%; overflow-y:auto; overscroll-behavior:contain; padding:2px 4px 2px 2px; }
+  .fit ::-webkit-scrollbar { width:10px; } .fit ::-webkit-scrollbar-thumb { background:color-mix(in srgb, var(--muted) 45%, transparent); border-radius:10px; border:2px solid transparent; background-clip:padding-box; }
+  .fit ::-webkit-scrollbar-track { background:transparent; }
   @media (max-width:1180px) { .grid-bukti.tn-split { grid-template-columns:1fr; } .tn-split:not(.show-detail) .tn-detailcol { display:none; } .tn-split.show-detail .tn-listcol { display:none; } .tn-split .back { display:inline-block; margin-bottom:12px; } #view-penyewa.detail-open .health, #view-penyewa.detail-open #healthNote, #view-penyewa.detail-open .page-head { display:none; } }
   @media (max-width:899px) { .health { grid-template-columns:1fr 1fr; } .hc b { font-size:22px; } }
 
@@ -1219,6 +1224,7 @@ function show(view) {
   if (view === 'penyewa') loadTenantsPage();
   if (view === 'set') openSetTab(setTab);
   window.scrollTo(0, 0);
+  setTimeout(fitAll, 0);
 }
 document.addEventListener('click', function (e) {
   var b = e.target.closest && e.target.closest('[data-view]');
@@ -1229,6 +1235,18 @@ $('meBtn').onclick = toggleMenu;
 $('menuTab').onclick = toggleMenu;
 document.addEventListener('click', function (e) { var m = $('userMenu'); if (!m.hidden && !m.contains(e.target)) { m.hidden = true; $('meBtn').setAttribute('aria-expanded', 'false'); } });
 
+
+/* ---------- two-pane pages: give the list + detail area the height of the screen ---------- */
+function fitSplit(id, minW) {
+  var sp = $(id);
+  if (!sp || sp.offsetParent === null) return;
+  if (window.innerWidth < minW) { sp.classList.remove('fit'); sp.style.height = ''; return; }
+  sp.classList.add('fit');
+  var top = sp.getBoundingClientRect().top + window.scrollY;
+  sp.style.height = Math.max(460, window.innerHeight - top - 20) + 'px';
+}
+function fitAll() { fitSplit('tnSplit', 1181); fitSplit('split', 900); }
+window.addEventListener('resize', function () { clearTimeout(fitAll.t); fitAll.t = setTimeout(fitAll, 120); });
 /* ---------- files ---------- */
 function readFiles(input, opts) {
   opts = opts || {};
@@ -2219,6 +2237,7 @@ function renderTnList() {
     b.classList.toggle('on', h === tnHealth);
   });
   $$('[data-tn-badge]').forEach(function (x) { var n = cnt.error + cnt.kurang; x.textContent = n; x.hidden = !n; x.title = n + ' penyewa perlu diperbaiki'; });
+  setTimeout(fitAll, 0);
   $('healthNote').textContent = base.length + ' kontrak aktif. ' + (cnt.error + cnt.kurang ? 'Klik kotak di atas untuk melihat siapa saja, lalu perbaiki satu per satu.' : 'Semua data penting sudah lengkap.');
   $$('#tnSegs [data-ts]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-ts') === tnStatus); });
   var q = $('tnq').value.toLowerCase().trim();
@@ -2362,7 +2381,7 @@ function openTenant(t) {
     ub.appendChild(it);
   });
   $('tnSplit').classList.add('show-detail'); $('view-penyewa').classList.add('detail-open');
-  document.querySelector('.tn-detailcol').scrollTop = 0;
+  document.querySelector('.tn-detailcol').scrollTop = 0; fitAll();
   renderTnList();
   if (window.matchMedia('(max-width: 899px)').matches) window.scrollTo(0, 0);
 }
