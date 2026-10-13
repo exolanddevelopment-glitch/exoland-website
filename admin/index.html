@@ -437,11 +437,20 @@
   .tn-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:16px; }
   .tn-actions .btn { margin:0; }
   .tn-actions #tnSave { grid-column:1 / -1; }
+  .doc-list { display:grid; gap:6px; }
+  .doc-list a { display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:10px; align-items:center; text-decoration:none; color:var(--ink); border:1px solid var(--line); border-radius:10px; padding:8px 12px; }
+  .doc-list a:hover { border-color:var(--accent); }
+  .doc-list a span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13.5px; }
+  .doc-list a small { color:var(--muted); font-size:12px; }
+  .doc-list a svg { color:var(--accent); }
   .tl { display:grid; gap:6px; margin-top:8px; }
   .tl-item { display:grid; gap:1px; text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:8px 12px; cursor:pointer; color:var(--ink); }
   .tl-item:hover { border-color:color-mix(in srgb, var(--ink) 30%, var(--line)); }
   .tl-item.cur { border-color:var(--accent); background:var(--tint); }
   .tl-item .muted { font-size:12.5px; }
+  /* detail panels scroll on their own, so the bottom (buttons, history) is reachable while the list stays put */
+  @media (min-width:1181px) { .tn-detailcol.sticky { max-height:calc(100vh - 48px); overflow-y:auto; overscroll-behavior:contain; border-radius:16px; scrollbar-width:thin; } }
+  @media (min-width:900px) { .bukti-detailcol.sticky { max-height:calc(100vh - 48px); overflow-y:auto; overscroll-behavior:contain; padding:10px 2px; scrollbar-width:thin; } }
   @media (max-width:1180px) { .grid-bukti.tn-split { grid-template-columns:1fr; } .tn-split:not(.show-detail) .tn-detailcol { display:none; } .tn-split.show-detail .tn-listcol { display:none; } .tn-split .back { display:inline-block; margin-bottom:12px; } #view-penyewa.detail-open .health, #view-penyewa.detail-open #healthNote, #view-penyewa.detail-open .page-head { display:none; } }
   @media (max-width:899px) { .health { grid-template-columns:1fr 1fr; } .hc b { font-size:22px; } }
 
@@ -798,6 +807,20 @@
                 <button class="btn sec" id="tnChange" type="button">Ubah kontrak</button>
                 <button class="btn danger" id="tnEnd" type="button">Akhiri kontrak</button>
                 <button class="btn sec" id="tnArchive" type="button">Arsipkan</button>
+              </div>
+              <div id="tnDocsWrap">
+                <h3 class="tn-h3">Dokumen (Google Drive)</h3>
+                <p class="hint" style="margin:0 0 8px">Foto KTP, foto penyewa, scan kontrak. Disimpan di folder Drive khusus penyewa ini (opsional).</p>
+                <div class="doc-list" id="tnDocs"></div>
+                <div id="tnDocUp">
+                  <div class="row" style="margin-top:10px">
+                    <div class="fld"><label for="tnDocJenis">Jenis</label><select id="tnDocJenis"><option>KTP</option><option>Foto penyewa</option><option>Kontrak</option><option>Lainnya</option></select></div>
+                    <div class="fld"><label for="tnDocFile">File (foto atau PDF)</label><input id="tnDocFile" type="file" accept="image/*,application/pdf" multiple></div>
+                  </div>
+                  <div id="tnDocErr" class="msg err" hidden></div>
+                  <div class="tn-actions"><button class="btn sec" id="tnDocUpload" type="button" disabled>Unggah</button><button class="btn sec" id="tnFolder" type="button">Buka folder Drive</button></div>
+                </div>
+                <button class="btn sec" id="tnFolderView" type="button" hidden>Buka folder Drive</button>
               </div>
               <h3 class="tn-h3">Riwayat pembayaran</h3>
               <div class="tbl-wrap" id="tnPays"></div>
@@ -2250,7 +2273,8 @@ function buildForm(t, canEdit) {
   var tempoIsDate = /^\d{4}-\d{2}-\d{2}$/.test(t.tempo || '');
   var inv = inp('text', t.inv, { list: 'tanahList', autocomplete: 'off', placeholder: 'Contoh: Waru 012' });
   var rows = [
-    ['row', fieldBox('nama', 'Nama penyewa', inp('text', t.nama, { maxlength: 120 })), fieldBox('wa', 'No WhatsApp', inp('tel', t.wa, { placeholder: '08…' }))],
+    ['one', fieldBox('nama', 'Nama penyewa', inp('text', t.nama, { maxlength: 120 }))],
+    ['row', fieldBox('ktp', 'No. KTP (NIK)', inp('text', t.ktp, { inputmode: 'numeric', maxlength: 20, placeholder: '16 angka', class: 'num' })), fieldBox('wa', 'No WhatsApp', inp('tel', t.wa, { placeholder: '08…' }))],
     ['row', fieldBox('inv', 'Inventaris', inv, 'Kode dari DBTanah, muncul saat diketik.'), fieldBox('unit', 'No Unit', inp('text', t.unit, { placeholder: 'Pakai - kalau tidak ada' }))],
     ['row', fieldBox('siklus', 'Siklus bayar', s), fieldBox('harga', 'Harga sewa per siklus (Rp)', inp('text', t.harga ? Number(t.harga).toLocaleString('id-ID') : '', { inputmode: 'numeric', class: 'num money' }))],
     ['row', fieldBox('mulai', 'Tanggal mulai', inp('date', t.mulaiIso)), fieldBox('selesai', 'Tanggal selesai', inp('date', t.selesaiIso), 'Wajib untuk 3 bulan, 6 bulan, dan Tahunan.')],
@@ -2280,7 +2304,7 @@ function buildForm(t, canEdit) {
 }
 function readForm() {
   var g = function (id) { var e = $('f_' + id); return e ? e.value : ''; };
-  return { key: tnMode === 'new' ? '' : tnSel.key, nama: g('nama'), wa: g('wa'), inv: g('inv'), unit: g('unit'), siklus: g('siklus'), harga: num(g('harga')),
+  return { key: tnMode === 'new' ? '' : tnSel.key, nama: g('nama'), ktp: g('ktp'), wa: g('wa'), inv: g('inv'), unit: g('unit'), siklus: g('siklus'), harga: num(g('harga')),
     mulaiIso: g('mulai'), selesaiIso: g('selesai'), tempo: g('tempo'), deposit: num(g('deposit')), awalIso: g('awal'), catatan: g('catatan') };
 }
 function openTenant(t) {
@@ -2313,6 +2337,7 @@ function openTenant(t) {
   $('tnArchive').hidden = !(tnData.isAdmin && !t.aktif); $('tnArchive').textContent = t.arsip ? 'Pulihkan dari arsip' : 'Arsipkan';
   $('tnPay').hidden = !(canPay() && t.aktif && !t.arsip);
   $('tnCancelNew').hidden = true;
+  loadDocs(t);
   // payments
   var pb = $('tnPays'); pb.innerHTML = '';
   if (!t.pays.length) pb.appendChild(el('div', 'muted', 'Belum ada pembayaran tercatat di website.'));
@@ -2337,6 +2362,7 @@ function openTenant(t) {
     ub.appendChild(it);
   });
   $('tnSplit').classList.add('show-detail'); $('view-penyewa').classList.add('detail-open');
+  document.querySelector('.tn-detailcol').scrollTop = 0;
   renderTnList();
   if (window.matchMedia('(max-width: 899px)').matches) window.scrollTo(0, 0);
 }
@@ -2351,6 +2377,7 @@ function newTenant() {
   $('tnErr').hidden = true; $('tnSave').hidden = false; $('tnSave').disabled = false; $('tnSave').textContent = 'Simpan penyewa';
   ['tnChange', 'tnEnd', 'tnArchive', 'tnPay'].forEach(function (id) { $(id).hidden = true; });
   $('tnCancelNew').hidden = false;
+  $('tnDocsWrap').hidden = true;
   $('tnPays').innerHTML = ''; $('tnPays').appendChild(el('div', 'muted', 'Belum ada.')); $('tnPaysNote').textContent = ''; $('tnUnit').innerHTML = '';
   $('tnSplit').classList.add('show-detail'); $('view-penyewa').classList.add('detail-open'); renderTnList();
   setTimeout(function () { $('f_nama').focus(); }, 30);
@@ -2376,6 +2403,59 @@ $('tnPay').onclick = function () { if (tnSel) payFor(tnSel.key); };
 $('tnq').oninput = renderTnList;
 $$('#tnSegs [data-ts]').forEach(function (b) { b.onclick = function () { tnStatus = b.getAttribute('data-ts'); tnHealth = ''; renderTnList(); }; });
 $$('#health [data-health]').forEach(function (b) { b.onclick = function () { var h = b.getAttribute('data-health'); tnHealth = tnHealth === h ? '' : h; renderTnList(); }; });
+
+
+/* --- tenant documents (Google Drive) --- */
+function renderDocs(t, d) {
+  var box = $('tnDocs'); box.innerHTML = '';
+  if (d.error) box.appendChild(el('div', 'msg warn', d.error));
+  if (!d.files.length) box.appendChild(el('div', 'muted', d.url ? 'Folder masih kosong.' : 'Belum ada dokumen. Folder Drive dibuat otomatis saat pertama kali mengunggah.'));
+  d.files.forEach(function (f) {
+    var a = document.createElement('a'); a.href = f.url; a.target = '_blank'; a.rel = 'noopener';
+    a.innerHTML = /pdf/.test(f.mime) ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>'
+      : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg>';
+    a.appendChild(el('span', '', f.name)); a.appendChild(el('small', '', f.date));
+    box.appendChild(a);
+  });
+  if (d.url) t.folder = d.url;
+}
+function loadDocs(t) {
+  var edit = tnData.canEdit && !t.arsip;
+  $('tnDocsWrap').hidden = false; $('tnDocUp').hidden = !edit;
+  $('tnFolderView').hidden = edit || !t.folder;
+  $('tnDocFile').value = ''; $('tnDocUpload').disabled = true; $('tnDocErr').hidden = true;
+  $('tnDocs').innerHTML = ''; $('tnDocs').appendChild(el('div', 'muted', t.folder ? 'Memuat dokumen…' : 'Belum ada dokumen. Folder Drive dibuat otomatis saat pertama kali mengunggah.'));
+  if (!t.folder) return;
+  var key = t.key;
+  call('getTenantDocs', { key: key }).then(function (d) { if (tnSel && tnSel.key === key) renderDocs(t, d); })
+    .catch(function (e) { if (tnSel && tnSel.key === key) { $('tnDocs').innerHTML = ''; $('tnDocs').appendChild(el('div', 'msg err', 'Gagal memuat dokumen: ' + errText(e))); } });
+}
+$('tnDocFile').addEventListener('change', function () { $('tnDocUpload').disabled = !(this.files || []).length; });
+$('tnDocUpload').onclick = function () {
+  var t = tnSel, btn = this; if (!t) return;
+  btn.disabled = true; btn.textContent = 'Mengunggah…'; $('tnDocErr').hidden = true;
+  readFiles($('tnDocFile')).then(function (files) {
+    var big = files.some(function (f) { return f.data.length > 11 * 1024 * 1024; });
+    if (big) throw new Error('File terlalu besar.');
+    return call('uploadTenantDocs', { key: t.key, jenis: $('tnDocJenis').value, files: files });
+  }).then(function (d) {
+    btn.textContent = 'Unggah'; $('tnDocFile').value = '';
+    if (tnSel && tnSel.key === t.key) renderDocs(t, d);
+    tnData.tenants.forEach(function (x) { if (x.key === t.key) x.folder = d.url; });
+    toast('Dokumen tersimpan di Drive.');
+  }).catch(function (e) { btn.textContent = 'Unggah'; btn.disabled = false; $('tnDocErr').textContent = errText(e); $('tnDocErr').hidden = false; });
+};
+function openFolder(t) {
+  if (t.folder) { window.open(t.folder, '_blank', 'noopener'); return; }
+  var w = window.open('about:blank', '_blank');
+  call('tenantFolder', { key: t.key }).then(function (r) {
+    t.folder = r.url; tnData.tenants.forEach(function (x) { if (x.key === t.key) x.folder = r.url; });
+    if (w) w.location = r.url; else window.open(r.url, '_blank');
+    loadDocs(t);
+  }).catch(function (e) { if (w) w.close(); toast('Gagal membuat folder: ' + errText(e)); });
+}
+$('tnFolder').onclick = function () { if (tnSel) openFolder(tnSel); };
+$('tnFolderView').onclick = function () { if (tnSel && tnSel.folder) window.open(tnSel.folder, '_blank', 'noopener'); };
 
 /* --- dialogs: akhiri / ubah kontrak / arsip --- */
 var tnAction = null;
