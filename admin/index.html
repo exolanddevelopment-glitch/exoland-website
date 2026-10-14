@@ -508,6 +508,15 @@
   .jl-sum { display:grid; grid-template-columns:1fr auto; gap:4px 12px; background:var(--subtle); border-radius:12px; padding:12px 14px; margin-top:12px; font-size:14px; }
   .jl-sum .big { font-size:16px; font-weight:800; margin-top:4px; } .jl-sum .pos { color:var(--ok); } .jl-sum .neg { color:var(--warn); }
   .jl-add { border-top:1px solid var(--line); margin-top:16px; }
+  .jl-km { margin-top:14px; border:1px solid var(--line); border-radius:12px; padding:10px 12px; background:var(--subtle); display:grid; gap:6px; }
+  .jl-km.need { border-color:#f59e0b; background:var(--warn-bg); }
+  .jl-km-row { display:flex; gap:8px; } .jl-km-row input { max-width:200px; margin:0; }
+  .jl-photos { display:grid; gap:6px; } .jl-photo-btns { display:flex; gap:6px; flex-wrap:wrap; }
+  .jl-older summary { cursor:pointer; color:var(--accent); font-size:13px; margin-top:4px; }
+  .photo-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 12px; } .photo-grid .drop { padding:10px 8px; } .photo-grid .fld label { margin-top:8px; }
+  @media (max-width:600px) { .photo-grid { grid-template-columns:1fr; } }
+  .backup-card { max-width:1320px; } .backup-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+  .backup-btns { display:flex; gap:8px; } .backup-btns a { text-decoration:none; display:inline-flex; align-items:center; }
   .jl-avail { font-size:13px; border-radius:10px; padding:8px 10px; margin-top:8px; } .jl-avail:empty { display:none; }
   .jl-avail.ok { background:var(--ok-bg); color:var(--ok); } .jl-avail.bad { background:var(--err-bg); color:var(--err); }
   .btn.ok-solid { background:#16a34a; border-color:#16a34a; color:#fff; }
@@ -765,6 +774,7 @@
       <div class="page-head" style="max-width:1320px">
         <div><h1>Dashboard</h1><p id="dashSub">Ringkasan pemasukan, tagihan, dan jatuh tempo.</p></div>
         <div class="head-right">
+          <button class="alert-chip" id="backupChip" type="button" hidden></button>
           <button class="alert-chip" id="issueChip" type="button" hidden></button>
           <div class="segs" id="periodSegs" role="group" aria-label="Periode">
             <button type="button" data-period="1B" class="on">1 Bulan</button>
@@ -872,6 +882,7 @@
         <button class="set-tab" data-st="cek" type="button">Pemeriksaan data <span class="badge" id="cekBadge" hidden></span></button>
         <button class="set-tab" data-st="err" type="button">Error sistem</button>
         <button class="set-tab" data-st="users" type="button">Pengguna &amp; akses</button>
+        <button class="set-tab" data-st="backup" type="button" id="backupTab" hidden>Backup</button>
         <button class="set-tab" data-st="soon" type="button">Lainnya <span class="soon">Coming soon</span></button>
       </div>
       <div class="set-pane" id="st-log">
@@ -912,6 +923,15 @@
         <div class="tbl-wrap" id="usersBox"><div class="empty">Memuat…</div></div>
         <div class="acc-legend"><span><b>—</b> menu tetap terlihat, isinya "Akses ditolak"</span><span><b>Lihat</b> bisa membuka, tidak bisa mengubah</span><span><b>Ubah</b> bisa membuka dan mengubah</span><span><b>Batal &amp; arsip</b> boleh membatalkan kwitansi, mengarsipkan, menghapus tugas</span><span><b>Setujui klaim</b> boleh menyetujui reimburse perjalanan dan mengatur kendaraan</span></div>
         <p class="hint" id="usersHint">Orang baru juga harus ditambahkan sebagai <b>Test user</b> di Google Cloud (OAuth consent screen), supaya bisa login.</p>
+      </div>
+      <div class="set-pane" id="st-backup" hidden>
+        <div class="card backup-card">
+          <div class="backup-head"><div><h2 style="margin:0">Backup otomatis</h2><p class="muted" style="margin:4px 0 0" id="bkStatus">Memuat…</p></div>
+            <div class="backup-btns"><a class="mini-btn" id="bkFolder" target="_blank" rel="noopener" hidden>Buka folder</a><button class="mini-btn dark" id="bkNow" type="button">Backup sekarang</button></div></div>
+          <div class="msg err" id="bkErr" hidden></div>
+          <p class="hint">Setiap malam sekitar pukul 02.00, satu salinan lengkap spreadsheet disimpan di folder Drive "Backup Property DB" (hanya Anda yang bisa membuka). Disimpan: 30 hari terakhir (1 per hari) + salinan pertama tiap bulan selama 12 bulan. Yang lebih lama otomatis dipindah ke Sampah.</p>
+        </div>
+        <div class="tbl-wrap" id="bkBox" style="margin-top:14px"><div class="empty">Memuat…</div></div>
       </div>
       <div class="set-pane" id="st-soon" hidden>
         <div class="card soon-page">
@@ -2394,6 +2414,9 @@ function renderDash() {
   $$('#periodSegs [data-period]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-period') === period); });
   $('issueChip').hidden = !(dashData.masalah > 0);
   $('issueChip').textContent = '⚠ ' + dashData.masalah + ' masalah data';
+  var bk = dashData.backup, bkOld = bk && (bk.err || !bk.last || (Date.now() - new Date(bk.last.replace(' ', 'T')).getTime()) > 36 * 3600e3);
+  $('backupChip').hidden = !bkOld;
+  if (bkOld) $('backupChip').textContent = bk.err ? '⚠ Backup gagal' : !bk.last ? '⚠ Belum ada backup' : '⚠ Backup terakhir ' + dmy(parseIso(bk.last.slice(0, 10)));
   $('cekBadge').hidden = !(dashData.masalah > 0); $('cekBadge').textContent = dashData.masalah || '';
   renderOcc();
   renderIncome(w, t);
@@ -2547,6 +2570,7 @@ window.addEventListener('resize', function () { clearTimeout(renderDash.rt); ren
 $$('#periodSegs [data-period]').forEach(function (b) { b.onclick = function () { period = b.getAttribute('data-period'); renderDash(); }; });
 $$('#alarmSegs [data-alarm]').forEach(function (b) { b.onclick = function () { alarmTab = b.getAttribute('data-alarm'); renderAlarm(); }; });
 $('issueChip').onclick = function () { setTab = 'cek'; show('set'); };
+$('backupChip').onclick = function () { setTab = 'backup'; show('set'); };
 
 /* ====================== KALENDER ====================== */
 var calMonth = (function () { var d = today0(); return new Date(d.getFullYear(), d.getMonth(), 1); })(), calSel = today0(), calMode = 'due';
@@ -2711,9 +2735,31 @@ var setTab = 'log', setCache = {}, cekLevel = '', errJenis = '';
 function openSetTab(tab) {
   setTab = tab;
   $$('.set-tab').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-st') === tab); });
-  ['log', 'cek', 'err', 'users', 'soon'].forEach(function (x) { $('st-' + x).hidden = x !== tab; });
+  ['log', 'cek', 'err', 'users', 'backup', 'soon'].forEach(function (x) { $('st-' + x).hidden = x !== tab; });
+  if (tab === 'backup') return loadBackups();
   if (tab !== 'soon') loadSet(tab, false);
 }
+function loadBackups() {
+  emptyBox($('bkBox'), 'Memuat…');
+  call('getBackups').then(renderBackups).catch(function (e) { emptyBox($('bkBox'), 'Gagal memuat: ' + errText(e)); });
+}
+function renderBackups(d) {
+  $('bkStatus').textContent = (d.last ? 'Backup terakhir: ' + dmy(parseIso(d.last.slice(0, 10))) + ' ' + d.last.slice(11) : 'Belum pernah backup.') +
+    (d.auto ? ' · Otomatis setiap malam: aktif ✓' : ' · Otomatis belum aktif: tekan "Backup sekarang" sekali (atau jalankan setup).');
+  $('bkErr').hidden = !d.err; $('bkErr').textContent = d.err ? 'Backup terakhir gagal: ' + d.err : '';
+  $('bkFolder').hidden = !d.folder; $('bkFolder').href = d.folder || '#';
+  var box = $('bkBox'); box.innerHTML = '';
+  if (!d.list.length) { emptyBox(box, 'Belum ada salinan.'); return; }
+  box.appendChild(table(['Waktu', 'Nama file', ''], d.list.map(function (x) {
+    var a = el('a', 'link', 'Buka'); a.href = x.url; a.target = '_blank'; a.rel = 'noopener';
+    return [{ t: x.waktu, cls: 'nowrap num' }, x.name, { node: a }];
+  })));
+}
+$('bkNow').onclick = function () {
+  var b = this; b.disabled = true; b.textContent = 'Membuat backup…';
+  call('backupNow').then(function (d) { b.disabled = false; b.textContent = 'Backup sekarang'; renderBackups(d); toast('Backup selesai.'); if (dashData) { dashData.backup = { last: d.last, err: '' }; renderDash(); } })
+    .catch(function (e) { b.disabled = false; b.textContent = 'Backup sekarang'; toast(errText(e)); });
+};
 function loadSet(tab, force) {
   var box = { log: 'logBox', cek: 'cekBox', err: 'errBox', users: 'usersBox' }[tab];
   if (setCache[tab] && !force) return renderSet(tab);
@@ -3632,9 +3678,16 @@ function tripState(t) {
   var now = new Date(), b = pdt(t.berangkat), k = pdt(t.kembali);
   if (b && now < b) return { k: 'nanti', txt: 'Dijadwalkan', cls: 'grey' };
   if (k && now <= k) return { k: 'jalan', txt: 'Berjalan', cls: 'blue' };
+  if (!t.km) return { k: 'klaim', txt: 'Perlu isi KM', cls: 'orange' };
   if (t.uangMuka > 0 || tripExps(t).length) return { k: 'klaim', txt: 'Perlu klaim', cls: 'orange' };
   return { k: 'selesai', txt: 'Selesai', cls: 'white' };
 }
+function prevKm(t) {  // highest KM known for the vehicle before this trip
+  var best = 0;
+  jlData.trips.forEach(function (x) { if (x.vid === t.vid && x.id !== t.id && x.km && x.berangkat < t.berangkat && x.km > best) best = x.km; });
+  return best;
+}
+function kmText(t) { if (!t.km) return '-'; var p = prevKm(t); return t.km.toLocaleString('id-ID') + (p && t.km >= p ? ' (+' + (t.km - p).toLocaleString('id-ID') + ' km)' : ''); }
 function result(ok, um, nama) {
   var d = ok - um;
   return d > 0 ? { txt: 'Kantor bayar ke ' + nama, val: rp(d), cls: 'pos' } : d < 0 ? { txt: nama + ' kembalikan ke kantor', val: rp(-d), cls: 'neg' } : { txt: 'Pas, tidak ada selisih', val: rp(0), cls: '' };
@@ -3742,7 +3795,25 @@ function openTrip(t) {
   var box = $('jlDetail'); box.innerHTML = '';
   var made = el('span', '', t.dibuat ? fdtY(pdt(t.dibuat)) : '-'); if (t.telat) { made.appendChild(document.createTextNode(' ')); made.appendChild(el('span', 'tag no', 'dipesan setelah berangkat')); }
   box.appendChild(kvGrid([['Peminjam', t.nama], ['Jadwal', span(t)], ['Tujuan', t.tujuan], ['Ikut', t.ikut], ['Uang muka', t.uangMuka ? rp(t.uangMuka) : 'Tidak ada'], ['Dipesan', made],
-    t.catatan ? ['Catatan', t.catatan] : null]));
+    ['KM kembali', kmText(t)], t.catatan ? ['Catatan', t.catatan] : null]));
+  // KM odometer when the vehicle comes back (borrower, or approver)
+  var started0 = pdt(t.berangkat) <= new Date(), lockedKm = ['Diajukan', 'Disetujui', 'Lunas'].indexOf(t.klaim) >= 0;
+  if (t.status !== 'Batal' && started0 && !lockedKm && jlData.canBook && (isMine(t) || jlData.canApprove)) {
+    var kb = el('div', 'jl-km' + (t.km ? '' : ' need'));
+    kb.appendChild(el('b', '', t.km ? 'KM odometer' : 'Isi KM odometer saat kendaraan kembali'));
+    var p0 = prevKm(t); if (p0) kb.appendChild(el('span', 'muted', ' KM terakhir kendaraan ini: ' + p0.toLocaleString('id-ID')));
+    var kr = el('div', 'jl-km-row'), ki = inp('text', t.km ? t.km.toLocaleString('id-ID') : '', { inputmode: 'numeric', class: 'num', placeholder: 'Contoh: 45.602', 'aria-label': 'KM odometer' });
+    var yk = el('label', 'mini-check'); var ykc = document.createElement('input'); ykc.type = 'checkbox'; yk.appendChild(ykc); yk.appendChild(document.createTextNode(' Angka sudah benar')); yk.style.display = 'none';
+    var kbtn = el('button', 'mini-btn dark', t.km ? 'Ubah KM' : 'Simpan KM'); kbtn.type = 'button';
+    kbtn.onclick = function () {
+      kbtn.disabled = true;
+      call('saveKm', { id: t.id, km: num(ki.value), yakin: ykc.checked }).then(function (d) { toast('KM tersimpan.'); applyTrips(d, t.id); })
+        .catch(function (e) { kbtn.disabled = false; toast(errText(e)); if (/centang/.test(errText(e))) yk.style.display = ''; });
+    };
+    ki.onblur = function () { var n = num(ki.value); ki.value = n ? n.toLocaleString('id-ID') : ''; };
+    kr.appendChild(ki); kr.appendChild(kbtn); kb.appendChild(kr); kb.appendChild(yk);
+    box.appendChild(kb);
+  }
   var mine = isMine(t), appr = jlData.canApprove, canBook = jlData.canBook, locked = ['Diajukan', 'Disetujui', 'Lunas'].indexOf(t.klaim) >= 0, active = t.status !== 'Batal';
   var acts = el('div', 'tn-actions');
   if (active && !locked && canBook && (mine || appr)) acts.appendChild(btnEl('Ubah / perpanjang', 'sec', function () { tripForm(t); }));
@@ -3805,8 +3876,8 @@ function openTrip(t) {
         if (!confirm('Ajukan klaim ' + rp(exps.reduce(function (a, e) { return a + e.jumlah; }, 0)) + '? Setelah diajukan, biaya tidak bisa diubah lagi.')) return;
         jlCall('submitClaim', { id: t.id }, 'Klaim diajukan. Menunggu persetujuan.', sb);
       });
-      sb.disabled = !started || (!exps.length && !t.uangMuka);
-      if (!started) sb.title = 'Bisa diajukan setelah berangkat';
+      sb.disabled = !started || !t.km || (!exps.length && !t.uangMuka);
+      if (!started) sb.title = 'Bisa diajukan setelah berangkat'; else if (!t.km) sb.title = 'Isi KM odometer dulu';
       acts2.appendChild(sb);
     }
     if (reviewing) {
@@ -3979,6 +4050,29 @@ function damageModal(vid, tripId) {
       .then(function (d) { toast('Laporan tersimpan.'); applyTrips(d, jlSel); });
   });
 }
+function personNm(email) { var p = (jlData.people || []).filter(function (x) { return x.email === email; })[0]; return p ? p.nama : (email || '-'); }
+function photoModal(v) {
+  jlModal('Foto kondisi · ' + v.nama, v.plat + '. Semua 5 foto wajib: 4 sisi dan interior.', function (b) {
+    var g = el('div', 'photo-grid');
+    (jlData.sides || []).forEach(function (sd) {
+      var fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*'; fi.setAttribute('data-side', sd);
+      var w = fieldBox('m_ph_' + sd, sd, fi); var fl = el('div', 'files'); w.appendChild(fl); g.appendChild(w);
+      makeDrop(fi); fi.addEventListener('change', function () { listFiles(fi, fl); });
+    });
+    b.appendChild(g);
+    var r = el('div', 'row');
+    r.appendChild(fieldBox('m_ph_km', 'KM odometer (opsional)', inp('text', '', { inputmode: 'numeric', class: 'num', placeholder: 'Contoh: 45.602' })));
+    r.appendChild(fieldBox('m_ph_cat', 'Catatan (opsional)', inp('text', '', { maxlength: 300, placeholder: 'Misalnya: ban depan kiri tipis' })));
+    b.appendChild(r);
+  }, 'Simpan foto', function () {
+    var inputs = $$('#jlmBody input[data-side]'), files = {};
+    var missing = inputs.filter(function (i) { return !(i.files || []).length; }).map(function (i) { return i.getAttribute('data-side'); });
+    if (missing.length) throw new Error('Foto belum ada: ' + missing.join(', ') + '.');
+    return Promise.all(inputs.map(function (i) { return readFiles(i, { max: 1600 }).then(function (f) { files[i.getAttribute('data-side')] = f[0]; }); }))
+      .then(function () { return call('saveInspection', { vid: v.id, files: files, km: num($('f_m_ph_km').value), catatan: $('f_m_ph_cat').value }); })
+      .then(function (d) { toast('Foto kondisi tersimpan.'); applyTrips(d, jlSel); });
+  });
+}
 function vehicleModal(v) {
   jlModal(v ? 'Ubah kendaraan' : 'Tambah kendaraan', '', function (b) {
     var r = el('div', 'row');
@@ -3988,9 +4082,14 @@ function vehicleModal(v) {
     var a = document.createElement('select'); [['Ya', 'Aktif (bisa dipinjam)'], ['Tidak', 'Tidak aktif (dijual / rusak)']].forEach(function (x) { var o = el('option', '', x[1]); o.value = x[0]; a.appendChild(o); }); a.value = v && !v.aktif ? 'Tidak' : 'Ya';
     var r2 = el('div', 'row'); r2.appendChild(fieldBox('m_v_jenis', 'Jenis', j)); r2.appendChild(fieldBox('m_v_aktif', 'Status', a)); b.appendChild(r2);
     b.appendChild(fieldBox('m_v_cat', 'Catatan (opsional)', inp('text', v ? v.catatan : '', { maxlength: 300, placeholder: 'Misalnya: pajak STNK Maret' })));
+    var js = document.createElement('select'); (jlData.jadwalList || ['Tidak']).forEach(function (x) { var o = el('option', '', x === 'Tidak' ? 'Tidak dijadwalkan' : x); o.value = x; js.appendChild(o); }); js.value = v ? v.jadwal : 'Mingguan';
+    var ps = document.createElement('select'); var o0 = el('option', '', '— pilih orang —'); o0.value = ''; ps.appendChild(o0);
+    (jlData.people || []).forEach(function (x) { var o = el('option', '', x.nama); o.value = x.email; ps.appendChild(o); }); ps.value = v ? v.petugas : ((jlData.people || []).some(function (x) { return x.email === jlData.me; }) ? jlData.me : '');
+    var r3 = el('div', 'row'); r3.appendChild(fieldBox('m_v_jadwal', 'Jadwal foto kondisi', js)); r3.appendChild(fieldBox('m_v_petugas', 'Yang bertugas memfoto', ps)); b.appendChild(r3);
+    b.appendChild(el('p', 'hint', 'Sesuai jadwal, tugas "Foto kondisi" dibuat otomatis di menu Tugas untuk orang ini, dan selesai sendiri saat 5 fotonya diunggah.'));
   }, v ? 'Simpan' : 'Tambah kendaraan', function () {
     var g = function (id) { return $('f_' + id).value; };
-    return call('saveVehicle', { id: v ? v.id : '', nama: g('m_v_nama'), plat: g('m_v_plat'), jenis: g('m_v_jenis'), aktif: g('m_v_aktif') === 'Ya', catatan: g('m_v_cat') })
+    return call('saveVehicle', { id: v ? v.id : '', nama: g('m_v_nama'), plat: g('m_v_plat'), jenis: g('m_v_jenis'), aktif: g('m_v_aktif') === 'Ya', catatan: g('m_v_cat'), jadwal: g('m_v_jadwal'), petugas: g('m_v_petugas') })
       .then(function (d) { toast(v ? 'Kendaraan diubah.' : 'Kendaraan ditambahkan.'); applyTrips(d, jlSel); });
   });
 }
@@ -4024,13 +4123,41 @@ function renderVehicles() {
     h.appendChild(el('span', 'st ' + (!v.aktif ? 'grey' : cur ? 'orange' : 'white'), !v.aktif ? 'Tidak aktif' : cur ? 'Dipakai ' + cur.nama.split(' ')[0] + ' s/d ' + fdt(pdt(cur.kembali)) : 'Tersedia'));
     c.appendChild(h);
     var acts = el('div', 'jl-veh-acts');
+    if (jlData.canBook) acts.appendChild(btnEl('Foto kondisi', '', function () { photoModal(v); }));
     if (jlData.canApprove) acts.appendChild(btnEl('Ubah', 'sec', function () { vehicleModal(v); }));
     if (jlData.canBook) acts.appendChild(btnEl('Lapor kerusakan', 'sec', function () { damageModal(v.id, ''); }));
     c.appendChild(acts);
+    // latest photos (4 sides + interior) and the photo schedule
+    var ph = (jlData.photos || []).filter(function (x) { return x.vid === v.id; }).sort(function (a, b) { return b.t - a.t; });
+    var sched = el('p', 'hint');
+    var every = { 'Mingguan': 7, '2 Minggu': 14, 'Bulanan': 30 }[v.jadwal];
+    sched.textContent = v.jadwal === 'Tidak' ? 'Foto kondisi: tidak dijadwalkan.' : 'Foto kondisi ' + v.jadwal.toLowerCase() + ' oleh ' + (personNm(v.petugas)) +
+      (ph[0] ? '. Berikutnya sekitar ' + dmy(addDays(new Date(ph[0].t), every)) : '. Belum pernah difoto: tugas dibuat besok pagi') + '. Tugasnya muncul otomatis di menu Tugas.';
+    c.appendChild(el('h3', 'tn-h3', 'Foto kondisi terakhir'));
+    if (!ph.length) c.appendChild(el('div', 'muted', 'Belum ada foto.'));
+    else {
+      var pr = el('div', 'jl-photos');
+      pr.appendChild(el('span', 'muted', ph[0].waktu + ' · ' + ph[0].nama + (ph[0].km ? ' · KM ' + ph[0].km.toLocaleString('id-ID') : '') + (ph[0].catatan ? ' · ' + ph[0].catatan : '')));
+      var row = el('div', 'jl-photo-btns');
+      (jlData.sides || []).forEach(function (sd) { var f = ph[0].foto[sd]; if (!f) return; var bt = el('button', 'mini-btn', '📷 ' + sd); bt.type = 'button'; bt.onclick = function () { openFile(f.id, 'jalan', v.nama + ' · ' + sd + ' · ' + ph[0].waktu, f.url); }; row.appendChild(bt); });
+      pr.appendChild(row);
+      if (ph.length > 1) {
+        var older = el('details', 'jl-older'); older.appendChild(el('summary', '', 'Foto sebelumnya (' + (ph.length - 1) + ')'));
+        ph.slice(1, 13).forEach(function (x) {
+          var lr = el('div', 'jl-dmg-row'); lr.appendChild(el('span', 'muted num', x.waktu)); lr.appendChild(el('b', '', x.nama));
+          var k = el('span', '', x.km ? 'KM ' + x.km.toLocaleString('id-ID') + ' ' : '');
+          (jlData.sides || []).forEach(function (sd) { var f = x.foto[sd]; if (!f) return; var a = el('button', 'link', sd + ' '); a.type = 'button'; a.onclick = function () { openFile(f.id, 'jalan', v.nama + ' · ' + sd + ' · ' + x.waktu, f.url); }; k.appendChild(a); });
+          lr.appendChild(k); older.appendChild(lr);
+        });
+        pr.appendChild(older);
+      }
+      c.appendChild(pr);
+    }
+    c.appendChild(sched);
     c.appendChild(el('h3', 'tn-h3', 'Riwayat pemakaian'));
     if (!trips.length) c.appendChild(el('div', 'muted', 'Belum pernah dipinjam.'));
-    else c.appendChild(table(['Waktu', 'Peminjam', 'Tujuan · keperluan', 'Ikut'], trips.slice(0, 12).map(function (t) {
-      return [{ t: span(t), cls: 'nowrap num' }, { t: t.nama, cls: 'nowrap' }, t.tujuan + ' · ' + t.keperluan, t.ikut];
+    else c.appendChild(table(['Waktu', 'Peminjam', 'Tujuan · keperluan', 'Ikut', { t: 'KM', cls: 'r' }], trips.slice(0, 12).map(function (t) {
+      return [{ t: span(t), cls: 'nowrap num' }, { t: t.nama, cls: 'nowrap' }, t.tujuan + ' · ' + t.keperluan, t.ikut, { t: kmText(t), cls: 'r nowrap num' }];
     }), { onRow: function (i) { jlTab = 'trips'; renderJl(); openTrip(trips[i]); } }));
     var dm = jlData.damage.filter(function (x) { return x.vid === v.id; }).reverse();
     if (dm.length) {
@@ -4268,6 +4395,7 @@ function boot() {
     $('todayLbl').textContent = longDate(new Date());
     $$('[data-me-role]').forEach(function (e) { e.textContent = d.owner ? 'Pemilik' : (d.peran || ''); });
     applyLocks();
+    $('backupTab').hidden = !d.owner;
     var payAny = lv('catat') !== '-' || lv('bukti') !== '-';
     $$('[data-sign-open]').forEach(function (b) { b.hidden = !(lv('catat') === 'U' || lv('bukti') === 'U'); });
     $('menuNav').innerHTML = '<nav class="side-nav">' + $('sideNav').innerHTML + '</nav>';
