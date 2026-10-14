@@ -455,6 +455,21 @@
   .health.six { grid-template-columns:repeat(6, minmax(0,1fr)); }
   .hc.sert::before { background:#8b5cf6; } .hc.sert b { color:#6d28d9; } :root[data-theme="dark"] .hc.sert b { color:#c4b5fd; }
   .head-btns { display:flex; gap:8px; flex-wrap:wrap; }
+  .sync-pill { position:fixed; top:14px; right:18px; z-index:70; display:flex; align-items:center; gap:8px; background:var(--surface); color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:6px 12px; font-size:12.5px; font-weight:600; box-shadow:0 4px 14px rgba(0,0,0,.12); }
+  .sync-pill i { width:12px; height:12px; border-radius:50%; border:2px solid var(--line); border-top-color:var(--accent); animation:spin .8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @media (max-width:899px) { .sync-pill { top:auto; bottom:84px; right:12px; } }
+  .gab { margin-top:12px; border:1px solid var(--line); border-radius:12px; padding:12px; display:grid; gap:6px; background:var(--subtle); }
+  .gab .mini-btn { justify-self:start; margin-top:4px; }
+  .gab-rows { display:grid; gap:8px; margin-top:6px; }
+  .gab-row { display:grid; grid-template-columns:auto minmax(0,1fr); gap:6px 10px; align-items:center; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:8px 10px; }
+  .gab-row.off { opacity:.55; } .gab-row input[type=checkbox] { width:18px; height:18px; }
+  .gab-nm b { display:block; font-size:14px; } .gab-nm span { font-size:12px; }
+  .gab-f { grid-column:2; display:grid; grid-template-columns:minmax(0,1.3fr) 64px minmax(0,1fr); gap:6px; align-items:center; }
+  .gab-f input { padding:6px 8px; font-size:13px; margin:0; }
+  .gab-end { grid-column:1 / -1; font-size:12px; }
+  .gab-foot { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:4px; }
+  .gab-add { width:auto; max-width:70%; padding:6px 8px; font-size:13px; }
   /* perjalanan kantor */
   .jl-week { max-width:1360px; margin-bottom:16px; padding:16px; }
   .jl-week-head { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
@@ -1165,6 +1180,7 @@
                 <button class="link" id="change" type="button">Ganti</button>
               </div>
               <div class="hist" id="hist"></div>
+              <div id="gabBox" class="gab" hidden></div>
             </div>
           </div>
 
@@ -1429,6 +1445,7 @@
   </div>
 </div>
 
+<div class="sync-pill" id="syncPill" hidden><i></i>Memperbarui…</div>
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script>
@@ -1518,6 +1535,31 @@ function call(fn, arg) {
     });
 }
 function errText(e) { return (e && e.message) ? e.message : String(e); }
+/* ---------- speed: every page first shows the data it had last time (kept in this browser), then refreshes it.
+ * The engine still checks access on every call; the copy is only for showing the page faster. Cleared on Keluar. */
+var CACHE_V = 'c1';
+function tokEmail() { try { return JSON.parse(atob(idToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).email || ''; } catch (e) { return ''; } }
+function ckey(fn) { return 'elc:' + CACHE_V + ':' + String(tokEmail()).toLowerCase() + ':' + fn; }
+function cacheRead(fn) { try { var v = localStorage.getItem(ckey(fn)); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
+function cacheWrite(fn, d) {
+  try { localStorage.setItem(ckey(fn), JSON.stringify(d)); }
+  catch (e) { try { localStorage.removeItem(ckey('getLand')); localStorage.setItem(ckey(fn), JSON.stringify(d)); } catch (e2) {} }
+}
+function cacheClear() { try { Object.keys(localStorage).filter(function (k) { return k.indexOf('elc:') === 0; }).forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {} }
+var syncN = 0;
+function syncing(d) { syncN = Math.max(0, syncN + d); var p = document.getElementById('syncPill'); if (p) p.hidden = !syncN; }
+/** apply(data, fromCache) runs at once with the saved copy (if any), and again only if the fresh data is different. */
+function swr(fn, arg, apply) {
+  var c = cacheRead(fn), cs = c ? JSON.stringify(c) : '';
+  if (c) { try { apply(c, true); } catch (e) { c = null; cs = ''; } }
+  syncing(1);
+  return call(fn, arg).then(function (d) {
+    syncing(-1);
+    var ds = JSON.stringify(d);
+    if (ds !== cs) { try { localStorage.setItem(ckey(fn), ds); } catch (e) { cacheWrite(fn, d); } apply(d, false); }
+    return d;
+  }, function (e) { syncing(-1); if (!c) throw e; toast('Gagal memperbarui data: ' + errText(e)); });
+}
 function toast(t) { var el = $('toast'); el.textContent = t; el.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(function () { el.hidden = true; }, 3500); }
 
 /* ---------- theme ---------- */
@@ -1767,7 +1809,7 @@ function peekNumber() {
   peekNumber.t = setTimeout(function () {
     call('peekKwitansi', { key: key, tanggal: tg }).then(function (no) {
       if (!chosen || chosen.key !== key || $('tanggal').value !== tg) return;
-      $('sNo').textContent = no || '-'; $('sNo').className = 'num'; $('sNoNote').hidden = !no;
+      $('sNo').textContent = (no || '-').replace(gabOn() ? /\/KWT\/[^/]+\// : /^$/, '/KWT/GAB/'); $('sNo').className = 'num'; $('sNoNote').hidden = !no;
     }).catch(function () { $('sNo').textContent = 'dibuat saat disimpan'; $('sNoNote').hidden = true; });
   }, 350);
 }
@@ -1776,10 +1818,72 @@ function peekNumber() {
 function isSewa(k) { return !k.jenis || k.jenis === 'Uang sewa'; }
 function jenisText(k) { var j = k.jenis || 'Uang sewa'; return j === 'Lain-lain' && k.ket ? 'Lain-lain: ' + k.ket : j; }
 function kRows(k) {
+  if (k.items && k.items.length) {  // bayar gabungan: one kwitansi, one line per unit
+    var g = [['Tanggal', k.tgl], ['Diterima dari', k.nama], ['Untuk', 'Uang sewa · ' + k.items.length + ' unit']];
+    k.items.forEach(function (it, i) { g.push(['Unit ' + (i + 1), it.inv + ' ' + it.unit + ' · ' + it.mulai + ' – ' + it.sd + ' · ' + rp(it.jumlah)]); });
+    g.push(['Metode', k.metode]);
+    return g;
+  }
   var r = [['Tanggal', k.tgl], ['Diterima dari', k.nama], ['Untuk', jenisText(k)], ['Unit', k.inv + ', unit ' + k.unit]];
   if (isSewa(k)) r.push(['Periode', k.mulai + ' – ' + k.sd]);
   r.push(['Metode', k.metode]);
   return r;
+}
+/* ---------- bayar gabungan: one transfer for several contracts of the same person ---------- */
+var gab = null;  // { rows: [{ t, on, mulai, periode, jumlah, touched }] }
+function gabOn() { return !!(gab && chosen && curJenis() === 'Uang sewa'); }
+function siblingsOf(t) { return tenants.filter(function (x) { return x.key !== t.key && x.person && x.person === t.person; }); }
+function nextStart(t) { if (t.once && t.mulaiIso) return t.mulaiIso; if (t.lunasIso) { var d = parseIso(t.lunasIso); d.setDate(d.getDate() + 1); return iso(d); } return iso(today0()); }
+function gabRow(t, on) { return { t: t, on: on, mulai: nextStart(t), periode: 1, jumlah: t.harga || 0, touched: false }; }
+function renderGab() {
+  var box = $('gabBox'); box.innerHTML = '';
+  if (!chosen || curJenis() !== 'Uang sewa') { box.hidden = true; return; }
+  var sib = siblingsOf(chosen);
+  box.hidden = false;
+  if (!gab) {
+    if (sib.length) {
+      box.appendChild(el('b', '', chosen.nama.split('/')[0].trim() + ' juga menyewa ' + sib.length + ' unit lain'));
+      box.appendChild(el('div', 'muted', sib.map(function (x) { return x.inv + ' ' + x.unit; }).join(', ')));
+    }
+    var b = el('button', 'mini-btn' + (sib.length ? ' dark' : ''), sib.length ? 'Bayar gabungan (1 transfer, 1 kwitansi)' : '+ Gabungkan dengan unit lain'); b.type = 'button';
+    b.onclick = function () { gab = { rows: [gabRow(chosen, true)].concat(sib.map(function (x) { return gabRow(x, true); })) }; renderGab(); check(); };
+    box.appendChild(b);
+    return;
+  }
+  box.appendChild(el('b', '', 'Bayar gabungan'));
+  box.appendChild(el('div', 'muted', 'Centang unit yang dibayar dengan transfer ini. Tiap unit tetap punya periode sendiri.'));
+  var tb = el('div', 'gab-rows');
+  gab.rows.forEach(function (r, i) {
+    var row = el('div', 'gab-row' + (r.on ? '' : ' off'));
+    var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = r.on; cb.disabled = i === 0; cb.setAttribute('aria-label', 'Ikut dibayar');
+    cb.onchange = function () { r.on = cb.checked; row.classList.toggle('off', !r.on); check(); };
+    var nm = el('div', 'gab-nm'); nm.appendChild(el('b', '', r.t.inv + ' ' + r.t.unit)); nm.appendChild(el('span', 'muted', rp(r.t.harga) + ' per ' + cycleWord(r.t) + (r.t.lunasIso ? ' · lunas s/d ' + dmy(parseIso(r.t.lunasIso)) : '')));
+    var mu = inp('date', r.mulai, { 'aria-label': 'Periode mulai ' + r.t.unit }); mu.disabled = !!r.t.once;
+    var pe = inp('number', r.periode, { min: 1, step: 1, class: 'num', 'aria-label': 'Jumlah periode ' + r.t.unit }); pe.disabled = !!r.t.once;
+    var ju = inp('text', r.jumlah ? Number(r.jumlah).toLocaleString('id-ID') : '', { inputmode: 'numeric', class: 'num', 'aria-label': 'Jumlah ' + r.t.unit });
+    var en = el('span', 'muted gab-end num', '');
+    function upd() {
+      r.mulai = mu.value; r.periode = Math.max(1, Math.round(+pe.value || 1));
+      if (!r.touched) { r.jumlah = (r.t.harga || 0) * r.periode; ju.value = r.jumlah ? r.jumlah.toLocaleString('id-ID') : ''; }
+      var st = parseIso(r.mulai); en.textContent = st ? 's/d ' + dmy(endOf(st, r.t, r.periode)) : '';
+      check();
+    }
+    mu.onchange = upd; pe.oninput = upd;
+    ju.oninput = function () { r.touched = true; r.jumlah = num(ju.value); check(); };
+    ju.onblur = function () { ju.value = r.jumlah ? Number(r.jumlah).toLocaleString('id-ID') : ''; };
+    row.appendChild(cb); row.appendChild(nm);
+    var fl = el('div', 'gab-f'); fl.appendChild(mu); fl.appendChild(pe); fl.appendChild(ju); fl.appendChild(en); row.appendChild(fl);
+    tb.appendChild(row);
+    var st0 = parseIso(r.mulai); en.textContent = st0 ? 's/d ' + dmy(endOf(st0, r.t, r.periode)) : '';
+  });
+  box.appendChild(tb);
+  var addSel = document.createElement('select'); addSel.className = 'gab-add';
+  var o0 = el('option', '', '+ Tambah unit lain…'); o0.value = ''; addSel.appendChild(o0);
+  tenants.filter(function (x) { return !gab.rows.some(function (r) { return r.t.key === x.key; }); })
+    .forEach(function (x) { var o = el('option', '', x.nama + ' · ' + x.inv + ' ' + x.unit); o.value = x.key; addSel.appendChild(o); });
+  addSel.onchange = function () { var x = tenants.filter(function (t) { return t.key === addSel.value; })[0]; if (x) { gab.rows.push(gabRow(x, true)); renderGab(); check(); } };
+  var off = el('button', 'link', 'Batal gabungan'); off.type = 'button'; off.onclick = function () { gab = null; jumlahTouched = false; renderGab(); check(); };
+  var foot = el('div', 'gab-foot'); foot.appendChild(addSel); foot.appendChild(off); box.appendChild(foot);
 }
 function fillLines(dl, rows) {
   dl.innerHTML = '';
@@ -1793,7 +1897,7 @@ function resetForm() {
   $('tanggal').value = iso(d); $('tanggal').max = iso(d);
   $('mulai').value = iso(d); $('jenis').value = 'Uang sewa'; $('ket').value = ''; $('ketBox').hidden = true; $('sewaBox').hidden = false;
   $('periode').value = 1; $('jumlah').value = ''; jumlahTouched = false; $('catatan').value = ''; $('foto').value = ''; $('fotoList').innerHTML = '';
-  $('confirm').checked = false; chosen = null; pastPays = [];
+  $('confirm').checked = false; chosen = null; pastPays = []; gab = null; $('gabBox').hidden = true;
   $('chosenBox').hidden = true; $('pickBox').hidden = false; $('q').value = ''; renderList(); check(); peekNumber();
 }
 
@@ -1816,7 +1920,7 @@ function renderList() {
 }
 
 function choose(t) {
-  chosen = t;
+  chosen = t; gab = null;
   $('cNama').textContent = t.nama;
   fillMeta($('cInfo'), [t.inv, 'Unit ' + t.unit + ', ' + rp(t.harga) + ' per ' + cycleWord(t)]);
   setAvatar($('cAvatar'), t.nama, t.inv);
@@ -1844,6 +1948,7 @@ function choose(t) {
     });
     check();
   }).catch(function () { $('hist').textContent = 'Riwayat gagal dimuat.'; });
+  renderGab();
   check();
 }
 
@@ -1861,6 +1966,37 @@ function check() {
   $('sSigBlock').setAttribute('data-date', tg ? longDate(tg) : ''); if (!$('sSigBlock').hidden) $('sSigDate').textContent = tg ? longDate(tg) : '';
   var k = { tgl: tg ? dmy(tg) : '-', nama: '-', inv: '-', unit: '-', jenis: jenis, ket: $('ket').value.trim(), mulai: '-', sd: '-', metode: metode };
   $('lateHint').hidden = true;
+  $('jumlah').readOnly = gabOn();
+  if (gabOn()) {
+    $('sewaBox').hidden = true;
+    var on = gab.rows.filter(function (r) { return r.on; }), total = 0;
+    k.nama = chosen.nama; k.items = [];
+    on.forEach(function (r) {
+      total += r.jumlah || 0;
+      var st = parseIso(r.mulai);
+      if (!st || !(r.jumlah > 0)) ok = false;
+      if (st) {
+        var en = endOf(st, r.t, r.periode);
+        k.items.push({ inv: r.t.inv, unit: r.t.unit, mulai: dmy(st), sd: dmy(en), jumlah: r.jumlah || 0 });
+        if (r.t.harga && r.jumlah !== r.t.harga * r.periode) w.push(r.t.inv + ' ' + r.t.unit + ': ' + rp(r.jumlah) + ' berbeda dari seharusnya ' + rp(r.t.harga * r.periode) + '.');
+        if (r.t.lunasIso && iso(st) <= r.t.lunasIso) w.push(r.t.inv + ' ' + r.t.unit + ': periode mulai ' + dmy(st) + ' masih di dalam masa yang sudah lunas (s/d ' + dmy(parseIso(r.t.lunasIso)) + ').');
+      }
+    });
+    if (on.length < 2) { ok = false; w.push('Centang minimal 2 unit untuk bayar gabungan, atau tekan "Batal gabungan".'); }
+    $('jumlah').value = total ? total.toLocaleString('id-ID') : '';
+    $('sNo').textContent = $('sNo').textContent.replace(/\/KWT\/[^/]+\//, '/KWT/GAB/');
+    $('expect').textContent = '';
+    $('sJumlah').textContent = total ? total.toLocaleString('id-ID') : '0';
+    $('sTerbilang').textContent = terbilang(total);
+    if (!total) ok = false;
+    fillLines($('sLines'), kRows(k));
+    if (!$('tanggal').value) ok = false;
+    $('warns').innerHTML = w.map(function (x) { return '<div class="msg warn">' + x + '</div>'; }).join('');
+    $('confirmBox').hidden = !w.length;
+    if (w.length && !$('confirm').checked) ok = false;
+    $('save').disabled = !ok; $('save').hidden = lv('catat') !== 'U';
+    return;
+  }
   if (chosen) {
     k.nama = chosen.nama; k.inv = chosen.inv; k.unit = chosen.unit;
     var expected = chosen.harga * n;
@@ -1910,7 +2046,29 @@ function showDone(k, hasProof) {
   $('formView').hidden = true; $('doneView').hidden = false; window.scrollTo(0, 0);
 }
 
+function saveGab() {
+  $('save').disabled = true; $('save').textContent = 'Menyimpan…';
+  var on = gab.rows.filter(function (r) { return r.on; }), tg = parseIso($('tanggal').value);
+  var draft = { nama: chosen.nama, inv: '', unit: '', tgl: dmy(tg), jenis: 'Uang sewa', metode: document.querySelector('input[name=metode]:checked').value, status: '',
+    items: on.map(function (r) { var st = parseIso(r.mulai); return { inv: r.t.inv, unit: r.t.unit, mulai: dmy(st), sd: dmy(endOf(st, r.t, r.periode)), jumlah: r.jumlah }; }) };
+  draft.jumlah = draft.items.reduce(function (a, x) { return a + x.jumlah; }, 0);
+  readFiles($('foto')).then(function (files) {
+    return call('savePaymentMulti', { tanggal: $('tanggal').value, metode: draft.metode, catatan: $('catatan').value, files: files,
+      items: on.map(function (r) { return { key: r.t.key, mulai: r.mulai, periode: r.periode, jumlah: r.jumlah }; }) });
+  }).then(function (r) {
+    $('save').textContent = 'Simpan pembayaran';
+    draft.kwitansi = r.kwitansi; draft.id = r.ids[0]; draft.grp = r.grp;
+    r.items.forEach(function (it, i) { draft.items[i].sd = it.sd; tenants.forEach(function (t) { if (t.key === it.key) { var d = parseDmy(it.sd); if (d) t.lunasIso = iso(d); } }); });
+    gab = null; showDone(draft, !!r.bukti);
+    refreshBadge(); dashData = null;
+  }).catch(function (e) {
+    $('save').textContent = 'Simpan pembayaran';
+    $('error').textContent = 'Gagal menyimpan: ' + errText(e) + ' Coba lagi.';
+    $('error').hidden = false; check();
+  });
+}
 function save() {
+  if (gabOn()) return saveGab();
   $('save').disabled = true; $('save').textContent = 'Menyimpan…';
   var n = Math.max(1, Math.round(Number($('periode').value) || 1));
   var jenis = curJenis(), sewa = jenis === 'Uang sewa';
@@ -1943,9 +2101,9 @@ function payFor(key) {
 }
 
 $('q').oninput = renderList;
-$('change').onclick = function () { chosen = null; pastPays = []; $('chosenBox').hidden = true; $('pickBox').hidden = false; $('q').focus(); check(); };
+$('change').onclick = function () { chosen = null; pastPays = []; gab = null; $('gabBox').hidden = true; $('chosenBox').hidden = true; $('pickBox').hidden = false; $('q').focus(); check(); };
 ['tanggal', 'mulai', 'periode', 'jumlah', 'confirm', 'ket'].forEach(function (id) { $(id).addEventListener('input', check); $(id).addEventListener('change', check); });
-$('jenis').addEventListener('change', function () { jumlahTouched = curJenis() !== 'Uang sewa'; if (jumlahTouched) $('jumlah').value = ''; check(); });
+$('jenis').addEventListener('change', function () { jumlahTouched = curJenis() !== 'Uang sewa'; if (jumlahTouched) $('jumlah').value = ''; renderGab(); check(); });
 $$('input[name=metode]').forEach(function (r) { r.addEventListener('change', check); });
 $('foto').addEventListener('change', function () { listFiles($('foto'), $('fotoList')); check(); });
 $('jumlah').addEventListener('input', function () { jumlahTouched = true; });
@@ -1968,7 +2126,7 @@ function refreshBadge() { call('getPayments').then(function (list) { payments = 
 
 function loadPayments() {
   $('payList').innerHTML = '<div class="empty">Memuat pembayaran…</div>';
-  call('getPayments').then(function (list) {
+  swr('getPayments', null, function (list) {
     payments = list || []; setBadge(); renderPays();
     var p = selId && payments.filter(function (x) { return x.id === selId; })[0];
     if (p) openDetail(p); else closeDetail();
@@ -2031,6 +2189,7 @@ function openDetail(p) {
   $('dMetode').textContent = p.metode || '-';
   $('dOleh').textContent = p.oleh || '-';
   $('dCatatan').textContent = p.catatan ? 'Catatan: ' + p.catatan : '';
+  if (p.grp) { var gk = kwOf(p); $('dCatatan').textContent = 'Bagian dari bayar gabungan: ' + gk.items.length + ' unit (' + gk.items.map(function (x) { return x.inv + ' ' + x.unit; }).join(', ') + '), total ' + rp(gk.jumlah) + '. Bukti dan pembatalan berlaku untuk semua unit ini.'; }
   var v = isVoid(p);
   $('dVoid').hidden = !v;
   $('dVoidInfo').textContent = v ? 'Dibatalkan ' + p.batalWaktu + ' oleh ' + p.batalOleh + '. Alasan: ' + p.alasan : '';
@@ -2055,6 +2214,14 @@ function openDetail(p) {
   if (window.matchMedia('(max-width: 899px)').matches) window.scrollTo(0, 0);
 }
 function current() { return payments.filter(function (x) { return x.id === selId; })[0]; }
+/** A combined payment shows and downloads as one kwitansi with every unit on it. */
+function kwOf(p) {
+  if (!p || !p.grp) return p;
+  var rows = payments.filter(function (x) { return x.grp === p.grp; });
+  return Object.assign({}, p, { jumlah: rows.reduce(function (a, x) { return a + x.jumlah; }, 0),
+    items: rows.map(function (x) { return { inv: x.inv, unit: x.unit, mulai: x.mulai, sd: x.sd, jumlah: x.jumlah }; }) });
+}
+function mergeUpd(upd) { var g = upd.group || [upd]; payments = payments.map(function (x) { var n = g.filter(function (y) { return y.id === x.id; })[0]; return n || x; }); }
 
 function checkB() { $('bsave').disabled = !selId || !($('bfile').files || []).length; }
 
@@ -2064,9 +2231,9 @@ function saveProof() {
     return call('addProof', { id: selId, files: files });
   }).then(function (upd) {
     $('bsave').textContent = 'Simpan bukti';
-    payments = payments.map(function (x) { return x.id === upd.id ? upd : x; });
+    mergeUpd(upd);
     setBadge(); openDetail(upd);
-    toast('Bukti tersimpan untuk ' + upd.nama + '.');
+    toast('Bukti tersimpan untuk ' + upd.nama + (upd.group ? ' (' + upd.group.length + ' unit gabungan)' : '') + '.');
   }).catch(function (e) {
     $('bsave').textContent = 'Simpan bukti';
     $('berror').textContent = 'Gagal menyimpan bukti: ' + errText(e);
@@ -2082,16 +2249,16 @@ $('cancelYes').onclick = function () {
   btn.disabled = true; btn.textContent = 'Membatalkan…';
   call('cancelPayment', { id: selId, alasan: reason }).then(function (upd) {
     btn.disabled = false; btn.textContent = 'Ya, batalkan';
-    payments = payments.map(function (x) { return x.id === upd.id ? upd : x; });
+    mergeUpd(upd);
     setBadge(); openDetail(upd);
-    toast('Kwitansi ' + (upd.kwitansi || '') + ' dibatalkan.');
+    toast('Kwitansi ' + (upd.kwitansi || '') + ' dibatalkan' + (upd.group ? ' (' + upd.group.length + ' unit gabungan)' : '') + '.');
   }).catch(function (e) {
     btn.disabled = false; btn.textContent = 'Ya, batalkan';
     $('cancelErr').textContent = errText(e); $('cancelErr').hidden = false;
   });
 };
 ['s', 'dn', 'd'].forEach(function (k) { $(k + 'Sign').addEventListener('change', function () { showSig(k); }); });
-$('dDownload').onclick = function () { var p = current(); if (p) downloadKwitansi(p, $('dSign'), this); };
+$('dDownload').onclick = function () { var p = current(); if (p) downloadKwitansi(kwOf(p), $('dSign'), this); };
 
 $('bq').oninput = renderPays;
 $('bsort').onchange = function () { sortBy = this.value; renderPays(); };
@@ -2152,10 +2319,10 @@ function loadDash(force) {
   if (dashData && !force) { renderDash(); renderCal(); return Promise.resolve(); }
   if (dashLoading) return dashLoading;
   if (!dashData) emptyBox($('alarmBox'), 'Memuat…');
-  dashLoading = call('getDashboard').then(function (d) {
-    dashData = d; tasks = d.tasks || []; people = d.people || []; dashLoading = null;
+  dashLoading = swr('getDashboard', null, function (d) {
+    dashData = d; tasks = d.tasks || []; people = d.people || [];
     setTaskBadge(); renderDash(); renderCal();
-  }).catch(function (e) { dashLoading = null; emptyBox($('alarmBox'), 'Gagal memuat: ' + errText(e)); });
+  }).then(function () { dashLoading = null; }).catch(function (e) { dashLoading = null; emptyBox($('alarmBox'), 'Gagal memuat: ' + errText(e)); });
   return dashLoading;
 }
 function windowOf(p, t) {
@@ -2602,10 +2769,11 @@ var tnSeq = 0;  // bumps on every click that opens a tenant or the new-tenant fo
 function loadTenantsPage(keepKey) {
   if (!tnData) emptyBox($('tnList'), 'Memuat penyewa…');
   var seq = tnSeq;
-  return call('getTenants').then(function (d) { applyTenants(d, keepKey, seq); }).catch(function (e) { emptyBox($('tnList'), 'Gagal memuat: ' + errText(e)); });
+  return swr('getTenants', null, function (d) { applyTenants(d, keepKey, seq); }).catch(function (e) { emptyBox($('tnList'), 'Gagal memuat: ' + errText(e)); });
 }
 function applyTenants(d, keepKey, seq) {
   if (seq === undefined) seq = tnSeq;
+  if (tnData && tnDirty) { tnData = d; renderTnList(); return; }  // never wipe what someone is typing
   (function () {
     tnData = d;
     var dl = $('tanahList'); dl.innerHTML = '';
@@ -2815,8 +2983,8 @@ function newTenant(pre) {
 function afterTenantChange(key, msg, r) {
   tnDirty = false; toast(msg); dashData = null;
   if (r && r.page) {  // the engine already sent the fresh page: no second trip
-    if (r.form) { tenants = r.form; try { renderList(); } catch (e) {} }
-    tnMode = 'view'; applyTenants(r.page, key);
+    if (r.form) { tenants = r.form; try { renderList(); } catch (e) {} if (me) { me.tenants = r.form; cacheWrite('getFormData', me); } }
+    tnMode = 'view'; cacheWrite('getTenants', r.page); applyTenants(r.page, key);
     return Promise.resolve();
   }
   call('getFormData').then(function (d) { tenants = d.tenants || []; renderList(); }).catch(function () {});
@@ -3031,7 +3199,8 @@ var TD_SECTIONS = [
 function loadLand(keepRow) {
   if (!tdData) emptyBox($('tdList'), 'Memuat data tanah…');
   var seq = tdSeq;
-  return call('getLand').then(function (d) {
+  return swr('getLand', null, function (d) {
+    if (tdData && tdDirty) { tdData = d; renderTdList(); return; }
     tdData = d;
     var kota = {}, tipe = {};
     d.plots.forEach(function (p) { if (p.f.kota) kota[p.f.kota] = 1; if (p.f.tipe) tipe[p.f.tipe] = 1; });
@@ -3054,6 +3223,7 @@ function mergePlots(list, row) {
     var i = -1; tdData.plots.forEach(function (x, j) { if (x.row === np.row) i = j; });
     if (i >= 0) tdData.plots[i] = np; else tdData.plots.push(np);
   });
+  cacheWrite('getLand', tdData);
   var kota = {}, tipe = {};
   tdData.plots.forEach(function (p) { if (p.f.kota) kota[p.f.kota] = 1; if (p.f.tipe) tipe[p.f.tipe] = 1; });
   fillOpts($('tdKota'), 'Semua kota', Object.keys(kota).sort()); fillOpts($('tdTipe'), 'Semua tipe', Object.keys(tipe).sort());
@@ -3354,10 +3524,12 @@ function result(ok, um, nama) {
 function loadTrips(keepId) {
   if (!jlData) emptyBox($('jlList'), 'Memuat…');
   var seq = jlSeq;
-  return call('getTrips').then(function (d) { applyTrips(d, keepId, seq); }).catch(function (e) { emptyBox($('jlList'), 'Gagal memuat: ' + errText(e)); });
+  return swr('getTrips', null, function (d) { applyTrips(d, keepId, seq); }).catch(function (e) { emptyBox($('jlList'), 'Gagal memuat: ' + errText(e)); });
 }
 function applyTrips(d, keepId, seq) {
-  jlData = d;
+  var typing = $$('.jl-add input, .jl-whyin').some(function (i) { return i.value && i.type !== 'date'; }) || ($('x_file') && ($('x_file').files || []).length);
+  jlData = d; cacheWrite('getTrips', d);
+  if (typing && seq !== undefined) { renderWeek(); renderTripList(); return; }  // a background refresh never wipes a half-filled expense
   if (!jlWeek0) jlWeek0 = monday(new Date());
   $('jlNew').hidden = !d.canBook || !d.vehicles.some(function (v) { return v.aktif; });
   $('jlVehNew').hidden = !d.canApprove;
@@ -3968,7 +4140,9 @@ function onCredential(resp) { idToken = resp.credential; try { sessionStorage.se
 function boot() {
   $('loginErr').hidden = true;
   $('gbtn').innerHTML = '<span class="muted">Memeriksa akses…</span>';
-  call('getFormData').then(function (d) {
+  var booted = false;
+  swr('getFormData', null, function (d) {
+    var firstTime = !booted; booted = true;
     $('login').hidden = true; $('app').hidden = false;
     me = d; tenants = d.tenants || []; user = d.user; signers = d.signers || [];
     $$('[data-me-name]').forEach(function (e) { e.textContent = d.nama; });
@@ -3980,7 +4154,8 @@ function boot() {
     $$('[data-sign-open]').forEach(function (b) { b.hidden = !(lv('catat') === 'U' || lv('bukti') === 'U'); });
     $('menuNav').innerHTML = '<nav class="side-nav">' + $('sideNav').innerHTML + '</nav>';
     $('taskDel').hidden = true;
-    if (payAny) { refreshSignSelects(); resetForm(); refreshBadge(); }
+    if (payAny) { refreshSignSelects(); if (firstTime || !chosen) resetForm(); else renderList(); if (firstTime) refreshBadge(); }
+    if (!firstTime) { if (lv(curView) === '-' && PAGE_NAME[curView]) show(curView); return; }
     var first = ['dash', 'tugas', 'catat', 'tanah', 'penyewa', 'bukti', 'jalan', 'kal', 'set'].filter(function (p) { return lv(p) !== '-'; })[0] || 'dash';
     show(first);
   }).catch(function (e) {
@@ -4007,7 +4182,7 @@ function initGoogle() {
   if (saved && jwtExp(saved) - Date.now() > 120000) { idToken = saved; boot(); }
   else google.accounts.id.prompt();
 }
-$$('[data-logout]').forEach(function (b) { b.onclick = function () { $('userMenu').hidden = true; signOut(''); location.href = '/'; }; });
+$$('[data-logout]').forEach(function (b) { b.onclick = function () { $('userMenu').hidden = true; cacheClear(); signOut(''); location.href = '/'; }; });
 (function waitForGoogle(n) {
   if (window.google && google.accounts && google.accounts.id) return initGoogle();
   if (n > 100) { $('gbtn').innerHTML = ''; return showLogin('Login Google gagal dimuat. Cek koneksi internet lalu muat ulang halaman.'); }
