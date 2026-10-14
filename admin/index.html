@@ -3889,6 +3889,7 @@ function openTrip(t) {
       acts2.appendChild(btnEl('Tolak semua', 'danger', function () { rejectModal(t); }));
     }
     if (appr && t.klaim === 'Disetujui') acts2.appendChild(btnEl('Tandai lunas', 'ok-solid', function () { paidModal(t); }));
+    if (exps.length || t.uangMuka) { var rb = btnEl('⬇ Unduh laporan (PDF)', 'sec', function () { reportModal(t); }); rb.id = 'jlReport'; acts2.appendChild(rb); }
     if (acts2.children.length) box.appendChild(acts2);
     if (t.klaim === 'Diajukan' && !reviewing) box.appendChild(el('p', 'hint', mine && appr && !me.owner ? 'Klaim sendiri disetujui oleh Pemilik atau penyetuju lain.' : 'Klaim diajukan ' + fdtY(pdt(t.diajukan)) + '. Menunggu persetujuan.'));
     if (t.periksaOleh) box.appendChild(el('p', 'hint', (t.klaim === 'Ditolak' ? 'Ditolak' : 'Diperiksa') + ' oleh ' + t.periksaOleh + ', ' + fdtY(pdt(t.periksaPada)) + '.'));
@@ -4261,6 +4262,276 @@ function renderUsers(d) {
   if (!edit) $('usersHint').textContent = 'Hanya Pemilik yang bisa mengubah akses.';
 }
 $('userAdd').onclick = function () { newUserRow = true; renderUsers(setCache.users); var e = $('usersBox').querySelector('input[type=email]'); if (e) e.focus(); };
+
+/* ====================== LAPORAN PERJALANAN (PDF, dibuat langsung di browser, tanpa library luar) ====================== */
+var MINIPDF_K = 72 / 25.4, MINIPDF_H = 297;
+function MiniPdf() { this.pages = []; this.imgs = []; this.cur = null; this._m = document.createElement('canvas').getContext('2d'); }
+MiniPdf.prototype.page = function () { this.cur = { ops: [], imgs: [] }; this.pages.push(this.cur); return this; };
+MiniPdf.enc = function (s) {
+  var map = { '–': '\x96', '—': '\x97', '‘': '\x91', '’': '\x92', '“': '\x93', '”': '\x94', '•': '\x95', '…': '\x85', '€': '\x80', '−': '-', '→': '->', '✓': 'v', '✔': 'v', ' ': ' ', ' ': ' ', ' ': ' ' };
+  return String(s == null ? '' : s).replace(/[^\x00-\xff]/g, function (c) { return map[c] || '?'; }).replace(/[\x00-\x1f]/g, ' ');
+};
+MiniPdf.prototype.w = function (s, size, style) {   // text width in mm (Arial metrics = Helvetica metrics)
+  this._m.font = (style === 'b' ? 'bold ' : style === 'i' ? 'italic ' : '') + '100px Arial, Helvetica, sans-serif';
+  return this._m.measureText(String(s)).width / 100 * size / MINIPDF_K;
+};
+MiniPdf.prototype.wrap = function (s, size, style, maxW) {
+  var out = [], self = this;
+  String(s == null ? '' : s).split('\n').forEach(function (para) {
+    var line = '';
+    para.split(/\s+/).forEach(function (word) {
+      if (!word) return;
+      var t = line ? line + ' ' + word : word;
+      if (self.w(t, size, style) <= maxW || !line) { line = t; }
+      else { out.push(line); line = word; }
+      while (self.w(line, size, style) > maxW && line.length > 1) {   // very long word: cut it
+        var n = line.length; while (n > 1 && self.w(line.slice(0, n), size, style) > maxW) n--;
+        out.push(line.slice(0, n)); line = line.slice(n);
+      }
+    });
+    out.push(line);
+  });
+  return out.length ? out : [''];
+};
+function pdfNum(n) { return (Math.round(n * 100) / 100).toString(); }
+function pdfCol(c) { c = c || [0, 0, 0]; return c.map(function (v) { return pdfNum(v / 255); }).join(' '); }
+MiniPdf.prototype.text = function (x, y, s, o) {
+  o = o || {}; var size = o.size || 10, st = o.style || '';
+  var str = MiniPdf.enc(s), wd = this.w(s, size, st);
+  if (o.align === 'right') x -= wd; else if (o.align === 'center') x -= wd / 2;
+  var f = st === 'b' ? '/F2' : st === 'i' ? '/F3' : '/F1';
+  var esc = str.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+  this.cur.ops.push('BT ' + f + ' ' + size + ' Tf ' + pdfCol(o.color) + ' rg ' + pdfNum(x * MINIPDF_K) + ' ' + pdfNum((MINIPDF_H - y) * MINIPDF_K) + ' Td (' + esc + ') Tj ET');
+  if (o.strike) this.line(x, y - size * 0.12, x + wd, y - size * 0.12, 0.2, o.color);
+  return wd;
+};
+MiniPdf.prototype.line = function (x1, y1, x2, y2, lw, col) {
+  this.cur.ops.push(pdfNum((lw || 0.2) * MINIPDF_K) + ' w ' + pdfCol(col) + ' RG ' + pdfNum(x1 * MINIPDF_K) + ' ' + pdfNum((MINIPDF_H - y1) * MINIPDF_K) + ' m ' + pdfNum(x2 * MINIPDF_K) + ' ' + pdfNum((MINIPDF_H - y2) * MINIPDF_K) + ' l S');
+};
+MiniPdf.prototype.rect = function (x, y, w, h, fill, stroke, lw) {
+  var r = pdfNum(x * MINIPDF_K) + ' ' + pdfNum((MINIPDF_H - y - h) * MINIPDF_K) + ' ' + pdfNum(w * MINIPDF_K) + ' ' + pdfNum(h * MINIPDF_K) + ' re ';
+  var op = fill && stroke ? 'B' : fill ? 'f' : 'S';
+  this.cur.ops.push(pdfNum((lw || 0.2) * MINIPDF_K) + ' w ' + (fill ? pdfCol(fill) + ' rg ' : '') + (stroke ? pdfCol(stroke) + ' RG ' : '') + r + op);
+};
+MiniPdf.prototype.image = function (img, x, y, w, h) {   // img = {bytes: Uint8Array (JPEG), pw, ph}
+  var idx = this.imgs.indexOf(img); if (idx < 0) { this.imgs.push(img); idx = this.imgs.length - 1; }
+  if (this.cur.imgs.indexOf(idx) < 0) this.cur.imgs.push(idx);
+  this.cur.ops.push('q ' + pdfNum(w * MINIPDF_K) + ' 0 0 ' + pdfNum(h * MINIPDF_K) + ' ' + pdfNum(x * MINIPDF_K) + ' ' + pdfNum((MINIPDF_H - y - h) * MINIPDF_K) + ' cm /Im' + idx + ' Do Q');
+};
+MiniPdf.prototype.blob = function () {
+  var parts = [], len = 0, offs = [], self = this;
+  function put(x) { if (typeof x === 'string') { var b = new Uint8Array(x.length); for (var i = 0; i < x.length; i++) b[i] = x.charCodeAt(i) & 255; x = b; } parts.push(x); len += x.length; }
+  function obj(n, body) { offs[n] = len; put(n + ' 0 obj\n'); (Array.isArray(body) ? body : [body]).forEach(put); put('\nendobj\n'); }
+  put('%PDF-1.4\n%\xe2\xe3\xcf\xd3\n');
+  var nImg = this.imgs.length, firstImg = 6, firstPage = firstImg + nImg;
+  var kids = this.pages.map(function (p, i) { return (firstPage + i * 2) + ' 0 R'; }).join(' ');
+  obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2, '<< /Type /Pages /Kids [' + kids + '] /Count ' + this.pages.length + ' >>');
+  obj(3, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
+  obj(4, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+  obj(5, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique /Encoding /WinAnsiEncoding >>');
+  this.imgs.forEach(function (im, i) {
+    obj(firstImg + i, ['<< /Type /XObject /Subtype /Image /Width ' + im.pw + ' /Height ' + im.ph + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + im.bytes.length + ' >>\nstream\n', im.bytes, '\nendstream']);
+  });
+  this.pages.forEach(function (p, i) {
+    var n = firstPage + i * 2, xo = p.imgs.map(function (k) { return '/Im' + k + ' ' + (firstImg + k) + ' 0 R'; }).join(' ');
+    obj(n, '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >>' + (xo ? ' /XObject << ' + xo + ' >>' : '') + ' >> /Contents ' + (n + 1) + ' 0 R >>');
+    var s = p.ops.join('\n');
+    obj(n + 1, ['<< /Length ' + s.length + ' >>\nstream\n', s, '\nendstream']);
+  });
+  var xref = len, count = firstPage + this.pages.length * 2;
+  var x = 'xref\n0 ' + count + '\n0000000000 65535 f \n';
+  for (var i = 1; i < count; i++) x += ('0000000000' + offs[i]).slice(-10) + ' 00000 n \n';
+  put(x + 'trailer\n<< /Size ' + count + ' /Root 1 0 R >>\nstartxref\n' + xref + '\n%%EOF');
+  return new Blob(parts, { type: 'application/pdf' });
+};
+// turn a fetched file (base64) into a JPEG the PDF can hold; null if it is not a picture
+function reportImage(f) {
+  return new Promise(function (res) {
+    if (!/^image\//.test(f.mime)) return res(null);
+    var img = new Image();
+    img.onload = function () {
+      var max = 1400, sc = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      var cv = document.createElement('canvas'); cv.width = Math.max(1, Math.round(img.naturalWidth * sc)); cv.height = Math.max(1, Math.round(img.naturalHeight * sc));
+      var cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, cv.width, cv.height); cx.drawImage(img, 0, 0, cv.width, cv.height);
+      var b64 = cv.toDataURL('image/jpeg', 0.82).split(',')[1], bin = atob(b64), arr = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+      res({ bytes: arr, pw: cv.width, ph: cv.height });
+    };
+    img.onerror = function () { res(null); };
+    img.src = 'data:' + f.mime + ';base64,' + f.data;
+  });
+}
+function reportFiles(t, onStep) {   // fetch all receipt files, 3 at a time
+  var jobs = [];
+  tripExps(t).forEach(function (e, i) { e.struk.forEach(function (s, j) { jobs.push({ e: e, no: i + 1, j: j, n: e.struk.length, id: s.id }); }); });
+  var done = 0, next = 0;
+  function worker() {
+    if (next >= jobs.length) return Promise.resolve();
+    var job = jobs[next++];
+    return call('getFile', { id: job.id, ctx: 'jalan' }).then(function (f) { job.name = f.name; job.mime = f.mime; return reportImage(f); })
+      .then(function (im) { job.img = im; }, function () { job.fail = true; })
+      .then(function () { done++; if (onStep) onStep(done, jobs.length); return worker(); });
+  }
+  return Promise.all([worker(), worker(), worker()]).then(function () { return jobs; });
+}
+function buildTripReport(t, files) {
+  var pdf = new MiniPdf().page(), L = 18, R = 192, W = R - L, GREY = [110, 110, 110], LINE = [190, 190, 190], GREEN = [21, 128, 61], RED = [185, 28, 28];
+  var exps = tripExps(t), first = t.nama.split(' ')[0], now = new Date();
+  var reviewed = t.klaim === 'Disetujui' || t.klaim === 'Lunas';
+  var total = 0, ok = 0; exps.forEach(function (e) { total += e.jumlah; if (e.status === 'Disetujui') ok += e.jumlah; });
+  var res = result(reviewed ? ok : total, t.uangMuka, first);
+  function head(title, sub) {
+    pdf.text(L, 24, title, { size: 16, style: 'b' });
+    pdf.text(L, 30, sub, { size: 9.5, color: GREY });
+    pdf.text(R, 20, 'No. laporan', { size: 8.5, color: GREY, align: 'right' });
+    pdf.text(R, 25.5, t.id, { size: 11.5, style: 'b', align: 'right' });
+    pdf.text(R, 30, 'Dicetak ' + fdtY(now), { size: 8.5, color: GREY, align: 'right' });
+    pdf.line(L, 34, R, 34, 0.6);
+    return 41;
+  }
+  var y = head('Laporan Perjalanan & Reimburse', 'Exotic Land Development');
+  // trip info, 2 columns
+  var p0 = prevKm(t), kmT = !t.km ? '-' : p0 && t.km >= p0 ? p0.toLocaleString('id-ID') + ' s/d ' + t.km.toLocaleString('id-ID') + ' (' + (t.km - p0).toLocaleString('id-ID') + ' km)' : t.km.toLocaleString('id-ID');
+  var info = [['Nama', t.nama, 'Kendaraan', t.kendaraan], ['Berangkat', fdtY(pdt(t.berangkat)), 'Kembali', fdtY(pdt(t.kembali))],
+    ['Tujuan', t.tujuan || '-', 'KM', kmT], ['Keperluan', t.keperluan || '-', 'Ikut', t.ikut || '-']];
+  info.forEach(function (r) {
+    var a = pdf.wrap(r[1], 9.5, 'b', 62), b = pdf.wrap(r[3], 9.5, 'b', 60), n = Math.max(a.length, b.length);
+    pdf.text(L, y, r[0], { size: 9.5, color: GREY }); pdf.text(110, y, r[2], { size: 9.5, color: GREY });
+    a.forEach(function (s, i) { pdf.text(44, y + i * 4.4, s, { size: 9.5, style: 'b' }); });
+    b.forEach(function (s, i) { pdf.text(132, y + i * 4.4, s, { size: 9.5, style: 'b' }); });
+    y += n * 4.4 + 1.6;
+  });
+  y += 3;
+  // expense table
+  var cols = [[8, 'No'], [21, 'Tanggal'], [23, 'Kategori'], [54, 'Keterangan'], [18, 'Struk'], [28, 'Jumlah', 'right'], [22, 'Status']];
+  function tableHead() {
+    pdf.rect(L, y, W, 7, [241, 241, 241], LINE);
+    var x = L; cols.forEach(function (c) { pdf.text(c[2] === 'right' ? x + c[0] - 2 : x + 2, y + 4.8, c[1], { size: 8.5, style: 'b', color: [70, 70, 70], align: c[2] }); x += c[0]; });
+    y += 7;
+  }
+  function newPage(title) { pdf.page(); y = head(title, t.id + ' · ' + t.nama); }
+  tableHead();
+  if (!exps.length) { pdf.rect(L, y, W, 8, null, LINE); pdf.text(L + 2, y + 5.3, 'Belum ada biaya. Hanya uang muka.', { size: 9, color: GREY }); y += 8; }
+  exps.forEach(function (e, i) {
+    var no = e.status === 'Ditolak', st = e.status || (t.klaim === 'Diajukan' ? 'Menunggu' : 'Belum diajukan');
+    var ket = (e.ket || '-') + (no && e.alasan ? ' (Ditolak: ' + e.alasan + ')' : '');
+    var struk = !e.struk.length ? '-' : files ? 'Lamp. ' + (i + 1) : e.struk.length + ' foto';
+    var cells = [String(i + 1), e.tanggal ? dmy(parseIso(e.tanggal)) : '-', e.kategori, ket, struk, rp(e.jumlah), st];
+    var lines = cells.map(function (c, k) { return pdf.wrap(c, 9, '', cols[k][0] - 4); });
+    var h = Math.max.apply(null, lines.map(function (l) { return l.length; })) * 4 + 3.4;
+    if (y + h > 268) { newPage('Laporan Perjalanan (lanjutan)'); tableHead(); }
+    var x = L;
+    cols.forEach(function (c, k) {
+      pdf.rect(x, y, c[0], h, null, LINE);
+      lines[k].forEach(function (s, li) {
+        pdf.text(c[2] === 'right' ? x + c[0] - 2 : x + 2, y + 5 + li * 4, s, { size: 9, align: c[2], color: no ? [150, 150, 150] : k === 6 && st === 'Disetujui' ? GREEN : null, strike: no && k !== 3 });
+      });
+      x += c[0];
+    });
+    y += h;
+  });
+  // totals box (right side)
+  y += 5;
+  var rows = [['Total biaya', rp(total)]];
+  if (reviewed) rows.push(['Disetujui', rp(ok)]);
+  rows.push(['Uang muka diterima', t.uangMuka ? '- ' + rp(t.uangMuka) : 'Tidak ada']);
+  if (y + rows.length * 6.5 + 9 + 70 > 280) { newPage('Laporan Perjalanan (lanjutan)'); }
+  var bx = 104, bw = R - bx;
+  rows.forEach(function (r) { pdf.rect(bx, y, bw, 6.5, null, LINE); pdf.text(bx + 3, y + 4.5, r[0], { size: 9.5 }); pdf.text(R - 3, y + 4.5, r[1], { size: 9.5, style: 'b', align: 'right' }); y += 6.5; });
+  pdf.rect(bx, y, bw, 9, [244, 244, 244], LINE);
+  pdf.text(bx + 3, y + 6, res.txt, { size: 10.5, style: 'b' }); pdf.text(R - 3, y + 6, res.val, { size: 10.5, style: 'b', align: 'right' });
+  y += 16;
+  var diff = Math.abs((reviewed ? ok : total) - t.uangMuka);
+  if (diff) { var tb = pdf.wrap('Terbilang: ' + terbilang(diff) + '.', 9, 'i', W); tb.forEach(function (s) { pdf.text(L, y, s, { size: 9, style: 'i', color: [60, 60, 60] }); y += 4.4; }); }
+  var stTxt = t.klaim === 'Lunas' ? 'Disetujui oleh ' + t.periksaOleh + ', ' + fdtY(pdt(t.periksaPada)) + '. Lunas ' + fdtY(pdt(t.bayarPada)) + (t.bayarOleh ? ' (' + t.bayarOleh + ')' : '') + '.'
+    : t.klaim === 'Disetujui' ? 'Disetujui oleh ' + t.periksaOleh + ', ' + fdtY(pdt(t.periksaPada)) + '. Menunggu dibayar.'
+    : t.klaim === 'Diajukan' ? 'Diajukan ' + fdtY(pdt(t.diajukan)) + '. Menunggu persetujuan.'
+    : t.klaim === 'Ditolak' ? 'Ditolak oleh ' + t.periksaOleh + ', ' + fdtY(pdt(t.periksaPada)) + '. Perlu diperbaiki lalu diajukan lagi.'
+    : 'Belum diajukan.';
+  pdf.text(L, y, 'Status klaim: ', { size: 9, color: [60, 60, 60] });
+  pdf.wrap(stTxt, 9, 'b', W - 24).forEach(function (s, i) { pdf.text(L + 21, y + i * 4.4, s, { size: 9, style: 'b' }); y += i ? 4.4 : 0; });
+  y += 4.4;
+  if (!reviewed) { pdf.text(L, y, 'Jumlah akhir bisa berubah setelah diperiksa.', { size: 8.5, color: GREY }); y += 4.4; }
+  // signatures
+  y += 12; if (y + 40 > 280) { newPage('Laporan Perjalanan (lanjutan)'); y += 6; }
+  var sigs = [['Diajukan oleh', t.nama, t.diajukan && t.klaim ? 'Diajukan di website ' + fdtY(pdt(t.diajukan)) : ''],
+    ['Disetujui oleh', reviewed ? t.periksaOleh : '', reviewed ? 'Disetujui di website ' + fdtY(pdt(t.periksaPada)) : ''],
+    ['Diterima / dibayar oleh', '', t.klaim === 'Lunas' ? 'Lunas di website ' + fdtY(pdt(t.bayarPada)) : '']];
+  sigs.forEach(function (s, i) {
+    var x = L + i * 62, cx = x + 25;
+    pdf.text(cx, y, s[0], { size: 9, align: 'center' });
+    if (s[2]) pdf.text(cx, y + 21, s[2], { size: 7.5, color: GREEN, align: 'center' });
+    pdf.line(x, y + 23.5, x + 50, y + 23.5, 0.3);
+    pdf.text(cx, y + 28.5, s[1] || '(..............................)', { size: 9, align: 'center' });
+  });
+  // receipt photos, 4 per page
+  if (files && files.length) {
+    var cellW = (W - 8) / 2, boxH = 104;
+    files.forEach(function (f, k) {
+      var pos = k % 4;
+      if (!pos) { newPage('Lampiran: foto struk'); }
+      var cx = L + (pos % 2) * (cellW + 8), cy = 39 + Math.floor(pos / 2) * 119;
+      if (f.img) {
+        var r = Math.min(cellW / f.img.pw, boxH / f.img.ph), iw = f.img.pw * r, ih = f.img.ph * r;
+        pdf.image(f.img, cx + (cellW - iw) / 2, cy + (boxH - ih) / 2, iw, ih);
+        pdf.rect(cx, cy, cellW, boxH, null, [215, 215, 215]);
+      } else {
+        pdf.rect(cx, cy, cellW, boxH, [246, 246, 246], [215, 215, 215]);
+        var msg = f.fail ? ['Foto tidak bisa dimuat.', 'Lihat di website.'] : ['File PDF: ' + (f.name || ''), 'Lampirkan terpisah.'];
+        pdf.wrap(msg.join('\n'), 9, '', cellW - 10).forEach(function (s, i) { pdf.text(cx + cellW / 2, cy + boxH / 2 + i * 4.4, s, { size: 9, color: GREY, align: 'center' }); });
+      }
+      var e = f.e, cap = 'Lamp. ' + f.no + (f.n > 1 ? ' (' + (f.j + 1) + '/' + f.n + ')' : '');
+      var wcap = pdf.text(cx, cy + boxH + 5, cap, { size: 8.5, style: 'b' });
+      pdf.text(cx + wcap + 1.5, cy + boxH + 5, '· ' + e.kategori + ' · ' + rp(e.jumlah) + (e.tanggal ? ' · ' + dmy(parseIso(e.tanggal)) : '') + (e.status === 'Ditolak' ? ' · Ditolak' : ''), { size: 8.5, color: e.status === 'Ditolak' ? RED : null });
+    });
+  }
+  // footer on every page
+  pdf.pages.forEach(function (p, i) {
+    pdf.cur = p;
+    pdf.line(L, 284, R, 284, 0.2, [200, 200, 200]);
+    pdf.text(L, 288.5, 'Exotic Land Development · Laporan dibuat otomatis dari website, sesuai data pada saat dicetak.', { size: 7.5, color: [130, 130, 130] });
+    pdf.text(R, 288.5, 'Halaman ' + (i + 1) + ' / ' + pdf.pages.length, { size: 7.5, color: [130, 130, 130], align: 'right' });
+  });
+  return pdf.blob();
+}
+function reportModal(t) {
+  var exps = tripExps(t), nFoto = exps.reduce(function (a, e) { return a + e.struk.length; }, 0), chk;
+  function make(btn) {
+    var withPics = chk && chk.checked && nFoto;
+    var label = btn.textContent; btn.disabled = true; btn.textContent = withPics ? 'Mengambil foto struk…' : 'Menyiapkan…';
+    return (withPics ? reportFiles(t, function (d, n) { btn.textContent = 'Mengambil foto struk ' + d + '/' + n + '…'; }) : Promise.resolve(null))
+      .then(function (files) { return buildTripReport(t, files); })
+      .then(function (blob) { btn.disabled = false; btn.textContent = label; return blob; }, function (e) { btn.disabled = false; btn.textContent = label; throw e; });
+  }
+  var fname = ('Laporan ' + t.id + ' ' + t.nama).replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') + '.pdf';
+  jlModal('Unduh laporan perjalanan', t.id + ' · ' + t.nama + ' · ' + (pdt(t.berangkat) ? dmy(pdt(t.berangkat)) : ''), function (b) {
+    if (nFoto) {
+      var lab = el('label', 'mini-check'); chk = document.createElement('input'); chk.type = 'checkbox'; chk.checked = true; chk.id = 'rep_pics';
+      lab.appendChild(chk); lab.appendChild(document.createTextNode(' Sertakan foto struk (' + nFoto + ' foto, 4 per halaman)'));
+      b.appendChild(lab);
+    } else b.appendChild(el('div', 'muted', 'Belum ada foto struk. Laporan berisi data perjalanan dan uang muka.'));
+    if (t.klaim !== 'Disetujui' && t.klaim !== 'Lunas') b.appendChild(el('p', 'hint', 'Klaim belum disetujui. Laporan akan menulis status saat ini, jumlah akhir bisa berubah.'));
+    var pv = btnEl('Lihat dulu', 'sec', function () {
+      make(pv).then(function (blob) {
+        $('jlModal').hidden = true;
+        if (viewerUrl) URL.revokeObjectURL(viewerUrl);
+        viewerUrl = URL.createObjectURL(blob);
+        $('viewerTitle').textContent = 'Laporan ' + t.id; $('viewerDrive').hidden = true;
+        var body = $('viewerBody'); body.innerHTML = '';
+        var fr = document.createElement('iframe'); fr.src = viewerUrl; fr.title = 'Laporan ' + t.id; body.appendChild(fr);
+        $('viewerDl').href = viewerUrl; $('viewerDl').download = fname; $('viewerDl').hidden = false; $('viewer').hidden = false;
+      }).catch(function (e) { $('jlmErr').textContent = errText(e); $('jlmErr').hidden = false; });
+    });
+    pv.id = 'rep_preview'; pv.style.marginTop = '12px'; b.appendChild(pv);
+  }, 'Unduh PDF', function () {
+    return make($('jlmOk')).then(function (blob) {
+      var u = URL.createObjectURL(blob), a = document.createElement('a'); a.href = u; a.download = fname;
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 60000);
+      toast('Laporan diunduh.');
+    });
+  });
+}
 
 /* ====================== FILE VIEWER (inside the website, no Drive access needed) ====================== */
 function driveId(u) { var m = String(u).match(/\/d\/([-\w]{20,})/) || String(u).match(/[?&]id=([-\w]{20,})/); return m ? m[1] : ''; }
