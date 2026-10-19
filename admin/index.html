@@ -502,6 +502,45 @@
   .jl-thumb { width:40px; height:40px; border-radius:8px; border:1px solid var(--line); background:var(--subtle); cursor:pointer; font-size:18px; }
   .jl-exp-end { display:flex; gap:6px; align-items:center; }
   .jl-why { color:var(--err); font-size:12.5px; }
+
+
+  .ck-item .t-name { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  .ck-hist { border-top:1px solid var(--line-2); padding:10px 0; display:grid; grid-template-columns:96px minmax(0,1fr) auto; gap:10px; font-size:13.5px; }
+  .ck-hist > .st { align-self:start; }
+  .ck-hist .muted.num { font-size:12px; white-space:pre-line; }
+  .ck-ans { display:flex; flex-wrap:wrap; gap:4px; margin-top:4px; }
+  .ck-photos { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+  .yn-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center; padding:9px 0; border-top:1px solid var(--line-2); font-size:14px; }
+  .yn-row .yn { display:inline-flex; gap:4px; }
+  .yn-row .yn button { border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:9px; padding:6px 14px; font-weight:600; cursor:pointer; }
+  .yn-row .yn button.on { background:var(--ink); color:var(--bg); border-color:var(--ink); }
+  .yn-row .yn button.on.bad { background:#dc2626; border-color:#dc2626; color:#fff; }
+  .gps-line { border-radius:10px; padding:9px 12px; font-size:13px; margin:4px 0 10px; background:var(--subtle); color:var(--muted); }
+  .gps-line.ok { background:var(--ok-bg); color:var(--ok); } .gps-line.bad { background:#fdecea; color:#9b1c12; } :root[data-theme="dark"] .gps-line.bad { background:#3b1a1a; color:#fca5a5; }
+  .chips-sel { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+  .chips-sel span { background:var(--tint, #ede7fd); color:var(--tint-ink, #5b21b6); border-radius:999px; padding:3px 6px 3px 10px; font-size:12.5px; font-weight:600; display:inline-flex; gap:4px; align-items:center; }
+  .chips-sel button { border:0; background:none; cursor:pointer; color:inherit; font-size:14px; line-height:1; }
+  .pb-areahead { display:flex; align-items:center; gap:14px; flex-wrap:wrap; max-width:1360px; margin-bottom:12px; }
+  .pb-paybar { display:flex; align-items:center; gap:10px; background:var(--tint, #ede7fd); border-radius:12px; padding:8px 12px; margin-bottom:8px; font-weight:600; font-size:13.5px; flex-wrap:wrap; }
+  .pb-item { display:grid; grid-template-columns:22px minmax(0,1fr) auto; gap:10px; align-items:center; }
+  .pb-item input[type=checkbox] { width:17px; height:17px; }
+  .pb-bars { display:flex; align-items:flex-end; gap:4px; height:90px; margin:8px 0 2px; }
+  .pb-bars div { flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; height:100%; font-size:10px; color:var(--muted); gap:2px; }
+  .pb-bars i { display:block; width:100%; background:var(--accent, #a78bfa); border-radius:4px 4px 0 0; min-height:2px; }
+  .pb-bars i.hi { background:#f59e0b; } .pb-bars i.un { background:repeating-linear-gradient(45deg, #f59e0b, #f59e0b 3px, transparent 3px, transparent 6px); border:1px solid #f59e0b; }
+  .pb-bars .cur { color:var(--ink); font-weight:700; }
+  .tbl tr.pb-sel td { background:var(--tint, #ede7fd); }
+  .prog { height:7px; background:var(--subtle); border-radius:9px; overflow:hidden; margin-top:4px; min-width:70px; } .prog i { display:block; height:100%; background:#22c55e; }
+  .jl-veh-chips { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; }
+  .svc-next { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:6px; }
+  .svc-box { background:var(--subtle); border:1px solid var(--line); border-radius:12px; padding:10px 12px; }
+  .svc-box span { display:block; font-size:12.5px; color:var(--muted); font-weight:600; } .svc-box b { display:block; font-size:16px; } .svc-box small { color:var(--muted); font-size:12px; }
+  .svc-box.warn { background:#fdf3dc; border-color:#f0c66b; } .svc-box.bad { background:#fdecea; border-color:#f2a69e; }
+  :root[data-theme="dark"] .svc-box.warn { background:#3a2e10; border-color:#7a5a12; } :root[data-theme="dark"] .svc-box.bad { background:#3b1a1a; border-color:#7f2d2d; }
+  .svc-row { display:grid; grid-template-columns:96px minmax(0,1fr) auto 26px; gap:10px; align-items:center; padding:8px 0; border-top:1px solid var(--line-2); font-size:13.5px; }
+  .svc-row .muted.num { white-space:pre-line; font-size:12px; }
+  .row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+  @media (max-width:640px) { .svc-next, .row3 { grid-template-columns:1fr; } .svc-row { grid-template-columns:80px minmax(0,1fr) auto; } .svc-row > div:last-child { display:none; } }
   .jl-tog { width:32px; height:30px; border-radius:8px; border:1px solid var(--line); background:var(--surface); cursor:pointer; font-weight:800; color:var(--muted); }
   .jl-tog.ok.on { background:#16a34a; border-color:#16a34a; color:#fff; } .jl-tog.no.on { background:#dc2626; border-color:#dc2626; color:#fff; }
   .jl-whyin { margin:0 0 8px 50px; width:calc(100% - 50px) !important; }
@@ -727,10 +766,16 @@
       <button class="nav" data-view="jalan" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 16l1.6-5.2A2 2 0 0 1 8.5 9.4h7a2 2 0 0 1 1.9 1.4L19 16"/><rect x="3" y="16" width="18" height="4" rx="1.5"/><circle cx="7.5" cy="20" r="1.2"/><circle cx="16.5" cy="20" r="1.2"/><path d="M9 6h6"/></svg>
         Perjalanan Kantor <span class="badge" data-jl-badge hidden></span></button>
+      <button class="nav" data-view="pbb" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-6h6v6"/><path d="M8 11h.01M16 11h.01"/></svg>
+        PBB <span class="badge" data-pbb-badge hidden></span></button>
       <div class="nav-group">Properti</div>
       <button class="nav" data-view="tanah" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 15l9-4.5 9 4.5-9 4.5z"/><path d="M3 10l9-4.5 9 4.5"/></svg>
         Data tanah <span class="badge" data-td-badge hidden></span></button>
+      <button class="nav" data-view="cek" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><path d="M9 10l2 2 4-4"/></svg>
+        Pengecekan tanah <span class="badge" data-cek-badge hidden></span></button>
       <button class="nav" data-view="penyewa" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>
         Penyewa <span class="badge" data-tn-badge hidden></span></button>
@@ -1000,6 +1045,104 @@
       <div id="jt-veh" hidden>
         <div class="toolbar"><button class="btn" id="jlVehNew" type="button" style="width:auto;margin:0;padding:10px 16px" hidden>+ Tambah kendaraan</button></div>
         <div class="jl-vehs" id="jlVehs"><div class="empty">Memuat…</div></div>
+      </div>
+    </section>
+
+
+    <!-- ================= PENGECEKAN TANAH ================= -->
+    <section id="view-cek" hidden>
+      <div class="page-head" style="max-width:1360px">
+        <div><h1>Pengecekan tanah</h1><p>Jadwal kunjungan ke lahan. Lahan rawan dikunjungi lebih sering. Tugasnya muncul otomatis di menu Tugas.</p></div>
+        <button class="btn" id="ckNew" type="button" style="width:auto;margin:0;padding:11px 18px" hidden>+ Jadwal cek</button>
+      </div>
+      <div class="health" id="ckHealth">
+        <button type="button" class="hc error" data-ckh="telat"><span>Terlambat</span><b>–</b><small>lewat jadwal</small></button>
+        <button type="button" class="hc kurang" data-ckh="minggu"><span>7 hari ke depan</span><b>–</b><small>harus dicek</small></button>
+        <button type="button" class="hc ok" data-ckh="bulan"><span>Dicek bulan ini</span><b>–</b><small>kunjungan</small></button>
+        <button type="button" class="hc cek" data-ckh="temuan"><span>Temuan terbuka</span><b>–</b><small>patok hilang / ada garapan</small></button>
+      </div>
+      <div class="grid-bukti tn-split" id="ckSplit">
+        <div class="tn-listcol">
+          <div class="toolbar">
+            <div class="search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              <input id="ckq" type="search" placeholder="Cari lahan, petugas" autocomplete="off" aria-label="Cari jadwal cek">
+            </div>
+            <div class="segs" id="ckSegs">
+              <button type="button" data-ckf="" class="on">Semua</button>
+              <button type="button" data-ckf="saya">Saya</button>
+              <button type="button" data-ckf="telat">Terlambat</button>
+              <button type="button" data-ckf="Rawan">Rawan</button>
+              <button type="button" data-ckf="temuan">Temuan</button>
+              <button type="button" data-ckf="off">Nonaktif</button>
+            </div>
+          </div>
+          <div class="pay-list" id="ckList"><div class="empty">Memuat…</div></div>
+        </div>
+        <div class="tn-detailcol sticky">
+          <div class="card">
+            <div class="empty" id="ckEmpty">Pilih jadwal di daftar.</div>
+            <div id="ckBody" hidden>
+              <button class="link back" id="ckBack" type="button">← Kembali ke daftar</button>
+              <div class="tn-head">
+                <div class="avatar plot">📍</div>
+                <div style="min-width:0"><h2 id="ckTitle"></h2><div class="muted" id="ckSub"></div></div>
+                <span class="st" id="ckState"></span>
+              </div>
+              <div id="ckDetail"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PBB ================= -->
+    <section id="view-pbb" hidden>
+      <div class="page-head" style="max-width:1360px">
+        <div><h1 id="pbTitle">PBB</h1><p id="pbSubtitle">Pajak bumi dan bangunan per NOP, dibayar tiap tahun.</p></div>
+        <div class="head-btns"><div class="segs" id="pbYears"></div><button class="btn sec" id="pbStart" type="button" style="width:auto;margin:0;padding:11px 18px" hidden></button><button class="btn" id="pbNewNop" type="button" style="width:auto;margin:0;padding:11px 18px" hidden>+ NOP</button></div>
+      </div>
+      <div class="msg warn" id="pbEmptyMsg" hidden style="max-width:1360px;margin:0 0 12px"></div>
+      <div class="health five" id="pbHealth">
+        <button type="button" class="hc" data-pbh=""><span>Tagihan</span><b>–</b><small></small></button>
+        <button type="button" class="hc ok" data-pbh="Lunas"><span>Sudah dibayar</span><b>–</b><small></small></button>
+        <button type="button" class="hc kurang" data-pbh="Belum"><span>Belum dibayar</span><b>–</b><small></small></button>
+        <button type="button" class="hc error" data-pbh="cek"><span>Perlu dicek</span><b>–</b><small>bermasalah / perkiraan</small></button>
+        <button type="button" class="hc cek" data-pbh="none"><span>Tidak ada tagihan</span><b>–</b><small>NOP aktif tanpa tagihan</small></button>
+      </div>
+      <div id="pbAreas"><div class="tbl-wrap" id="pbAreaTbl"><div class="empty">Memuat…</div></div><p class="hint">Klik area untuk melihat semua NOP-nya. PIC, cara bayar, dan jatuh tempo bisa diubah di halaman area.</p></div>
+      <div id="pbArea" hidden>
+        <div class="pb-areahead"><button class="link" id="pbBackAreas" type="button">← Semua area</button><div class="muted" id="pbAreaInfo"></div><button class="mini-btn" id="pbAreaEdit" type="button" hidden>Ubah info area</button></div>
+        <div class="grid-bukti tn-split" id="pbSplit">
+          <div class="tn-listcol">
+            <div class="toolbar">
+              <div class="search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+                <input id="pbq" type="search" placeholder="Cari inventaris, NOP, nama SPPT, kelurahan" autocomplete="off" aria-label="Cari NOP">
+              </div>
+              <div class="segs" id="pbSegs">
+                <button type="button" data-pbf="" class="on">Semua</button>
+                <button type="button" data-pbf="Belum">Belum</button>
+                <button type="button" data-pbf="Lunas">Lunas</button>
+                <button type="button" data-pbf="cek">Perlu dicek</button>
+                <button type="button" data-pbf="none">Tidak ada tagihan</button>
+                <button type="button" data-pbf="naik">Naik tajam</button>
+              </div>
+            </div>
+            <div class="pb-paybar" id="pbPayBar" hidden><span id="pbPayTxt"></span><button class="btn" id="pbPayBtn" type="button" style="width:auto;margin:0;padding:9px 16px">Catat bayar</button><button class="mini-btn" id="pbPayClear" type="button">Batal pilih</button></div>
+            <div class="pay-list" id="pbList"><div class="empty">Memuat…</div></div>
+          </div>
+          <div class="tn-detailcol sticky">
+            <div class="card">
+              <div class="empty" id="pbEmpty">Pilih NOP di daftar. Centang beberapa NOP yang belum dibayar untuk bayar sekaligus.</div>
+              <div id="pbBody" hidden>
+                <button class="link back" id="pbBack" type="button">← Kembali ke daftar</button>
+                <div class="tn-head"><div class="avatar plot">🏷</div><div style="min-width:0"><h2 id="pbNTitle"></h2><div class="muted num" id="pbNSub"></div></div><span class="st" id="pbNState"></span></div>
+                <div id="pbDetail"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1609,14 +1752,14 @@ $$('[data-theme-switch]').forEach(function (s) {
 applyTheme(document.documentElement.getAttribute('data-theme') || 'light');
 
 /* ---------- navigation ---------- */
-var VIEWS = ['dash', 'kal', 'tugas', 'set', 'soon', 'catat', 'bukti', 'jalan', 'penyewa', 'tanah'];
+var VIEWS = ['dash', 'kal', 'tugas', 'set', 'soon', 'catat', 'bukti', 'jalan', 'pbb', 'penyewa', 'tanah', 'cek'];
 var SOON = {
   'soon-edai': ['Ask EDAI', 'Exotic Land Development AI', 'Tanya apa saja tentang data tanah, penyewa, dan pembayaran dalam bahasa sehari-hari, misalnya "siapa yang telat bayar bulan ini?" atau "berapa pemasukan Meikarta tahun ini?". EDAI menjawab dari database perusahaan.']
 
 };
 var curView = 'dash';
 /* ---------- access per page: "-" (Akses ditolak), "L" (lihat), "U" (ubah). The engine checks it again on every call. ---------- */
-var PAGE_NAME = { dash: 'Dashboard', kal: 'Kalender', tugas: 'Tugas', catat: 'Catat pembayaran', bukti: 'Riwayat pembayaran', jalan: 'Perjalanan Kantor', penyewa: 'Penyewa', tanah: 'Data tanah', set: 'Pengaturan' };
+var PAGE_NAME = { dash: 'Dashboard', kal: 'Kalender', tugas: 'Tugas', catat: 'Catat pembayaran', bukti: 'Riwayat pembayaran', jalan: 'Perjalanan Kantor', pbb: 'PBB', penyewa: 'Penyewa', tanah: 'Data tanah', cek: 'Pengecekan tanah', set: 'Pengaturan' };
 function lv(page) { return me && me.perms ? (me.perms[page] || '-') : '-'; }
 function canPay() { return lv('catat') === 'U'; }
 function isAdmin() { return !!(me && (me.owner || me.heavy)); }
@@ -1653,6 +1796,8 @@ function show(view) {
   if (view === 'penyewa') loadTenantsPage(tnPendingKey);
   if (view === 'tanah') loadLand();
   if (view === 'jalan') loadTrips();
+  if (view === 'cek') loadChecks();
+  if (view === 'pbb') loadPbb();
   if (view === 'set') openSetTab(setTab);
   window.scrollTo(0, 0);
   setTimeout(fitAll, 0);
@@ -1676,7 +1821,7 @@ function fitSplit(id, minW) {
   var top = sp.getBoundingClientRect().top + window.scrollY;
   sp.style.height = Math.max(460, window.innerHeight - top - 20) + 'px';
 }
-function fitAll() { fitSplit('tnSplit', 1181); fitSplit('split', 900); fitSplit('tdSplit', 1181); fitSplit('jlSplit', 1181); }
+function fitAll() { fitSplit('tnSplit', 1181); fitSplit('split', 900); fitSplit('tdSplit', 1181); fitSplit('jlSplit', 1181); fitSplit('ckSplit', 1181); fitSplit('pbSplit', 1181); }
 window.addEventListener('resize', function () { clearTimeout(fitAll.t); fitAll.t = setTimeout(fitAll, 120); });
 /* ---------- files ---------- */
 function readFiles(input, opts) {
@@ -4088,9 +4233,15 @@ function vehicleModal(v) {
     (jlData.people || []).forEach(function (x) { var o = el('option', '', x.nama); o.value = x.email; ps.appendChild(o); }); ps.value = v ? v.petugas : ((jlData.people || []).some(function (x) { return x.email === jlData.me; }) ? jlData.me : '');
     var r3 = el('div', 'row'); r3.appendChild(fieldBox('m_v_jadwal', 'Jadwal foto kondisi', js)); r3.appendChild(fieldBox('m_v_petugas', 'Yang bertugas memfoto', ps)); b.appendChild(r3);
     b.appendChild(el('p', 'hint', 'Sesuai jadwal, tugas "Foto kondisi" dibuat otomatis di menu Tugas untuk orang ini, dan selesai sendiri saat 5 fotonya diunggah.'));
+    var r4 = el('div', 'row3');
+    r4.appendChild(fieldBox('m_v_tkm', 'Servis tiap (KM)', inp('text', v ? v.tiapKm.toLocaleString('id-ID') : '5.000', { inputmode: 'numeric', class: 'num' })));
+    r4.appendChild(fieldBox('m_v_tbl', 'atau tiap (bulan)', inp('number', v ? v.tiapBulan : 6, { min: 1, max: 36 })));
+    r4.appendChild(fieldBox('m_v_stnk', 'Pajak STNK berikutnya', inp('date', v ? v.stnk : '')));
+    b.appendChild(r4);
+    if (!v) j.onchange = function () { $('f_m_v_tkm').value = j.value === 'Motor' ? '2.000' : '5.000'; $('f_m_v_tbl').value = j.value === 'Motor' ? 3 : 6; };
   }, v ? 'Simpan' : 'Tambah kendaraan', function () {
     var g = function (id) { return $('f_' + id).value; };
-    return call('saveVehicle', { id: v ? v.id : '', nama: g('m_v_nama'), plat: g('m_v_plat'), jenis: g('m_v_jenis'), aktif: g('m_v_aktif') === 'Ya', catatan: g('m_v_cat'), jadwal: g('m_v_jadwal'), petugas: g('m_v_petugas') })
+    return call('saveVehicle', { id: v ? v.id : '', nama: g('m_v_nama'), plat: g('m_v_plat'), jenis: g('m_v_jenis'), aktif: g('m_v_aktif') === 'Ya', catatan: g('m_v_cat'), jadwal: g('m_v_jadwal'), petugas: g('m_v_petugas'), tiapKm: num(g('m_v_tkm')), tiapBulan: Number(g('m_v_tbl')) || 0, stnk: g('m_v_stnk') })
       .then(function (d) { toast(v ? 'Kendaraan diubah.' : 'Kendaraan ditambahkan.'); applyTrips(d, jlSel); });
   });
 }
@@ -4121,13 +4272,18 @@ function renderVehicles() {
     var nm = el('div'); nm.style.minWidth = '0'; nm.appendChild(el('b', '', v.nama)); nm.appendChild(el('div', 'muted', v.plat + ' · ' + v.jenis + (v.catatan ? ' · ' + v.catatan : ''))); h.appendChild(nm);
     var trips = jlData.trips.filter(function (t) { return t.vid === v.id && t.status !== 'Batal'; }).sort(function (a, b) { return a.berangkat < b.berangkat ? 1 : -1; });
     var cur = trips.filter(function (t) { return pdt(t.berangkat) <= now && now <= pdt(t.kembali); })[0];
-    h.appendChild(el('span', 'st ' + (!v.aktif ? 'grey' : cur ? 'orange' : 'white'), !v.aktif ? 'Tidak aktif' : cur ? 'Dipakai ' + cur.nama.split(' ')[0] + ' s/d ' + fdt(pdt(cur.kembali)) : 'Tersedia'));
+    var stw = el('div', 'jl-veh-chips');
+    stw.appendChild(el('span', 'st ' + (!v.aktif ? 'grey' : cur ? 'orange' : 'white'), !v.aktif ? 'Tidak aktif' : cur ? 'Dipakai ' + cur.nama.split(' ')[0] + ' s/d ' + fdt(pdt(cur.kembali)) : 'Tersedia'));
+    if (v.aktif) { var ss = svcState(v); stw.appendChild(el('span', 'st ' + ss.cls, ss.txt)); var tx = stnkState(v); if (tx && tx.cls !== 'white') stw.appendChild(el('span', 'st ' + tx.cls, tx.txt)); }
+    stw.style.justifyContent = 'flex-start'; stw.style.marginTop = '6px'; nm.appendChild(stw);
     c.appendChild(h);
     var acts = el('div', 'jl-veh-acts');
     if (jlData.canBook) acts.appendChild(btnEl('Foto kondisi', '', function () { photoModal(v); }));
     if (jlData.canApprove) acts.appendChild(btnEl('Ubah', 'sec', function () { vehicleModal(v); }));
     if (jlData.canBook) acts.appendChild(btnEl('Lapor kerusakan', 'sec', function () { damageModal(v.id, ''); }));
+    if (jlData.canBook) acts.appendChild(btnEl('+ Catat service', 'sec', function () { serviceModal(v); }));
     c.appendChild(acts);
+    c.appendChild(serviceSection(v));
     // latest photos (4 sides + interior) and the photo schedule
     var ph = (jlData.photos || []).filter(function (x) { return x.vid === v.id; }).sort(function (a, b) { return b.t - a.t; });
     var sched = el('p', 'hint');
@@ -4167,11 +4323,113 @@ function renderVehicles() {
       dm.slice(0, 10).forEach(function (x) {
         var r = el('div', 'jl-dmg-row'); r.appendChild(el('span', 'muted num', x.waktu)); r.appendChild(el('b', '', x.nama));
         var k = el('span', '', x.ket); x.foto.forEach(function (f, i) { var a = el('button', 'link', ' foto ' + (i + 1)); a.type = 'button'; a.onclick = function () { openFile(f.id, 'jalan', 'Kerusakan ' + v.plat, f.url); }; k.appendChild(a); });
+        if (x.fixed) { k.appendChild(document.createTextNode(' ')); k.appendChild(el('span', 'st white', '✓ ' + x.fixed)); }
         r.appendChild(k); dl.appendChild(r);
       });
       c.appendChild(dl);
     }
     box.appendChild(c);
+  });
+}
+
+/* ---------- Riwayat service kendaraan ---------- */
+function vehServices(v) { return (jlData.services || []).filter(function (x) { return x.vid === v.id; }).sort(function (a, b) { return a.tanggal < b.tanggal ? 1 : a.tanggal > b.tanggal ? -1 : (b.km - a.km); }); }
+function addMonthsD(d, n) { var x = new Date(d.getFullYear(), d.getMonth() + n, d.getDate()); if (x.getDate() !== d.getDate()) x = new Date(d.getFullYear(), d.getMonth() + n + 1, 0); return x; }
+function svcNext(v) { return vehServices(v).filter(function (x) { return x.nextKm || x.nextTgl; })[0] || null; }
+function svcState(v) {
+  var n = svcNext(v), km = (jlData.kmNow || {})[v.id] || 0, t0 = today0();
+  if (!n) return { cls: 'grey', txt: vehServices(v).length ? 'Jadwal servis belum diisi' : 'Belum ada data servis', n: null };
+  var remKm = n.nextKm ? n.nextKm - km : null, days = n.nextTgl ? Math.round((parseIso(n.nextTgl) - t0) / 86400000) : null;
+  if ((remKm !== null && remKm <= 0) || (days !== null && days < 0)) return { cls: 'red', txt: 'Lewat jadwal servis', n: n, remKm: remKm, days: days };
+  if ((remKm !== null && remKm <= 500) || (days !== null && days <= 14)) return { cls: 'orange', txt: remKm !== null && remKm <= 500 ? 'Servis dalam ' + remKm.toLocaleString('id-ID') + ' km' : 'Servis ' + days + ' hari lagi', n: n, remKm: remKm, days: days };
+  return { cls: 'white', txt: 'Servis OK', n: n, remKm: remKm, days: days };
+}
+function stnkState(v) {
+  if (!v.stnk) return null;
+  var days = Math.round((parseIso(v.stnk) - today0()) / 86400000);
+  return days < 0 ? { cls: 'red', txt: 'Pajak STNK lewat ' + (-days) + ' hari', days: days } : days <= 30 ? { cls: 'orange', txt: 'Pajak STNK ' + days + ' hari lagi', days: days } : { cls: 'white', txt: 'Pajak STNK ' + dmy(parseIso(v.stnk)), days: days };
+}
+function serviceSection(v) {
+  var w = el('div', 'svc-sec'), ss = svcState(v), list = vehServices(v), km = (jlData.kmNow || {})[v.id] || 0;
+  var nx = el('div', 'svc-next');
+  var a = el('div', 'svc-box ' + (ss.cls === 'red' ? 'bad' : ss.cls === 'orange' ? 'warn' : ''));
+  a.appendChild(el('span', '', 'Servis berikutnya'));
+  if (ss.n) {
+    a.appendChild(el('b', '', [ss.n.nextKm ? 'KM ' + ss.n.nextKm.toLocaleString('id-ID') : '', ss.n.nextTgl ? dmy(parseIso(ss.n.nextTgl)) : ''].filter(String).join(' atau ')));
+    a.appendChild(el('small', '', [ss.remKm !== null ? (ss.remKm > 0 ? 'sisa ' + ss.remKm.toLocaleString('id-ID') + ' km' : 'lewat ' + (-ss.remKm).toLocaleString('id-ID') + ' km') : '', ss.days !== null ? (ss.days >= 0 ? ss.days + ' hari lagi' : 'lewat ' + (-ss.days) + ' hari') : ''].filter(String).join(' · ') + ' · KM sekarang ' + (km ? km.toLocaleString('id-ID') : '-')));
+  } else { a.appendChild(el('b', '', '—')); a.appendChild(el('small', '', 'Catat service berkala, nanti jadwal berikutnya dihitung otomatis (tiap ' + v.tiapKm.toLocaleString('id-ID') + ' km / ' + v.tiapBulan + ' bulan).')); }
+  nx.appendChild(a);
+  var tx = stnkState(v), b = el('div', 'svc-box ' + (tx && tx.cls === 'red' ? 'bad' : tx && tx.cls === 'orange' ? 'warn' : ''));
+  b.appendChild(el('span', '', 'Pajak STNK'));
+  b.appendChild(el('b', '', v.stnk ? dmy(parseIso(v.stnk)) : '—'));
+  b.appendChild(el('small', '', !tx ? (jlData.canApprove ? 'Isi tanggalnya lewat tombol "Ubah".' : 'Belum diisi.') : tx.days >= 0 ? tx.days + ' hari lagi' : 'sudah lewat ' + (-tx.days) + ' hari'));
+  nx.appendChild(b);
+  w.appendChild(el('h3', 'tn-h3', 'Servis & pajak'));
+  w.appendChild(nx);
+  w.appendChild(el('h3', 'tn-h3', 'Riwayat service' + (list.length ? ' (' + list.length + ')' : '')));
+  if (!list.length) { w.appendChild(el('div', 'muted', 'Belum ada service yang dicatat.')); return w; }
+  var yr = String(new Date().getFullYear()), totYr = 0, nYr = 0;
+  list.forEach(function (x) { if (x.tanggal.slice(0, 4) === yr) { totYr += x.biaya; nYr++; } });
+  var box = el('div', 'svc-list');
+  list.slice(0, 15).forEach(function (x) {
+    var r = el('div', 'svc-row');
+    r.appendChild(el('div', 'muted num', dmy(parseIso(x.tanggal)) + '\nKM ' + x.km.toLocaleString('id-ID')));
+    var mid = el('div'); mid.style.minWidth = '0';
+    var t = el('b', '', x.jenis); mid.appendChild(t);
+    if (x.dmg) { mid.appendChild(document.createTextNode(' ')); mid.appendChild(el('span', 'st blue', 'perbaikan laporan')); }
+    var m = el('div', 'muted', x.bengkel + ' · ' + x.ket + ' · ' + x.nama);
+    x.nota.forEach(function (n, i) { m.appendChild(document.createTextNode(' · ')); var a2 = el('button', 'link', 'nota' + (x.nota.length > 1 ? ' ' + (i + 1) : '')); a2.type = 'button'; a2.onclick = function () { openFile(n.id, 'jalan', 'Nota ' + x.jenis + ' · ' + v.plat + ' · ' + dmy(parseIso(x.tanggal)), n.url); }; m.appendChild(a2); });
+    mid.appendChild(m);
+    r.appendChild(mid);
+    r.appendChild(el('b', 'num', x.biaya ? rp(x.biaya) : '-'));
+    var end = el('div');
+    if (jlData.canApprove) { var del = el('button', 'file-x', '×'); del.type = 'button'; del.title = 'Hapus (salah catat)'; del.onclick = function () { if (confirm('Hapus service ' + x.jenis + ' ' + dmy(parseIso(x.tanggal)) + '? Barisnya tetap tersimpan sebagai "Dihapus".')) call('deleteService', { id: x.id }).then(function (d) { toast('Service dihapus.'); applyTrips(d, jlSel); }).catch(function (e) { toast(errText(e)); }); }; end.appendChild(del); }
+    r.appendChild(end);
+    box.appendChild(r);
+  });
+  w.appendChild(box);
+  if (nYr) w.appendChild(el('p', 'hint', 'Biaya service ' + yr + ': ' + rp(totYr) + ' (' + nYr + ' kali).'));
+  return w;
+}
+function serviceModal(v) {
+  var km0 = (jlData.kmNow || {})[v.id] || 0;
+  var dmgs = (jlData.damage || []).filter(function (x) { return x.vid === v.id && !x.fixed; });
+  jlModal('Catat service · ' + v.nama, v.plat + (km0 ? ' · KM terakhir ' + km0.toLocaleString('id-ID') : ''), function (b) {
+    var r1 = el('div', 'row');
+    r1.appendChild(fieldBox('m_s_tgl', 'Tanggal', inp('date', iso(new Date()), { max: iso(new Date()) })));
+    r1.appendChild(fieldBox('m_s_km', 'KM saat service', inp('text', km0 ? km0.toLocaleString('id-ID') : '', { inputmode: 'numeric', class: 'num', placeholder: 'Contoh: 45.980' }))); b.appendChild(r1);
+    var js = document.createElement('select'); (jlData.svcJenis || []).forEach(function (x) { var o = el('option', '', x); o.value = x; js.appendChild(o); });
+    var r2 = el('div', 'row'); r2.appendChild(fieldBox('m_s_jenis', 'Jenis', js));
+    r2.appendChild(fieldBox('m_s_biaya', 'Biaya (Rp)', inp('text', '', { inputmode: 'numeric', class: 'num money', placeholder: '0' }))); b.appendChild(r2);
+    b.appendChild(fieldBox('m_s_bengkel', 'Bengkel', inp('text', '', { maxlength: 100, placeholder: 'Misalnya: Auto2000 Cikarang' })));
+    b.appendChild(fieldBox('m_s_ket', 'Yang dikerjakan', inp('text', '', { maxlength: 300, placeholder: 'Misalnya: ganti oli, filter oli, cek rem' })));
+    if (dmgs.length) {
+      var ds = document.createElement('select'); var o0 = el('option', '', '— tidak ada —'); o0.value = ''; ds.appendChild(o0);
+      dmgs.slice().reverse().forEach(function (x) { var o = el('option', '', x.waktu.slice(0, 10) + ' · ' + x.ket.slice(0, 60)); o.value = x.row; ds.appendChild(o); });
+      b.appendChild(fieldBox('m_s_dmg', 'Memperbaiki laporan kerusakan (opsional)', ds));
+    }
+    var fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*,application/pdf'; fi.multiple = true;
+    b.appendChild(fieldBox('m_s_file', 'Foto nota (wajib)', fi)); var fl = el('div', 'files'); b.appendChild(fl);
+    makeDrop(fi); fi.addEventListener('change', function () { listFiles(fi, fl); });
+    var r3 = el('div', 'row');
+    r3.appendChild(fieldBox('m_s_nkm', 'Servis berikutnya (KM)', inp('text', '', { inputmode: 'numeric', class: 'num' })));
+    r3.appendChild(fieldBox('m_s_ntgl', 'atau tanggal', inp('date', ''))); b.appendChild(r3);
+    var hint = el('p', 'hint', ''); b.appendChild(hint);
+    function auto() {
+      var berkala = js.value === 'Servis berkala' || js.value === 'Ganti oli', k = num($('f_m_s_km').value), t = parseIso($('f_m_s_tgl').value);
+      if (berkala) { $('f_m_s_nkm').value = k ? (k + v.tiapKm).toLocaleString('id-ID') : ''; $('f_m_s_ntgl').value = t ? iso(addMonthsD(t, v.tiapBulan)) : ''; }
+      else { $('f_m_s_nkm').value = ''; $('f_m_s_ntgl').value = ''; }
+      hint.textContent = berkala ? 'Otomatis: tiap ' + v.tiapKm.toLocaleString('id-ID') + ' km atau ' + v.tiapBulan + ' bulan (bisa diubah). Pengingat di daftar kendaraan memakai angka ini.' : 'Untuk servis berkala / ganti oli, jadwal berikutnya diisi otomatis. Untuk jenis lain boleh dikosongkan.';
+    }
+    js.onchange = auto; setTimeout(function () { $('f_m_s_km').addEventListener('change', auto); $('f_m_s_tgl').addEventListener('change', auto); auto();
+      $$('#jlmBody .money, #jlmBody .num').forEach(function (i) { i.addEventListener('blur', function () { var n = num(i.value); i.value = n ? n.toLocaleString('id-ID') : ''; }); }); }, 0);
+  }, 'Simpan service', function () {
+    var fi = $('f_m_s_file');
+    if (!(fi.files || []).length) throw new Error('Foto nota wajib.');
+    return readFiles(fi, { max: 1600 }).then(function (files) {
+      return call('saveService', { vid: v.id, tanggal: $('f_m_s_tgl').value, km: num($('f_m_s_km').value), jenis: $('f_m_s_jenis').value, biaya: num($('f_m_s_biaya').value),
+        bengkel: $('f_m_s_bengkel').value, ket: $('f_m_s_ket').value, dmgRow: $('f_m_s_dmg') ? $('f_m_s_dmg').value : '', files: files, nextKm: num($('f_m_s_nkm').value), nextTgl: $('f_m_s_ntgl').value });
+    }).then(function (d) { toast('Service tersimpan.'); applyTrips(d, jlSel); });
   });
 }
 $$('[data-jt]').forEach(function (b) { b.onclick = function () { if (jlDirtyCheck()) return; jlTab = b.getAttribute('data-jt'); if (jlMode !== 'view') jlMode = 'view'; renderJl(); }; });
@@ -4185,14 +4443,14 @@ $('jlVehNew').onclick = function () { vehicleModal(null); };
 $('jlBack').onclick = function () { if (jlDirtyCheck()) return; closeTrip(); renderTripList(); };
 
 /* ====================== PENGGUNA & AKSES ====================== */
-var ACC_PAGES = ['dash', 'kal', 'tugas', 'catat', 'bukti', 'jalan', 'penyewa', 'tanah', 'set'];
-var ACC_SHORT = { dash: 'Dashboard', kal: 'Kalender', tugas: 'Tugas', catat: 'Catat bayar', bukti: 'Riwayat bayar', jalan: 'Perjalanan', penyewa: 'Penyewa', tanah: 'Data tanah', set: 'Pengaturan' };
+var ACC_PAGES = ['dash', 'kal', 'tugas', 'catat', 'bukti', 'jalan', 'pbb', 'penyewa', 'tanah', 'cek', 'set'];
+var ACC_SHORT = { dash: 'Dashboard', kal: 'Kalender', tugas: 'Tugas', catat: 'Catat bayar', bukti: 'Riwayat bayar', jalan: 'Perjalanan', pbb: 'PBB', penyewa: 'Penyewa', tanah: 'Data tanah', cek: 'Cek tanah', set: 'Pengaturan' };
 var TEMPLATES = {
-  'Staf keuangan': { dash: 'L', kal: 'L', tugas: 'U', catat: 'U', bukti: 'U', jalan: 'U', penyewa: 'U', tanah: 'L', set: '-' },
-  'Staf tanah': { dash: '-', kal: '-', tugas: 'U', catat: '-', bukti: '-', jalan: 'U', penyewa: '-', tanah: 'U', set: '-' },
-  'Manajemen': { dash: 'L', kal: 'L', tugas: 'L', catat: '-', bukti: 'L', jalan: 'U', penyewa: 'L', tanah: 'L', set: '-' },
-  'Semua (ubah)': { dash: 'U', kal: 'U', tugas: 'U', catat: 'U', bukti: 'U', jalan: 'U', penyewa: 'U', tanah: 'U', set: 'L' },
-  'Tidak ada': { dash: '-', kal: '-', tugas: '-', catat: '-', bukti: '-', jalan: '-', penyewa: '-', tanah: '-', set: '-' }
+  'Staf keuangan': { dash: 'L', kal: 'L', tugas: 'U', catat: 'U', bukti: 'U', jalan: 'U', pbb: 'U', penyewa: 'U', tanah: 'L', cek: 'L', set: '-' },
+  'Staf tanah': { dash: '-', kal: '-', tugas: 'U', catat: '-', bukti: '-', jalan: 'U', pbb: 'L', penyewa: '-', tanah: 'U', cek: 'U', set: '-' },
+  'Manajemen': { dash: 'L', kal: 'L', tugas: 'L', catat: '-', bukti: 'L', jalan: 'U', pbb: 'L', penyewa: 'L', tanah: 'L', cek: 'L', set: '-' },
+  'Semua (ubah)': { dash: 'U', kal: 'U', tugas: 'U', catat: 'U', bukti: 'U', jalan: 'U', pbb: 'U', penyewa: 'U', tanah: 'U', cek: 'U', set: 'L' },
+  'Tidak ada': { dash: '-', kal: '-', tugas: '-', catat: '-', bukti: '-', jalan: '-', pbb: '-', penyewa: '-', tanah: '-', cek: '-', set: '-' }
 };
 var newUserRow = false;
 var userDrafts = {};   // unsaved changes per user, kept when the list redraws (after another card is saved or data refreshes)
@@ -4265,6 +4523,456 @@ function renderUsers(d) {
   if (!edit) $('usersHint').textContent = 'Hanya Pemilik yang bisa mengubah akses.';
 }
 $('userAdd').onclick = function () { newUserRow = true; renderUsers(setCache.users); var e = $('usersBox').querySelector('input[type=email]'); if (e) e.focus(); };
+
+/* ====================== PENGECEKAN TANAH ====================== */
+var ckData = null, ckSel = null, ckFilter = '', ckHealth = '';
+function loadChecks(keepId) {
+  if (!ckData) emptyBox($('ckList'), 'Memuat…');
+  return swr('getChecks', null, function (d) { applyChecks(d, keepId); }).catch(function (e) { emptyBox($('ckList'), 'Gagal memuat: ' + errText(e)); });
+}
+function applyChecks(d, keepId) {
+  ckData = d; cacheWrite('getChecks', d);
+  $('ckNew').hidden = !d.canManage;
+  var act = d.sched.filter(function (o) { return o.aktif; });
+  var telat = act.filter(function (o) { return o.telat > 0 || !o.last; }).length, minggu = act.filter(function (o) { return o.last && o.telat <= 0 && o.telat >= -7; }).length;
+  var ym = d.today.slice(0, 7), bulan = d.checks.filter(function (c) { return c.waktu.slice(0, 7) === ym; }).length;
+  var tem = d.checks.filter(function (c) { return c.temuan && !c.selesai; }).length;
+  var hb = $$('#ckHealth [data-ckh]');
+  [telat, minggu, bulan, tem].forEach(function (n, i) { hb[i].querySelector('b').textContent = n; });
+  var mine = act.filter(function (o) { return o.petugas === d.me && (o.telat > 0 || !o.last || o.telat >= -2); }).length;
+  var badge = d.canManage ? telat + tem : mine;
+  $$('[data-cek-badge]').forEach(function (x) { x.hidden = !badge; x.textContent = badge; x.title = d.canManage ? telat + ' terlambat, ' + tem + ' temuan' : mine + ' lahan perlu Anda cek'; });
+  renderCkList();
+  var id = keepId || (ckSel && ckSel.id), o = id && d.sched.filter(function (x) { return x.id === id; })[0];
+  if (o) openCk(o); else closeCk();
+}
+function ckStatus(o) {
+  if (!o.aktif) return { cls: 'grey', txt: 'Nonaktif', k: 'off' };
+  if (!o.last) return { cls: 'red', txt: 'Belum pernah dicek', k: 'telat' };
+  if (o.telat > 0) return { cls: 'red', txt: 'Telat ' + o.telat + ' hari', k: 'telat' };
+  if (o.telat >= -7) return { cls: 'orange', txt: o.telat === 0 ? 'Hari ini' : 'Jatuh ' + dmy(parseIso(o.due)).slice(0, 5), k: 'minggu' };
+  return { cls: 'white', txt: 'Berikutnya ' + dmy(parseIso(o.due)).slice(0, 5), k: 'nanti' };
+}
+var CK_LVL_CLS = { Rawan: 'red', Sedang: 'orange', Aman: 'grey' };
+function ckPerson(email) { var p = (ckData.people || []).filter(function (x) { return x.email === email; })[0]; return p ? p.nama : (email || '-'); }
+function renderCkList() {
+  $$('#ckSegs [data-ckf]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-ckf') === ckFilter); });
+  $$('#ckHealth [data-ckh]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-ckh') === ckHealth); });
+  var q = $('ckq').value.toLowerCase().trim(), ym = ckData.today.slice(0, 7);
+  var list = ckData.sched.filter(function (o) {
+    var st = ckStatus(o);
+    if (ckFilter === 'off') { if (o.aktif) return false; } else if (!o.aktif) return false;
+    if (ckFilter === 'saya' && o.petugas !== ckData.me) return false;
+    if (ckFilter === 'telat' && st.k !== 'telat') return false;
+    if (ckFilter === 'Rawan' && o.tingkat !== 'Rawan') return false;
+    if (ckFilter === 'temuan' && !o.temuan) return false;
+    if (ckHealth === 'telat' && st.k !== 'telat') return false;
+    if (ckHealth === 'minggu' && st.k !== 'minggu') return false;
+    if (ckHealth === 'temuan' && !o.temuan) return false;
+    if (ckHealth === 'bulan' && !ckData.checks.some(function (c) { return c.jid === o.id && c.waktu.slice(0, 7) === ym; })) return false;
+    return !q || [o.nama, o.invs.join(' '), ckPerson(o.petugas), o.alasan, o.id].join(' ').toLowerCase().indexOf(q) >= 0;
+  });
+  var rank = { telat: 0, minggu: 1, nanti: 2, off: 3 };
+  list.sort(function (a, b) { var ra = rank[ckStatus(a).k], rb = rank[ckStatus(b).k]; return ra - rb || (a.due < b.due ? -1 : 1); });
+  var box = $('ckList'); box.innerHTML = '';
+  if (!list.length) { emptyBox(box, ckData.sched.length ? 'Tidak ada yang cocok.' : (ckData.canManage ? 'Belum ada jadwal. Tekan "+ Jadwal cek" untuk mulai: pilih lahan, tingkat rawan, dan petugasnya.' : 'Belum ada jadwal cek.')); return; }
+  list.forEach(function (o) {
+    var st = ckStatus(o), b = el('button', 'pay ck-item' + (ckSel && ckSel.id === o.id ? ' on' : '')); b.type = 'button';
+    b.appendChild(el('div', 'avatar plot', '📍'));
+    var mid = el('div'); mid.style.minWidth = '0';
+    var nm = el('div', 't-name', o.nama); nm.appendChild(el('span', 'st ' + CK_LVL_CLS[o.tingkat], o.tingkat));
+    if (o.temuan) nm.appendChild(el('span', 'st red', o.temuan + ' temuan'));
+    mid.appendChild(nm);
+    mid.appendChild(metaEl([ckPerson(o.petugas), ' tiap ' + o.tiap + ' hari · ' + (o.last ? 'cek terakhir ' + dmy(parseIso(o.last.slice(0, 10))) : 'belum pernah dicek') + (o.invs.length > 1 ? ' · ' + o.invs.length + ' plot' : '')]));
+    var right = el('div', 'pay-right'); right.appendChild(el('span', 'st ' + st.cls, st.txt));
+    b.appendChild(mid); b.appendChild(right);
+    b.onclick = function () { openCk(o); };
+    box.appendChild(b);
+  });
+}
+function closeCk() { ckSel = null; $('ckEmpty').hidden = false; $('ckBody').hidden = true; $('ckSplit').classList.remove('show-detail'); $('view-cek').classList.remove('detail-open'); }
+function openCk(o) {
+  ckSel = o;
+  var st = ckStatus(o);
+  $('ckTitle').textContent = o.nama; $('ckSub').textContent = o.id + ' · ' + o.tingkat + ', tiap ' + o.tiap + ' hari';
+  $('ckState').className = 'st ' + st.cls; $('ckState').textContent = st.txt;
+  var box = $('ckDetail'); box.innerHTML = '';
+  var lands = o.invs.map(function (inv) { var x = (ckData.land || []).filter(function (l) { return l.inv === inv; })[0]; return x ? inv + (x.lok ? ' (' + x.lok + (x.luas ? ', ' + x.luas + ' m²' : '') + ')' : '') : inv + ' (tidak ada di Data tanah)'; });
+  box.appendChild(kvGrid([['Lahan', lands.join('; ')], ['Petugas', ckPerson(o.petugas)], ['Jadwal', 'Tiap ' + o.tiap + ' hari · berikutnya ' + dmy(parseIso(o.due))],
+    o.alasan ? ['Alasan / catatan', o.alasan] : null, ['Titik lokasi', o.lat ? o.lat.toFixed(5) + ', ' + o.lng.toFixed(5) : 'Belum ada (tersimpan saat cek pertama dengan lokasi HP)']]));
+  var acts = el('div', 'tn-actions');
+  if (ckData.canEdit && o.aktif) acts.appendChild(btnEl('Cek sekarang', '', function () { checkForm(o); }));
+  if (ckData.canManage) acts.appendChild(btnEl('Ubah jadwal', 'sec', function () { scheduleModal(o); }));
+  var l0 = (ckData.land || []).filter(function (l) { return l.inv === o.invs[0]; })[0];
+  if (l0 && lv('tanah') !== '-') acts.appendChild(btnEl('Lihat di Data tanah', 'sec', function () { show('tanah'); loadLand({ row: l0.row, inv: l0.inv }); }));
+  if (o.lat) { var mp = el('a', 'btn sec', 'Buka peta'); mp.href = 'https://www.google.com/maps?q=' + o.lat + ',' + o.lng; mp.target = '_blank'; mp.rel = 'noopener'; acts.appendChild(mp); }
+  box.appendChild(acts);
+  box.appendChild(el('h3', 'tn-h3', 'Riwayat cek'));
+  var hist = ckData.checks.filter(function (c) { return c.jid === o.id; }).sort(function (a, b) { return b.t - a.t; });
+  if (!hist.length) box.appendChild(el('div', 'muted', 'Belum pernah dicek lewat website.'));
+  hist.slice(0, 20).forEach(function (c) {
+    var r = el('div', 'ck-hist');
+    r.appendChild(el('div', 'muted num', fdtY(pdt(c.waktu)) + '\n' + c.petugas));
+    var mid = el('div'); mid.style.minWidth = '0';
+    var ans = el('div', 'ck-ans');
+    [['Patok', c.patok, 'Tidak'], ['Garapan', c.garapan, 'Ya'], ['Papan', c.papan, 'Tidak'], ['Perlu dibersihkan', c.bersih, 'Ya']].forEach(function (x) { ans.appendChild(el('span', 'st ' + (x[1] === x[2] ? (x[0] === 'Patok' || x[0] === 'Garapan' ? 'red' : 'orange') : 'grey'), x[0] + ': ' + x[1])); });
+    mid.appendChild(ans);
+    if (c.catatan) mid.appendChild(el('div', '', c.catatan));
+    mid.appendChild(el('div', 'muted', c.lat ? (c.jarak !== null ? '📍 ' + c.jarak.toLocaleString('id-ID') + ' m dari titik lahan' : '📍 lokasi tercatat (titik pertama)') + (c.acc ? ' · akurasi ±' + c.acc + ' m' : '') : '📍 tanpa lokasi (HP tidak mengizinkan)'));
+    var ph = el('div', 'ck-photos');
+    c.foto.forEach(function (f, i) { var a = el('button', 'mini-btn', '📷 ' + (i + 1)); a.type = 'button'; a.onclick = function () { openFile(f.id, 'cek', o.nama + ' · ' + fdtY(pdt(c.waktu)) + ' · foto ' + (i + 1), f.url); }; ph.appendChild(a); });
+    mid.appendChild(ph);
+    if (c.temuan) {
+      var tm = el('div', 'msg ' + (c.selesai ? 'okmsg' : 'err'), (c.selesai ? '✓ Temuan selesai: ' : 'Temuan: ') + c.temuan + (c.selesai ? ' → ' + c.selesai + ' (' + c.selesaiOleh + ', ' + fdtY(pdt(c.selesaiPada)) + ')' : ''));
+      tm.style.marginTop = '6px'; mid.appendChild(tm);
+      if (!c.selesai && ckData.canEdit) { var rb = btnEl('Tandai temuan selesai', 'sec', function () { resolveModal(c); }); rb.style.marginTop = '6px'; mid.appendChild(rb); }
+    }
+    r.appendChild(mid);
+    r.appendChild(el('span', 'st ' + (c.temuan && !c.selesai ? 'red' : c.temuan ? 'white' : 'white'), c.temuan && !c.selesai ? 'Temuan' : 'OK'));
+    box.appendChild(r);
+  });
+  $('ckEmpty').hidden = true; $('ckBody').hidden = false; $('ckSplit').classList.add('show-detail'); $('view-cek').classList.add('detail-open'); fitAll();
+  renderCkList();
+  if (window.matchMedia('(max-width: 1180px)').matches) window.scrollTo(0, 0);
+}
+function resolveModal(c) {
+  jlModal('Temuan selesai', c.nama + ': ' + c.temuan, function (b) {
+    b.appendChild(fieldBox('m_ck_res', 'Bagaimana ditangani', inp('text', '', { maxlength: 300, placeholder: 'Misalnya: patok utara dipasang lagi 10/09' })));
+  }, 'Tandai selesai', function () {
+    return call('resolveFinding', { id: c.id, catatan: $('f_m_ck_res').value }).then(function (d) { toast('Temuan ditandai selesai.'); applyChecks(d, c.jid); });
+  });
+}
+function checkForm(o) {
+  var gps = null, ans = {};
+  jlModal('Cek lahan: ' + o.nama, o.invs.join(', ') + ' · jadwal ' + dmy(parseIso(o.due)), function (b) {
+    var gl = el('div', 'gps-line', '📍 Mengambil lokasi HP…'); b.appendChild(gl);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function (pos) {
+        gps = { lat: pos.coords.latitude, lng: pos.coords.longitude, acc: Math.round(pos.coords.accuracy) };
+        var txt = '📍 Lokasi tercatat (akurasi ±' + gps.acc + ' m)';
+        if (o.lat) { var dm = distM(o.lat, o.lng, gps.lat, gps.lng); txt = '📍 ' + dm.toLocaleString('id-ID') + ' m dari titik lahan (akurasi ±' + gps.acc + ' m)'; gl.className = 'gps-line ' + (dm <= 300 ? 'ok' : 'bad'); if (dm > 300) txt += '. Anda belum di lahan?'; }
+        else { gl.className = 'gps-line ok'; txt += '. Ini akan jadi titik lahan.'; }
+        gl.textContent = txt;
+      }, function () { gl.className = 'gps-line bad'; gl.textContent = '📍 Lokasi tidak diizinkan. Izinkan lokasi di browser supaya kunjungan tercatat. Tetap bisa dikirim tanpa lokasi.'; }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 });
+    } else { gl.className = 'gps-line bad'; gl.textContent = '📍 HP / browser ini tidak bisa mengirim lokasi.'; }
+    var fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*'; fi.multiple = true;
+    b.appendChild(fieldBox('m_ck_file', 'Foto lahan (minimal 3)', fi)); var fl = el('div', 'files'); b.appendChild(fl);
+    makeDrop(fi); fi.addEventListener('change', function () { listFiles(fi, fl); });
+    [['patok', 'Patok lengkap?', 'Tidak'], ['garapan', 'Ada bangunan / garapan orang lain?', 'Ya'], ['papan', 'Papan nama perusahaan ada?', 'Tidak'], ['bersih', 'Perlu dibersihkan?', 'Ya']].forEach(function (q) {
+      var r = el('div', 'yn-row'); r.appendChild(el('span', '', q[1]));
+      var g = el('div', 'yn'); r.setAttribute('data-q', q[0]);
+      ['Ya', 'Tidak'].forEach(function (v) { var bt = el('button', v === q[2] ? 'bad' : '', v); bt.type = 'button'; bt.onclick = function () { ans[q[0]] = v; g.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === bt); }); }; g.appendChild(bt); });
+      r.appendChild(g); b.appendChild(r);
+    });
+    b.appendChild(fieldBox('m_ck_cat', 'Catatan', inp('text', '', { maxlength: 500, placeholder: 'Wajib kalau ada temuan, misalnya patok mana yang hilang' })));
+  }, 'Kirim hasil cek', function () {
+    var fi = $('f_m_ck_file');
+    if ((fi.files || []).length < 3) throw new Error('Minimal 3 foto lahan.');
+    var miss = ['patok', 'garapan', 'papan', 'bersih'].filter(function (k) { return !ans[k]; });
+    if (miss.length) throw new Error('Jawab semua pertanyaan Ya / Tidak.');
+    return readFiles(fi, { max: 1600 }).then(function (files) {
+      return call('submitCheck', { id: o.id, files: files, patok: ans.patok, garapan: ans.garapan, papan: ans.papan, bersih: ans.bersih, catatan: $('f_m_ck_cat').value,
+        lat: gps ? gps.lat : '', lng: gps ? gps.lng : '', acc: gps ? gps.acc : '' });
+    }).then(function (d) { toast('Hasil cek terkirim.' + (d.jarak !== '' && d.jarak !== undefined ? ' ' + Number(d.jarak).toLocaleString('id-ID') + ' m dari titik lahan.' : '')); applyChecks(d, o.id); });
+  });
+}
+function distM(a, b, c, d) { var R = 6371000, t = Math.PI / 180, x = Math.sin((c - a) * t / 2), y = Math.sin((d - b) * t / 2); var h = x * x + Math.cos(a * t) * Math.cos(c * t) * y * y; return Math.round(2 * R * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h))); }
+function scheduleModal(o) {
+  var sel = o ? o.invs.slice() : [];
+  jlModal(o ? 'Ubah jadwal cek' : 'Jadwal cek baru', 'Satu jadwal bisa untuk satu lahan atau beberapa lahan yang berdekatan (misalnya semua Cogrek).', function (b) {
+    var li = inp('text', '', { list: 'ckLandList', placeholder: 'Ketik kode inventaris, lalu Enter', autocomplete: 'off' });
+    var dl = document.createElement('datalist'); dl.id = 'ckLandList';
+    (ckData.land || []).forEach(function (l) { var op = document.createElement('option'); op.value = l.inv; op.label = l.lok; dl.appendChild(op); });
+    var chips = el('div', 'chips-sel');
+    function draw() { chips.innerHTML = ''; sel.forEach(function (x, i) { var c = el('span', '', x); var bx = el('button', '', '×'); bx.type = 'button'; bx.onclick = function () { sel.splice(i, 1); draw(); }; c.appendChild(bx); chips.appendChild(c); }); }
+    function addOne() { var v = li.value.trim(); if (!v) return; var hit = (ckData.land || []).filter(function (l) { return l.inv.toLowerCase() === v.toLowerCase(); })[0]; if (!hit) { toast('"' + v + '" tidak ada di Data tanah.'); return; } if (sel.indexOf(hit.inv) < 0) sel.push(hit.inv); li.value = ''; draw(); }
+    li.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); addOne(); } });
+    li.addEventListener('change', addOne);
+    var w = fieldBox('m_ck_land', 'Lahan', li); w.appendChild(dl); w.appendChild(chips); b.appendChild(w); draw();
+    b.appendChild(fieldBox('m_ck_nama', 'Nama jadwal (opsional)', inp('text', o ? o.nama : '', { maxlength: 80, placeholder: 'Misalnya: Cogrek 001–004' })));
+    var tg = document.createElement('select'); Object.keys(ckData.levels).forEach(function (k) { var op = el('option', '', k + ' (tiap ' + ckData.levels[k] + ' hari)'); op.value = k; tg.appendChild(op); }); tg.value = o ? o.tingkat : 'Sedang';
+    var r = el('div', 'row'); r.appendChild(fieldBox('m_ck_tingkat', 'Tingkat', tg)); r.appendChild(fieldBox('m_ck_tiap', 'Tiap (hari)', inp('number', o ? o.tiap : 30, { min: 1, max: 365 }))); b.appendChild(r);
+    tg.onchange = function () { $('f_m_ck_tiap').value = ckData.levels[tg.value]; };
+    var ps = document.createElement('select'); var p0 = el('option', '', '— pilih orang —'); p0.value = ''; ps.appendChild(p0);
+    (ckData.people || []).forEach(function (x) { var op = el('option', '', x.nama); op.value = x.email; ps.appendChild(op); }); ps.value = o ? o.petugas : '';
+    var r2 = el('div', 'row'); r2.appendChild(fieldBox('m_ck_pet', 'Petugas', ps));
+    r2.appendChild(fieldBox('m_ck_awal', 'Cek terakhir sebelumnya (opsional)', inp('date', '', { max: iso(new Date()) }), 'Kalau sudah pernah dicek sebelum ada website.')); b.appendChild(r2);
+    b.appendChild(fieldBox('m_ck_alasan', 'Alasan rawan / catatan', inp('text', o ? o.alasan : '', { maxlength: 300, placeholder: 'Misalnya: pernah ada penyerobotan 2025' })));
+    if (o) { var ak = document.createElement('select'); [['Ya', 'Aktif'], ['Tidak', 'Nonaktif (tidak dijadwalkan lagi)']].forEach(function (x) { var op = el('option', '', x[1]); op.value = x[0]; ak.appendChild(op); }); ak.value = o.aktif ? 'Ya' : 'Tidak'; b.appendChild(fieldBox('m_ck_aktif', 'Status', ak)); }
+    b.appendChild(el('p', 'hint', 'Tugas "Cek lahan" dibuat otomatis tiap pagi untuk petugas, 2 hari sebelum jadwal, dan selesai sendiri saat hasil cek dikirim.'));
+  }, o ? 'Simpan' : 'Buat jadwal', function () {
+    if (!sel.length && $('f_m_ck_land').value.trim()) { var v = $('f_m_ck_land').value.trim(), hit = (ckData.land || []).filter(function (l) { return l.inv.toLowerCase() === v.toLowerCase(); })[0]; if (hit) sel.push(hit.inv); }
+    return call('saveCheckSchedule', { id: o ? o.id : '', invs: sel, nama: $('f_m_ck_nama').value, tingkat: $('f_m_ck_tingkat').value, tiap: Number($('f_m_ck_tiap').value) || 0,
+      petugas: $('f_m_ck_pet').value, awal: $('f_m_ck_awal').value, alasan: $('f_m_ck_alasan').value, aktif: $('f_m_ck_aktif') ? $('f_m_ck_aktif').value === 'Ya' : true })
+      .then(function (d) { toast(o ? 'Jadwal diubah.' : 'Jadwal dibuat.'); var nid = o ? o.id : d.sched[d.sched.length - 1].id; applyChecks(d, nid); });
+  });
+}
+$('ckNew').onclick = function () { scheduleModal(null); };
+$('ckBack').onclick = function () { closeCk(); renderCkList(); };
+$('ckq').oninput = renderCkList;
+$$('#ckSegs [data-ckf]').forEach(function (b) { b.onclick = function () { ckFilter = b.getAttribute('data-ckf'); renderCkList(); }; });
+$$('#ckHealth [data-ckh]').forEach(function (b) { b.onclick = function () { var k = b.getAttribute('data-ckh'); ckHealth = ckHealth === k ? '' : k; renderCkList(); }; });
+
+/* ====================== PBB ====================== */
+var pbData = null, pbYear = null, pbDefYear = null, pbArea = null, pbFilter = '', pbSel = null, pbChecked = {}, pbHist = {};
+function loadPbb(year) {
+  if (year && year !== pbDefYear) {
+    emptyBox($('pbList'), 'Memuat ' + year + '…'); syncing(1);
+    return call('getPbb', { tahun: year }).then(function (d) { syncing(-1); applyPbb(d); }, function (e) { syncing(-1); toast(errText(e)); });
+  }
+  if (!pbData) emptyBox($('pbAreaTbl'), 'Memuat…');
+  return swr('getPbb', null, function (d) { if (pbYear && pbYear !== d.tahun && pbData) return; pbDefYear = d.tahun; applyPbb(d); }).catch(function (e) { emptyBox($('pbAreaTbl'), 'Gagal memuat: ' + errText(e)); });
+}
+function pbAfter(d, msg) { if (d.tahun === pbDefYear) cacheWrite('getPbb', d); pbChecked = {}; pbHist = {}; toast(msg); applyPbb(d); }
+function pbSt(n) { return n.b ? n.b.status : (n.aktif ? 'none' : 'off'); }
+var PB_CLS = { Lunas: 'white', Belum: 'orange', Bermasalah: 'red', Perkiraan: 'blue', none: 'grey', off: 'grey' };
+var PB_TXT = { Lunas: 'Lunas', Belum: 'Belum', Bermasalah: 'Bermasalah', Perkiraan: 'Perkiraan', none: 'Tidak ada tagihan', off: 'Nonaktif' };
+function applyPbb(d) {
+  pbData = d; pbYear = d.tahun;
+  var yb = $('pbYears'); yb.innerHTML = '';
+  d.years.slice(-4).forEach(function (y) { var b = el('button', y === d.tahun ? 'on' : '', String(y)); b.type = 'button'; b.onclick = function () { pbSel = null; pbChecked = {}; loadPbb(y); }; yb.appendChild(b); });
+  var maxY = d.years.length ? d.years[d.years.length - 1] : 0, nextY = Math.max(maxY + 1, new Date().getFullYear());
+  $('pbStart').hidden = !d.canHeavy || !d.nops.length || d.years.indexOf(nextY) >= 0 || nextY > new Date().getFullYear() + 1;
+  $('pbStart').textContent = 'Mulai PBB ' + nextY; $('pbStart').onclick = function () { startYearModal(nextY); };
+  $('pbNewNop').hidden = !d.canEdit;
+  $('pbEmptyMsg').hidden = !!d.nops.length;
+  $('pbEmptyMsg').textContent = 'Belum ada data PBB. Impor file "PBB_untuk_diimpor.xlsx" ke spreadsheet dulu (ikuti petunjuk), lalu buka halaman ini lagi.';
+  var act = d.nops.filter(function (n) { return n.aktif || n.b; }), c = { all: 0, sum: 0, Lunas: 0, sLunas: 0, Belum: 0, sBelum: 0, cek: 0, none: 0 };
+  act.forEach(function (n) { var st = pbSt(n); if (n.b) { c.all++; c.sum += n.b.total; } if (st === 'Lunas') { c.Lunas++; c.sLunas += n.b.total; } if (st === 'Belum') { c.Belum++; c.sBelum += n.b.total; } if (st === 'Bermasalah' || st === 'Perkiraan') c.cek++; if (st === 'none') c.none++; });
+  var hb = $$('#pbHealth [data-pbh]');
+  hb[0].querySelector('span').textContent = 'Tagihan ' + d.tahun; hb[0].querySelector('b').textContent = rpShort(c.sum); hb[0].querySelector('small').textContent = c.all + ' NOP';
+  hb[1].querySelector('b').textContent = c.Lunas + ' NOP'; hb[1].querySelector('small').textContent = rp(c.sLunas);
+  hb[2].querySelector('b').textContent = c.Belum + ' NOP'; hb[2].querySelector('small').textContent = rp(c.sBelum);
+  hb[3].querySelector('b').textContent = c.cek; hb[4].querySelector('b').textContent = c.none;
+  var badge = d.tahun === new Date().getFullYear() ? c.Belum : 0;
+  $$('[data-pbb-badge]').forEach(function (x) { x.hidden = !badge; x.textContent = badge; x.title = badge + ' NOP belum dibayar ' + d.tahun; });
+  renderPbb();
+}
+function pbAreas() {
+  var m = {};
+  pbData.nops.forEach(function (n) { var a = n.area || '(tanpa area)'; (m[a] = m[a] || []).push(n); });
+  var info = {}; pbData.areas.forEach(function (a) { info[a.area.toLowerCase()] = a; });
+  return Object.keys(m).map(function (a) {
+    var list = m[a], bills = list.filter(function (n) { return n.b; }), paid = bills.filter(function (n) { return n.b.status === 'Lunas'; });
+    return { area: a, info: info[a.toLowerCase()] || { area: a }, list: list, n: bills.length, paid: paid.length, sum: bills.reduce(function (s, n) { return s + n.b.total; }, 0),
+      belum: bills.filter(function (n) { return n.b.status === 'Belum'; }).length, cek: bills.filter(function (n) { return n.b.status === 'Bermasalah' || n.b.status === 'Perkiraan'; }).length };
+  }).sort(function (a, b) { return b.sum - a.sum; });
+}
+function renderPbb() {
+  $('pbAreas').hidden = !!pbArea; $('pbArea').hidden = !pbArea;
+  $('pbTitle').textContent = pbArea ? 'PBB · ' + (pbArea === '*' ? 'Semua area' : pbArea) + ' ' + pbYear : 'PBB';
+  $$('#pbHealth [data-pbh]').forEach(function (b) { b.classList.toggle('on', !!pbArea && b.getAttribute('data-pbh') === pbFilter && pbFilter !== ''); });
+  if (!pbArea) {
+    var box = $('pbAreaTbl'); box.innerHTML = '';
+    if (!pbData.nops.length) { emptyBox(box, 'Belum ada data.'); return; }
+    var areas = pbAreas();
+    box.appendChild(table(['Area', 'Bayar dari', 'PIC / cara bayar', 'Jatuh tempo', 'Terbayar', { t: 'Tagihan ' + pbYear, cls: 'r' }, 'Status'], areas.map(function (a) {
+      var pg = el('div'); pg.appendChild(el('span', 'num', a.paid + '/' + a.n)); var bar = el('div', 'prog'); var fill = el('i'); fill.style.width = (a.n ? Math.round(a.paid / a.n * 100) : 0) + '%'; bar.appendChild(fill); pg.appendChild(bar);
+      var st = el('div'); st.style.display = 'flex'; st.style.gap = '4px'; st.style.flexWrap = 'wrap';
+      if (!a.n) st.appendChild(el('span', 'st grey', 'Tidak ada tagihan'));
+      else if (a.paid === a.n) st.appendChild(el('span', 'st white', 'Lunas'));
+      if (a.belum) st.appendChild(el('span', 'st orange', a.belum + ' belum'));
+      if (a.cek) st.appendChild(el('span', 'st red', a.cek + ' perlu dicek'));
+      return [{ t: a.area, cls: 'nowrap b' }, a.info.bayar || '-', { t: [a.info.pic, a.info.fisik].filter(String).join(' · ') || '-', cls: 'muted' }, a.info.jt || '-', { node: pg }, { t: rp(a.sum), cls: 'r nowrap num' }, { node: st }];
+    }), { onRow: function (i) { pbArea = areas[i].area; pbFilter = ''; pbSel = null; pbChecked = {}; renderPbb(); } }));
+    return;
+  }
+  var inf = pbArea === '*' ? null : (pbData.areas.filter(function (a) { return a.area.toLowerCase() === pbArea.toLowerCase(); })[0] || { area: pbArea });
+  $('pbAreaInfo').textContent = inf ? [inf.bayar ? 'Bayar dari ' + inf.bayar : '', inf.pic ? 'PIC: ' + inf.pic : 'PIC belum diisi', inf.fisik, inf.jt ? 'Jatuh tempo ' + inf.jt : ''].filter(String).join(' · ') : 'Semua NOP dari semua area.';
+  $('pbAreaEdit').hidden = !inf || !pbData.canEdit;
+  renderPbList();
+  var n = pbSel && pbData.nops.filter(function (x) { return x.key === pbSel; })[0];
+  if (n) openPbNop(n); else closePbNop();
+  setTimeout(fitAll, 0);
+}
+function pbVisible() {
+  var q = $('pbq').value.toLowerCase().trim();
+  return pbData.nops.filter(function (n) {
+    if (pbArea !== '*' && (n.area || '(tanpa area)') !== pbArea) return false;
+    var st = pbSt(n);
+    if (st === 'off' && pbFilter !== 'off') return false;
+    if (pbFilter === 'Belum' && st !== 'Belum') return false;
+    if (pbFilter === 'Lunas' && st !== 'Lunas') return false;
+    if (pbFilter === 'cek' && st !== 'Bermasalah' && st !== 'Perkiraan') return false;
+    if (pbFilter === 'none' && st !== 'none') return false;
+    if (pbFilter === 'naik' && !n.naik) return false;
+    return !q || [n.inv, n.nop, n.key, n.nama, n.kel, n.kec, n.catatan, n.tanah].join(' ').toLowerCase().indexOf(q) >= 0;
+  });
+}
+function renderPbList() {
+  $$('#pbSegs [data-pbf]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-pbf') === pbFilter); });
+  $$('#pbHealth [data-pbh]').forEach(function (b) { b.classList.toggle('on', !!pbArea && pbFilter !== '' && b.getAttribute('data-pbh') === pbFilter); });
+  var list = pbVisible(), box = $('pbList'); box.innerHTML = '';
+  var rank = { Belum: 0, Bermasalah: 1, Perkiraan: 2, none: 3, Lunas: 4, off: 5 };
+  list.sort(function (a, b) { return rank[pbSt(a)] - rank[pbSt(b)] || (a.inv < b.inv ? -1 : 1); });
+  if (!list.length) emptyBox(box, 'Tidak ada yang cocok.');
+  list.slice(0, 400).forEach(function (n) {
+    var st = pbSt(n), b = el('div', 'pay pb-item' + (pbSel === n.key ? ' on' : '')); b.tabIndex = 0;
+    var canPick = pbData.canEdit && st === 'Belum';
+    var cb = document.createElement('input'); cb.type = 'checkbox'; cb.disabled = !canPick; cb.checked = !!pbChecked[n.key]; cb.title = canPick ? 'Pilih untuk bayar sekaligus' : '';
+    cb.onclick = function (e) { e.stopPropagation(); if (cb.checked) pbChecked[n.key] = true; else delete pbChecked[n.key]; updPayBar(); };
+    b.appendChild(cb);
+    var mid = el('div'); mid.style.minWidth = '0';
+    var nm = el('div', 't-name', n.inv || '(tanpa inventaris)'); if (n.naik) { nm.appendChild(document.createTextNode(' ')); nm.appendChild(el('span', 'st orange', '▲ ' + n.naik + '%')); }
+    mid.appendChild(nm);
+    mid.appendChild(metaEl([n.nop, ' ' + [n.nama, n.kel].filter(String).join(' · ') + (pbArea === '*' ? ' · ' + n.area : '')]));
+    var right = el('div', 'pay-right'); right.appendChild(el('span', 'st ' + PB_CLS[st], PB_TXT[st]));
+    if (n.b) right.appendChild(el('small', 'num', rp(n.b.total) + (n.b.tgl ? ' · ' + dmy(parseIso(n.b.tgl)) : '')));
+    b.appendChild(mid); b.appendChild(right);
+    b.onclick = function () { openPbNop(n); };
+    box.appendChild(b);
+  });
+  if (list.length > 400) box.appendChild(el('div', 'empty', list.length - 400 + ' lainnya: pakai pencarian.'));
+  updPayBar();
+}
+function updPayBar() {
+  var keys = Object.keys(pbChecked), tot = 0;
+  keys.forEach(function (k) { var n = pbData.nops.filter(function (x) { return x.key === k; })[0]; if (n && n.b) tot += n.b.total; });
+  $('pbPayBar').hidden = !keys.length;
+  $('pbPayTxt').textContent = keys.length + ' NOP dipilih · ' + rp(tot);
+}
+function closePbNop() { pbSel = null; $('pbEmpty').hidden = false; $('pbBody').hidden = true; $('pbSplit').classList.remove('show-detail'); $('view-pbb').classList.remove('detail-open'); }
+function openPbNop(n) {
+  pbSel = n.key;
+  var st = pbSt(n);
+  $('pbNTitle').textContent = n.inv || n.nop; $('pbNSub').textContent = n.nop;
+  $('pbNState').className = 'st ' + PB_CLS[st]; $('pbNState').textContent = PB_TXT[st] + ' ' + pbYear;
+  var box = $('pbDetail'); box.innerHTML = '';
+  var tanah = null;
+  if (n.tanah && lv('tanah') !== '-') { tanah = el('button', 'link', n.tanah + ' →'); tanah.type = 'button'; tanah.onclick = function () { show('tanah'); loadLand({ row: 0, inv: n.tanah }); }; }
+  box.appendChild(kvGrid([['Area', n.area || '-'], ['Lokasi', [n.kel, n.kec, n.kota].filter(String).join(', ') || '-'], ['Nama SPPT', n.nama || '-'], ['Luas', n.luas || '-'],
+    ['Legalitas', n.leg || '-'], ['Data tanah', tanah || (n.tanah || 'NOP ini belum ada di kolom PBB Data tanah')], n.catatan ? ['Catatan', n.catatan] : null, !n.aktif ? ['Status', 'Nonaktif'] : null]));
+  box.appendChild(el('h3', 'tn-h3', 'Tagihan ' + pbYear));
+  if (n.b) {
+    var bb = n.b, sum = el('div', 'jl-sum');
+    [['PBB', rp(bb.pbb)], bb.denda ? ['Denda', rp(bb.denda)] : null, bb.diskon ? ['Diskon', '− ' + rp(bb.diskon)] : null, bb.adm ? ['Adm', rp(bb.adm)] : null, bb.njop ? ['NJOP', rp(bb.njop)] : null]
+      .forEach(function (x) { if (!x) return; sum.appendChild(el('span', '', x[0])); sum.appendChild(el('b', 'num', x[1])); });
+    sum.appendChild(el('span', 'big', 'Total')); sum.appendChild(el('b', 'big num', rp(bb.total)));
+    box.appendChild(sum);
+    if (n.prev) box.appendChild(el('p', n.naik ? 'msg warn' : 'hint', (pbYear - 1) + ': ' + rp(n.prev) + (n.naik ? ' → naik ' + n.naik + '%. Cek SPPT, mungkin NJOP naik.' : bb.total < n.prev ? ' (turun ' + Math.round((1 - bb.total / n.prev) * 100) + '%)' : '')));
+    if (bb.status === 'Lunas') {
+      var pl = el('p', 'hint', 'Dibayar ' + (bb.tgl ? dmy(parseIso(bb.tgl)) : '(tanggal tidak tercatat)') + (bb.oleh ? ' · ' + bb.oleh : '') + (bb.kode ? ' · ' + bb.kode : '') + '. ');
+      bb.bukti.forEach(function (f, i) { var a = el('button', 'link', 'Bukti bayar' + (bb.bukti.length > 1 ? ' ' + (i + 1) : '')); a.type = 'button'; a.onclick = function () { openFile(f.id, 'pbb', 'Bukti PBB ' + n.nop + ' ' + pbYear, f.url); }; pl.appendChild(a); });
+      box.appendChild(pl);
+    }
+    if (bb.catatan) box.appendChild(el('p', 'hint', 'Catatan: ' + bb.catatan));
+  } else box.appendChild(el('div', 'muted', n.aktif ? 'Belum ada tagihan ' + pbYear + ' untuk NOP ini. Isi dari SPPT kalau ada.' : 'NOP nonaktif.'));
+  var acts = el('div', 'tn-actions');
+  if (pbData.canEdit && st === 'Belum') acts.appendChild(btnEl('Catat bayar', '', function () { payModal([n.key]); }));
+  if (pbData.canEdit) acts.appendChild(btnEl(n.b ? 'Ubah tagihan' : 'Isi tagihan ' + pbYear, 'sec', function () { billModal(n); }));
+  if (pbData.canHeavy && st === 'Lunas') acts.appendChild(btnEl('Batalkan bayar', 'danger', function () { cancelPayModal(n); }));
+  if (pbData.canEdit) acts.appendChild(btnEl('Ubah NOP', 'sec', function () { nopModal(n); }));
+  box.appendChild(acts);
+  box.appendChild(el('h3', 'tn-h3', 'PBB per tahun'));
+  var hb = el('div'); box.appendChild(hb);
+  function drawHist(bills) {
+    hb.innerHTML = '';
+    if (!bills.length) { hb.appendChild(el('div', 'muted', 'Belum ada riwayat.')); return; }
+    var asc = bills.slice().sort(function (a, b) { return a.tahun - b.tahun; }).slice(-10), mx = Math.max.apply(null, asc.map(function (b) { return b.total || 0; })) || 1;
+    var bars = el('div', 'pb-bars');
+    asc.forEach(function (b, i) {
+      var c = el('div', b.tahun === pbYear ? 'cur' : ''), bar = el('i', b.status !== 'Lunas' ? 'un' : (i && asc[i - 1].total && b.total >= asc[i - 1].total * 1.5 ? 'hi' : ''));
+      bar.style.height = Math.max(2, Math.round((b.total || 0) / mx * 70)) + 'px'; bar.title = b.tahun + ': ' + rp(b.total) + ' · ' + b.status;
+      c.appendChild(bar); c.appendChild(el('span', '', String(b.tahun).slice(2))); bars.appendChild(c);
+    });
+    hb.appendChild(bars);
+    hb.appendChild(table(['Tahun', { t: 'Total', cls: 'r' }, 'Dibayar', 'Status'], bills.slice(0, 12).map(function (b) {
+      return [String(b.tahun), { t: rp(b.total), cls: 'r num nowrap' }, { t: b.tgl ? dmy(parseIso(b.tgl)) : '-', cls: 'num nowrap' }, { node: el('span', 'st ' + PB_CLS[b.status], b.status) }];
+    })));
+  }
+  if (pbHist[n.key]) drawHist(pbHist[n.key]);
+  else { hb.appendChild(el('div', 'muted', 'Memuat riwayat…')); call('getPbbNop', { key: n.key }).then(function (r) { pbHist[n.key] = r.bills; if (pbSel === n.key) drawHist(r.bills); }).catch(function (e) { hb.innerHTML = ''; hb.appendChild(el('div', 'msg err', errText(e))); }); }
+  $('pbEmpty').hidden = true; $('pbBody').hidden = false; $('pbSplit').classList.add('show-detail'); $('view-pbb').classList.add('detail-open'); fitAll();
+  renderPbListOnce();
+  if (window.matchMedia('(max-width: 1180px)').matches) window.scrollTo(0, 0);
+}
+function renderPbListOnce() { if (renderPbListOnce.busy) return; renderPbListOnce.busy = true; try { renderPbList(); } finally { renderPbListOnce.busy = false; } }
+function payModal(keys) {
+  var list = keys.map(function (k) { return pbData.nops.filter(function (x) { return x.key === k; })[0]; }).filter(Boolean);
+  var tot = list.reduce(function (s, n) { return s + (n.b ? n.b.total : 0); }, 0);
+  jlModal('Catat bayar PBB ' + pbYear, list.length + ' NOP · total ' + rp(tot) + '. Satu bukti transfer untuk semua.', function (b) {
+    var ul = el('div', 'muted'); ul.style.maxHeight = '140px'; ul.style.overflow = 'auto'; ul.style.fontSize = '13px';
+    list.forEach(function (n) { ul.appendChild(el('div', '', (n.inv || n.nop) + ' · ' + n.nop + ' · ' + rp(n.b.total))); }); b.appendChild(ul);
+    b.appendChild(fieldBox('m_pb_tgl', 'Tanggal bayar', inp('date', iso(new Date()), { max: iso(new Date()) })));
+    var fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*,application/pdf'; fi.multiple = true;
+    b.appendChild(fieldBox('m_pb_file', 'Bukti bayar / STTS (disarankan)', fi)); var fl = el('div', 'files'); b.appendChild(fl);
+    makeDrop(fi); fi.addEventListener('change', function () { listFiles(fi, fl); });
+    b.appendChild(fieldBox('m_pb_cat', 'Catatan (opsional)', inp('text', '', { maxlength: 200, placeholder: 'Misalnya: dibayar Pak Dedi lewat web Bapenda' })));
+  }, 'Simpan pembayaran', function () {
+    return readFiles($('f_m_pb_file')).then(function (files) { return call('payPbb', { tahun: pbYear, keys: keys, tanggal: $('f_m_pb_tgl').value, files: files, catatan: $('f_m_pb_cat').value }); })
+      .then(function (d) { pbAfter(d, list.length + ' NOP ditandai lunas (' + d.kode + ').'); });
+  });
+}
+function billModal(n) {
+  var b0 = n.b || {};
+  jlModal((n.b ? 'Ubah' : 'Isi') + ' tagihan ' + pbYear, (n.inv || '') + ' · ' + n.nop + '. Isi sesuai SPPT.', function (b) {
+    var m = function (id, label, v) { return fieldBox(id, label, inp('text', v ? Math.round(v).toLocaleString('id-ID') : '', { inputmode: 'numeric', class: 'num money', placeholder: '0' })); };
+    var r1 = el('div', 'row'); r1.appendChild(m('m_pb_pbb', 'PBB (pokok)', b0.pbb || (!n.b && n.prev ? n.prev : 0))); r1.appendChild(m('m_pb_njop', 'NJOP (opsional)', b0.njop)); b.appendChild(r1);
+    var r2 = el('div', 'row3'); r2.appendChild(m('m_pb_denda', 'Denda', b0.denda)); r2.appendChild(m('m_pb_disk', 'Diskon', b0.diskon)); r2.appendChild(m('m_pb_adm', 'Adm', b0.adm)); b.appendChild(r2);
+    var tl = el('p', 'hint', ''); b.appendChild(tl);
+    var lab = el('label', 'check'); var cb = document.createElement('input'); cb.type = 'checkbox'; cb.id = 'f_m_pb_bad'; cb.checked = b0.status === 'Bermasalah';
+    lab.appendChild(cb); lab.appendChild(document.createTextNode(' Bermasalah (NOP tidak terbaca / salah, perlu diurus)')); b.appendChild(lab);
+    b.appendChild(fieldBox('m_pb_bcat', 'Catatan', inp('text', b0.catatan && b0.status !== 'Perkiraan' ? b0.catatan : '', { maxlength: 200 })));
+    function upd() { var t = num($('f_m_pb_pbb').value) + num($('f_m_pb_denda').value) - num($('f_m_pb_disk').value) + num($('f_m_pb_adm').value); tl.textContent = 'Total: ' + rp(t) + (n.prev ? ' · ' + (pbYear - 1) + ': ' + rp(n.prev) : ''); }
+    setTimeout(function () { $$('#jlmBody .money').forEach(function (i) { i.addEventListener('input', upd); i.addEventListener('blur', function () { var v = num(i.value); i.value = v ? v.toLocaleString('id-ID') : ''; }); }); upd(); }, 0);
+  }, 'Simpan', function () {
+    return call('savePbbBill', { key: n.key, tahun: pbYear, pbb: num($('f_m_pb_pbb').value), njop: num($('f_m_pb_njop').value), denda: num($('f_m_pb_denda').value), diskon: num($('f_m_pb_disk').value),
+      adm: num($('f_m_pb_adm').value), bermasalah: $('f_m_pb_bad').checked, catatan: $('f_m_pb_bcat').value }).then(function (d) { pbAfter(d, 'Tagihan tersimpan.'); });
+  });
+}
+function cancelPayModal(n) {
+  jlModal('Batalkan bayar PBB', (n.inv || n.nop) + ' ' + pbYear + ' · ' + rp(n.b.total) + '. Status kembali "Belum". Bukti lama tetap di Drive.', function (b) {
+    b.appendChild(fieldBox('m_pb_why', 'Alasan', inp('text', '', { maxlength: 200, placeholder: 'Misalnya: salah pilih NOP' })));
+  }, 'Batalkan bayar', function () {
+    return call('cancelPbbPay', { key: n.key, tahun: pbYear, alasan: $('f_m_pb_why').value }).then(function (d) { pbAfter(d, 'Pembayaran dibatalkan.'); });
+  }, 'danger-solid');
+}
+function nopModal(n) {
+  jlModal(n ? 'Ubah NOP' : 'Tambah NOP', n ? 'Mengubah nomor NOP juga memindahkan semua tagihannya.' : 'NOP 18 angka, sesuai SPPT.', function (b) {
+    var r1 = el('div', 'row'); r1.appendChild(fieldBox('m_pn_nop', 'NOP', inp('text', n ? n.nop : '', { maxlength: 30, placeholder: '32.03.210.020.004-0415.0', class: 'num' })));
+    r1.appendChild(fieldBox('m_pn_inv', 'Inventaris', inp('text', n ? n.inv : '', { maxlength: 120, placeholder: 'Misalnya: Cogrek 001' }))); b.appendChild(r1);
+    var areas = {}; pbData.nops.forEach(function (x) { if (x.area) areas[x.area] = 1; }); pbData.areas.forEach(function (a) { areas[a.area] = 1; });
+    var ai = inp('text', n ? n.area : (pbArea && pbArea !== '*' ? pbArea : ''), { list: 'pbAreaList', maxlength: 60 }); var dl = document.createElement('datalist'); dl.id = 'pbAreaList'; Object.keys(areas).sort().forEach(function (a) { var o = document.createElement('option'); o.value = a; dl.appendChild(o); });
+    var r2 = el('div', 'row'); var fa = fieldBox('m_pn_area', 'Area', ai); fa.appendChild(dl); r2.appendChild(fa); r2.appendChild(fieldBox('m_pn_kota', 'Kab/Kota', inp('text', n ? n.kota : '', { maxlength: 60 }))); b.appendChild(r2);
+    var r3 = el('div', 'row'); r3.appendChild(fieldBox('m_pn_kec', 'Kecamatan', inp('text', n ? n.kec : '', { maxlength: 60 }))); r3.appendChild(fieldBox('m_pn_kel', 'Kelurahan / desa', inp('text', n ? n.kel : '', { maxlength: 60 }))); b.appendChild(r3);
+    var r4 = el('div', 'row'); r4.appendChild(fieldBox('m_pn_nama', 'Nama di SPPT', inp('text', n ? n.nama : '', { maxlength: 120 }))); r4.appendChild(fieldBox('m_pn_luas', 'Luas', inp('text', n ? n.luas : '', { maxlength: 30 }))); b.appendChild(r4);
+    b.appendChild(fieldBox('m_pn_leg', 'Legalitas', inp('text', n ? n.leg : '', { maxlength: 120, placeholder: 'SHM No. ...' })));
+    var ak = document.createElement('select'); [['Ya', 'Aktif (masih bayar PBB)'], ['Tidak', 'Nonaktif (dijual / digabung / NOP lama)']].forEach(function (x) { var o = el('option', '', x[1]); o.value = x[0]; ak.appendChild(o); }); ak.value = n && !n.aktif ? 'Tidak' : 'Ya';
+    b.appendChild(fieldBox('m_pn_aktif', 'Status', ak));
+    b.appendChild(fieldBox('m_pn_cat', 'Catatan', inp('text', n ? n.catatan : '', { maxlength: 300 })));
+  }, n ? 'Simpan' : 'Tambah NOP', function () {
+    var g = function (id) { return $('f_' + id).value; };
+    return call('savePbbNop', { key: n ? n.key : '', nop: g('m_pn_nop'), inv: g('m_pn_inv'), area: g('m_pn_area'), kota: g('m_pn_kota'), kec: g('m_pn_kec'), kel: g('m_pn_kel'), nama: g('m_pn_nama'),
+      luas: g('m_pn_luas'), leg: g('m_pn_leg'), aktif: g('m_pn_aktif') === 'Ya', catatan: g('m_pn_cat'), tahun: pbYear }).then(function (d) { pbSel = String(g('m_pn_nop')).replace(/\D/g, ''); pbAfter(d, n ? 'NOP diubah.' : 'NOP ditambahkan.'); });
+  });
+}
+function areaModal(area) {
+  var a = pbData.areas.filter(function (x) { return x.area.toLowerCase() === area.toLowerCase(); })[0] || { area: area };
+  jlModal('Info area · ' + area, 'Siapa yang membayar, bagaimana caranya, dan kapan jatuh temponya.', function (b) {
+    var r = el('div', 'row'); r.appendChild(fieldBox('m_pa_bayar', 'Bayar dari', inp('text', a.bayar || '', { maxlength: 30, placeholder: 'Jakarta / Daerah' }))); r.appendChild(fieldBox('m_pa_jt', 'Jatuh tempo', inp('text', a.jt || '', { maxlength: 30, placeholder: 'Agustus' }))); b.appendChild(r);
+    b.appendChild(fieldBox('m_pa_pic', 'PIC', inp('text', a.pic || '', { maxlength: 300, placeholder: 'Misalnya: Tapos (Pak Dedi); Waru, Cogreg (kantor Parung)' })));
+    b.appendChild(fieldBox('m_pa_fisik', 'Fisik PBB / cara bayar', inp('text', a.fisik || '', { maxlength: 100, placeholder: 'Online web / aplikasi / kantor desa' })));
+  }, 'Simpan', function () {
+    return call('savePbbArea', { area: area, bayar: $('f_m_pa_bayar').value, pic: $('f_m_pa_pic').value, fisik: $('f_m_pa_fisik').value, jt: $('f_m_pa_jt').value, tahun: pbYear }).then(function (d) { pbAfter(d, 'Info area tersimpan.'); });
+  });
+}
+function startYearModal(y) {
+  var n = pbData.nops.filter(function (x) { return x.aktif && x.b && x.b.total > 0; }).length;
+  jlModal('Mulai PBB ' + y, 'Membuat tagihan ' + y + ' untuk NOP aktif, dengan jumlah ' + (y - 1) + ' sebagai perkiraan (status "Perkiraan"). Setelah SPPT ' + y + ' keluar, ganti jumlahnya lewat "Ubah tagihan". Yang masih perkiraan belum bisa dicatat bayar.', function (b) {
+    b.appendChild(el('p', 'hint', pbYear === y - 1 ? 'Sekitar ' + n + ' NOP punya tagihan ' + (y - 1) + '.' : ''));
+  }, 'Buat tagihan ' + y, function () {
+    return call('startPbbYear', { tahun: y }).then(function (d) { pbDefYear = d.tahun; pbAfter(d, 'Tagihan ' + y + ' dibuat (perkiraan).'); });
+  });
+}
+$('pbBackAreas').onclick = function () { pbArea = null; pbSel = null; pbChecked = {}; renderPbb(); };
+$('pbBack').onclick = function () { closePbNop(); renderPbList(); };
+$('pbAreaEdit').onclick = function () { if (pbArea && pbArea !== '*') areaModal(pbArea); };
+$('pbNewNop').onclick = function () { nopModal(null); };
+$('pbq').oninput = renderPbList;
+$('pbPayBtn').onclick = function () { var k = Object.keys(pbChecked); if (k.length) payModal(k); };
+$('pbPayClear').onclick = function () { pbChecked = {}; renderPbList(); };
+$$('#pbSegs [data-pbf]').forEach(function (b) { b.onclick = function () { pbFilter = b.getAttribute('data-pbf'); renderPbList(); }; });
+$$('#pbHealth [data-pbh]').forEach(function (b) { b.onclick = function () { if (!pbData || !pbData.nops.length) return; pbFilter = b.getAttribute('data-pbh'); if (!pbArea) pbArea = '*'; pbSel = null; renderPbb(); }; });
 
 /* ====================== LAPORAN PERJALANAN (PDF, dibuat langsung di browser, tanpa library luar) ====================== */
 var MINIPDF_K = 72 / 25.4, MINIPDF_H = 297;
