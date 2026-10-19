@@ -4195,6 +4195,7 @@ var TEMPLATES = {
   'Tidak ada': { dash: '-', kal: '-', tugas: '-', catat: '-', bukti: '-', jalan: '-', penyewa: '-', tanah: '-', set: '-' }
 };
 var newUserRow = false;
+var userDrafts = {};   // unsaved changes per user, kept when the list redraws (after another card is saved or data refreshes)
 function lvlCtl(val, disabled, onChange) {
   var w = el('div', 'lvl'); w.setAttribute('role', 'radiogroup');
   [['-', '—'], ['L', 'Lihat'], ['U', 'Ubah']].forEach(function (o) {
@@ -4212,9 +4213,11 @@ function renderUsers(d) {
   var rows = d.users.slice().sort(function (a, b) { return (b.owner ? 1 : 0) - (a.owner ? 1 : 0) || (b.aktif ? 1 : 0) - (a.aktif ? 1 : 0); });
   if (newUserRow) rows.unshift({ isNew: true, email: '', nama: '', peran: '', aktif: true, heavy: false, perms: Object.assign({}, TEMPLATES['Staf keuangan']) });
   rows.forEach(function (u) {
-    var card = el('div', 'ucard' + (u.aktif ? '' : ' off') + (u.isNew ? ' dirty' : '')), cur = { email: u.email, nama: u.nama, peran: u.peran, aktif: u.aktif, heavy: u.heavy, approve: u.approve, perms: Object.assign({}, u.perms) };
+    var draft = !u.isNew && userDrafts[u.email];
+    var cur = draft || { email: u.email, nama: u.nama, peran: u.peran, aktif: u.aktif, heavy: u.heavy, approve: u.approve, perms: Object.assign({}, u.perms) };
+    var card = el('div', 'ucard' + (cur.aktif ? '' : ' off') + (u.isNew || draft ? ' dirty' : ''));
     var saveBtn = null;
-    function dirty() { if (saveBtn) saveBtn.disabled = false; card.classList.add('dirty'); }
+    function dirty() { if (saveBtn) saveBtn.disabled = false; card.classList.add('dirty'); if (!u.isNew) userDrafts[u.email] = cur; }
     var who = el('div', 'who');
     if (u.isNew) {
       who.appendChild(el('b', '', 'Pengguna baru'));
@@ -4227,21 +4230,21 @@ function renderUsers(d) {
       else if (!u.aktif) top.appendChild(el('span', 'chip', 'Nonaktif'));
       else if (u.peran && !edit) top.appendChild(el('span', 'chip', u.peran));
       who.appendChild(top); who.appendChild(el('span', 'em', u.email));
-      if (!u.owner && edit) { var pr2 = inp('text', u.peran, { placeholder: 'Label peran (opsional)', 'aria-label': 'Peran ' + u.nama }); pr2.oninput = function () { cur.peran = pr2.value; dirty(); }; who.appendChild(pr2); }
+      if (!u.owner && edit) { var pr2 = inp('text', cur.peran, { placeholder: 'Label peran (opsional)', 'aria-label': 'Peran ' + u.nama }); pr2.oninput = function () { cur.peran = pr2.value; dirty(); }; who.appendChild(pr2); }
     }
     card.appendChild(who);
     if (u.owner) { card.appendChild(el('div', 'muted owner-note', 'Semua halaman dan semua tindakan, termasuk mengatur pengguna. Tidak bisa diubah.')); box.appendChild(card); return; }
     var right = el('div', 'uright');
     var grid = el('div', 'pgrid');
-    ACC_PAGES.forEach(function (p) { var c = el('div', 'pcell'); c.appendChild(el('span', '', ACC_SHORT[p])); c.appendChild(lvlCtl(u.perms[p] || '-', !edit, function (v) { cur.perms[p] = v; dirty(); })); grid.appendChild(c); });
+    ACC_PAGES.forEach(function (p) { var c = el('div', 'pcell'); c.appendChild(el('span', '', ACC_SHORT[p])); c.appendChild(lvlCtl(cur.perms[p] || '-', !edit, function (v) { cur.perms[p] = v; dirty(); })); grid.appendChild(c); });
     right.appendChild(grid);
     var foot = el('div', 'ufoot');
-    var hl = el('label', 'mini-check'); var hc = document.createElement('input'); hc.type = 'checkbox'; hc.checked = !!u.heavy; hc.disabled = !edit; hc.onchange = function () { cur.heavy = hc.checked; dirty(); };
+    var hl = el('label', 'mini-check'); var hc = document.createElement('input'); hc.type = 'checkbox'; hc.checked = !!cur.heavy; hc.disabled = !edit; hc.onchange = function () { cur.heavy = hc.checked; dirty(); };
     hl.appendChild(hc); hl.appendChild(document.createTextNode(' Boleh batal kwitansi & arsip')); foot.appendChild(hl);
-    var al = el('label', 'mini-check'); var acx = document.createElement('input'); acx.type = 'checkbox'; acx.checked = !!u.approve; acx.disabled = !edit; acx.onchange = function () { cur.approve = acx.checked; dirty(); };
+    var al = el('label', 'mini-check'); var acx = document.createElement('input'); acx.type = 'checkbox'; acx.checked = !!cur.approve; acx.disabled = !edit; acx.onchange = function () { cur.approve = acx.checked; dirty(); };
     al.appendChild(acx); al.appendChild(document.createTextNode(' Boleh setujui klaim perjalanan')); foot.appendChild(al);
     if (edit) {
-      var ak = el('label', 'mini-check'); var ac = document.createElement('input'); ac.type = 'checkbox'; ac.checked = !!u.aktif; ac.onchange = function () { cur.aktif = ac.checked; dirty(); };
+      var ak = el('label', 'mini-check'); var ac = document.createElement('input'); ac.type = 'checkbox'; ac.checked = !!cur.aktif; ac.onchange = function () { cur.aktif = ac.checked; dirty(); };
       ak.appendChild(ac); ak.appendChild(document.createTextNode(' Aktif')); foot.appendChild(ak);
       var tpl = document.createElement('select'); tpl.setAttribute('aria-label', 'Pakai template');
       [['', 'Pakai template…']].concat(Object.keys(TEMPLATES).map(function (k) { return [k, k]; })).forEach(function (o) { var x = el('option', '', o[1]); x.value = o[0]; tpl.appendChild(x); });
@@ -4249,10 +4252,10 @@ function renderUsers(d) {
       foot.appendChild(tpl);
       var sp = el('span', 'grow'); foot.appendChild(sp);
       if (u.isNew) { var cx = el('button', 'mini-btn', 'Batal'); cx.type = 'button'; cx.onclick = function () { newUserRow = false; renderUsers(setCache.users); }; foot.appendChild(cx); }
-      saveBtn = el('button', 'mini-btn dark', u.isNew ? 'Tambah' : 'Simpan'); saveBtn.type = 'button'; saveBtn.disabled = !u.isNew;
+      saveBtn = el('button', 'mini-btn dark', u.isNew ? 'Tambah' : 'Simpan'); saveBtn.type = 'button'; saveBtn.disabled = !u.isNew && !draft;
       saveBtn.onclick = function () {
         saveBtn.disabled = true; saveBtn.textContent = 'Menyimpan…';
-        call('setAccess', cur).then(function (r) { if (u.isNew) newUserRow = false; setCache.users.users = r.users; renderUsers(setCache.users); toast('Akses ' + (cur.nama || cur.email) + ' tersimpan.'); })
+        call('setAccess', cur).then(function (r) { if (u.isNew) newUserRow = false; delete userDrafts[u.email]; setCache.users.users = r.users; renderUsers(setCache.users); var left = Object.keys(userDrafts).length; toast('Akses ' + (cur.nama || cur.email) + ' tersimpan.' + (left ? ' ' + left + ' pengguna lain belum disimpan, tekan Simpan di kartunya.' : '')); })
           .catch(function (e) { saveBtn.disabled = false; saveBtn.textContent = u.isNew ? 'Tambah' : 'Simpan'; toast(errText(e)); });
       };
       foot.appendChild(saveBtn);
