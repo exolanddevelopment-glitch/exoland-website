@@ -1709,7 +1709,7 @@
   </div>
 </div>
 
-<div class="sync-pill" id="syncPill" hidden><i></i>Memperbarui…</div>
+<div class="sync-pill" id="syncPill" hidden><i></i>Memperbarui data…</div>
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script>
@@ -1823,6 +1823,7 @@ function syncing(d, fn) {
   var p = document.getElementById('syncPill'); if (!p) return;
   p.hidden = !syncN;
   var names = Object.keys(syncPend).map(function (k) { return (SYNC_NAMES[k] || k) + ' (' + Math.round((Date.now() - syncPend[k]) / 1000) + ' dtk)'; });
+  p.lastChild.textContent = names.length ? 'Memperbarui ' + names.map(function (x) { return x.replace(/ \(.*$/, ''); }).join(', ') + '…' : 'Memperbarui data…';
   p.title = names.length ? 'Sedang mengambil data terbaru: ' + names.join(', ') + '. Halaman memakai data terakhir sampai selesai.' : '';
 }
 setInterval(function () { if (syncN) syncing(0); }, 5000);
