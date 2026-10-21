@@ -582,9 +582,10 @@
   .jl-avail { font-size:13px; border-radius:10px; padding:8px 10px; margin-top:8px; } .jl-avail:empty { display:none; }
   .jl-avail.ok { background:var(--ok-bg); color:var(--ok); } .jl-avail.bad { background:var(--err-bg); color:var(--err); }
   .btn.ok-solid { background:#16a34a; border-color:#16a34a; color:#fff; }
-  .jl-vehs { display:grid; grid-template-columns:repeat(auto-fill, minmax(420px, 1fr)); gap:16px; max-width:1360px; }
+  .jl-vehs { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(600px, 100%), 1fr)); gap:16px; max-width:1360px; align-items:start; }
+  .jl-veh { min-width:0; } .jl-veh .tbl { width:100%; } .jl-veh .tbl td, .jl-veh .tbl th { white-space:normal; }
   .jl-veh.off { opacity:.7; } .jl-veh-head { display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:12px; align-items:center; }
-  .jl-veh-acts { display:flex; gap:8px; margin-top:12px; } .jl-veh-acts .btn { width:auto; margin:0; padding:8px 14px; }
+  .jl-veh-acts { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; } .jl-veh-acts .btn { width:auto; margin:0; padding:8px 14px; white-space:nowrap; }
   .jl-dmg-row { display:grid; grid-template-columns:auto auto minmax(0,1fr); gap:10px; font-size:13px; padding:6px 0; border-top:1px solid var(--line-2); }
   .avatar.plot:empty, .avatar.plot { flex:none; }
   #view-jalan .tn-split { margin-top:0; }
@@ -650,6 +651,21 @@
   .lvl button.on.lv-no { background:#52525b; color:#fff; } .lvl button.on.lv-view { background:#1e40af; color:#fff; } .lvl button.on.lv-edit { background:var(--accent); color:var(--accent-ink); font-weight:700; }
   .acc-legend { display:flex; gap:18px; flex-wrap:wrap; color:var(--muted); font-size:12.5px; margin-top:12px; } .acc-legend b { color:var(--ink); }
   /* viewer */
+
+  .gal-card { max-width:min(1100px, 100%); width:100%; height:min(92vh, 940px); display:flex; flex-direction:column; padding:14px; }
+  .gal-main { flex:1; min-height:0; position:relative; background:#0b0b0e; border-radius:12px; overflow:hidden; }
+  .gal-stage { position:absolute; inset:0; display:grid; place-items:center; color:#bbb; font-size:14px; }
+  .gal-stage img { max-width:100%; max-height:100%; object-fit:contain; user-select:none; }
+  .gal-stage iframe { width:100%; height:100%; border:0; background:#fff; }
+  .gal-nav { position:absolute; top:50%; transform:translateY(-50%); z-index:2; width:46px; height:64px; border:0; border-radius:12px; background:rgba(255,255,255,.14); color:#fff; font-size:34px; line-height:1; cursor:pointer; }
+  .gal-nav:hover { background:rgba(255,255,255,.28); } .gal-nav.prev { left:10px; } .gal-nav.next { right:10px; } .gal-nav[disabled] { opacity:.25; cursor:default; }
+  .gal-cap { font-size:13px; color:var(--muted); padding:8px 2px 6px; min-height:20px; }
+  .gal-thumbs { display:flex; gap:8px; overflow-x:auto; padding:4px 2px 2px; }
+  .gal-thumbs button { flex:none; width:76px; height:58px; border-radius:8px; border:2px solid transparent; padding:0; overflow:hidden; background:var(--subtle); cursor:pointer; display:grid; place-items:center; color:var(--muted); font-size:11px; opacity:.6; }
+  .gal-thumbs button.on { border-color:var(--accent); opacity:1; } .gal-thumbs button:hover { opacity:1; }
+  .gal-thumbs img { width:100%; height:100%; object-fit:cover; }
+  .ph-strip { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; align-items:center; }
+  @media (max-width:640px) { .gal-card { height:100%; padding:10px; } .gal-nav { width:38px; height:54px; font-size:28px; } .gal-thumbs button { width:60px; height:46px; } }
   .viewer-card { max-width:min(1100px, 100%); width:100%; height:min(88vh, 900px); display:flex; flex-direction:column; padding:16px; }
   .viewer-head { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
   .viewer-head h2 { margin:0; font-size:16px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; flex:1; }
@@ -1663,6 +1679,22 @@
   </div>
 </div>
 
+<div class="modal gal" id="gal" hidden role="dialog" aria-modal="true" aria-labelledby="galTitle">
+  <div class="modal-card gal-card">
+    <div class="viewer-head">
+      <h2 id="galTitle">Foto</h2>
+      <span class="muted num" id="galCount"></span>
+      <div class="viewer-actions"><a class="mini-btn dark" id="galDl" hidden>Unduh</a><button class="mini-btn" id="galClose" type="button">Tutup</button></div>
+    </div>
+    <div class="gal-main">
+      <button class="gal-nav prev" id="galPrev" type="button" aria-label="Sebelumnya">‹</button>
+      <div class="gal-stage" id="galStage"></div>
+      <button class="gal-nav next" id="galNext" type="button" aria-label="Berikutnya">›</button>
+    </div>
+    <div class="gal-cap" id="galCap"></div>
+    <div class="gal-thumbs" id="galThumbs"></div>
+  </div>
+</div>
 <div class="modal viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-labelledby="viewerTitle">
   <div class="modal-card viewer-card">
     <div class="viewer-head">
@@ -1782,20 +1814,33 @@ function cacheWrite(fn, d) {
 }
 function cacheClear() { try { Object.keys(localStorage).filter(function (k) { return k.indexOf('elc:') === 0; }).forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {} }
 var syncN = 0;
-function syncing(d) { syncN = Math.max(0, syncN + d); var p = document.getElementById('syncPill'); if (p) p.hidden = !syncN; }
+var syncPend = {};
+var SYNC_NAMES = { getFormData: 'data awal', getDashboard: 'dashboard', getTasks: 'tugas', getPayments: 'riwayat pembayaran', getTenants: 'penyewa', getLand: 'data tanah',
+  getTrips: 'perjalanan', getChecks: 'pengecekan tanah', getPbb: 'PBB', getKos: 'kos & apartemen', getLogs: 'log', checkData: 'pemeriksaan data', getUsers: 'pengguna', getBackups: 'backup' };
+function syncing(d, fn) {
+  syncN = Math.max(0, syncN + d);
+  if (fn) { if (d > 0) syncPend[fn] = Date.now(); else delete syncPend[fn]; }
+  var p = document.getElementById('syncPill'); if (!p) return;
+  p.hidden = !syncN;
+  var names = Object.keys(syncPend).map(function (k) { return (SYNC_NAMES[k] || k) + ' (' + Math.round((Date.now() - syncPend[k]) / 1000) + ' dtk)'; });
+  p.title = names.length ? 'Sedang mengambil data terbaru: ' + names.join(', ') + '. Halaman memakai data terakhir sampai selesai.' : '';
+}
+setInterval(function () { if (syncN) syncing(0); }, 5000);
 /** apply(data, fromCache) runs at once with the saved copy (if any), and again only if the fresh data is different. */
 function swr(fn, arg, apply) {
   var c = cacheRead(fn), cs = c ? JSON.stringify(c) : '';
   if (c) { try { apply(c, true); } catch (e) { c = null; cs = ''; } }
-  syncing(1);
-  var started = Date.now();
-  return call(fn, arg).then(function (d) {
-    syncing(-1);
+  syncing(1, fn);
+  var started = Date.now(), done = false;
+  // never spin forever: after 90 seconds stop waiting (the page keeps the data it already shows)
+  var slow = new Promise(function (res, rej) { setTimeout(function () { if (!done) rej(new Error('Server lambat menjawab (' + (SYNC_NAMES[fn] || fn) + '), data yang tampil mungkin belum terbaru. Coba muat ulang nanti.')); }, 90000); });
+  return Promise.race([call(fn, arg), slow]).then(function (d) {
+    done = true; syncing(-1, fn);
     if ((lastWrite[fn] || 0) > started) return d;  // a save during this refresh already brought newer data
     var ds = JSON.stringify(d);
     if (ds !== cs) { try { localStorage.setItem(ckey(fn), ds); } catch (e) { cacheWrite(fn, d); } apply(d, false); }
     return d;
-  }, function (e) { syncing(-1); if (!c) throw e; toast('Gagal memperbarui data: ' + errText(e)); });
+  }, function (e) { done = true; syncing(-1, fn); if (!c) throw e; toast('Gagal memperbarui data: ' + errText(e)); });
 }
 function toast(t) { var el = $('toast'); el.textContent = t; el.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(function () { el.hidden = true; }, 3500); }
 
@@ -4057,7 +4102,11 @@ function openTrip(t) {
     exps.forEach(function (e) {
       var r = el('div', 'jl-exp');
       var th = el('button', 'jl-thumb', '🧾'); th.type = 'button'; th.title = 'Lihat struk';
-      th.onclick = function () { if (e.struk[0]) openFile(e.struk[0].id, 'jalan', 'Struk ' + e.kategori + ' · ' + rp(e.jumlah), e.struk[0].url); };
+      th.onclick = function () {
+        var all = [], start = 0;
+        exps.forEach(function (x) { x.struk.forEach(function (sf, k) { if (x === e && k === 0) start = all.length; all.push({ id: sf.id, ctx: 'jalan', cap: x.kategori + (x.ket ? ' · ' + x.ket : '') + ' · ' + rp(x.jumlah) + (x.struk.length > 1 ? ' · foto ' + (k + 1) : '') + (x.status ? ' · ' + x.status : '') }); }); });
+        openGallery(all, start, 'Struk · ' + t.keperluan);
+      };
       r.appendChild(th);
       var mid = el('div'); mid.appendChild(el('b', '', e.kategori + (e.ket ? ' · ' + e.ket : '')));
       var meta = el('div', 'muted', (e.tanggal ? dmy(parseIso(e.tanggal)) : '') + ' · ' + e.struk.length + ' foto');
@@ -4378,14 +4427,15 @@ function renderVehicles() {
       var pr = el('div', 'jl-photos');
       pr.appendChild(el('span', 'muted', ph[0].waktu + ' · ' + ph[0].nama + (ph[0].km ? ' · KM ' + ph[0].km.toLocaleString('id-ID') : '') + (ph[0].catatan ? ' · ' + ph[0].catatan : '')));
       var row = el('div', 'jl-photo-btns');
-      (jlData.sides || []).forEach(function (sd) { var f = ph[0].foto[sd]; if (!f) return; var bt = el('button', 'mini-btn', '📷 ' + sd); bt.type = 'button'; bt.onclick = function () { openFile(f.id, 'jalan', v.nama + ' · ' + sd + ' · ' + ph[0].waktu, f.url); }; row.appendChild(bt); });
+      var vItems = function (x) { return (jlData.sides || []).filter(function (sd) { return x.foto[sd]; }).map(function (sd) { return { id: x.foto[sd].id, ctx: 'jalan', cap: v.nama + ' (' + v.plat + ') · ' + sd + ' · ' + x.waktu + ' · ' + x.nama }; }); };
+      row.appendChild(galBtn('📷 Lihat ' + vItems(ph[0]).length + ' foto', vItems(ph[0]), 'Foto kondisi · ' + v.nama + ' · ' + ph[0].waktu));
       pr.appendChild(row);
       if (ph.length > 1) {
         var older = el('details', 'jl-older'); older.appendChild(el('summary', '', 'Foto sebelumnya (' + (ph.length - 1) + ')'));
         ph.slice(1, 13).forEach(function (x) {
           var lr = el('div', 'jl-dmg-row'); lr.appendChild(el('span', 'muted num', x.waktu)); lr.appendChild(el('b', '', x.nama));
           var k = el('span', '', x.km ? 'KM ' + x.km.toLocaleString('id-ID') + ' ' : '');
-          (jlData.sides || []).forEach(function (sd) { var f = x.foto[sd]; if (!f) return; var a = el('button', 'link', sd + ' '); a.type = 'button'; a.onclick = function () { openFile(f.id, 'jalan', v.nama + ' · ' + sd + ' · ' + x.waktu, f.url); }; k.appendChild(a); });
+          var a = el('button', 'link', 'Lihat foto'); a.type = 'button'; a.onclick = function () { openGallery(vItems(x), 0, 'Foto kondisi · ' + v.nama + ' · ' + x.waktu); }; k.appendChild(a);
           lr.appendChild(k); older.appendChild(lr);
         });
         pr.appendChild(older);
@@ -4635,13 +4685,18 @@ function renderKos() {
     [['Kosong', rs.length - isi.length], ['Telat', tel], ['± per bulan', mon ? rpShort(mon) : '-']].forEach(function (x) { var d = el('div', '', x[0]); d.appendChild(el('b', x[0] === 'Telat' && x[1] ? 'neg' : '', String(x[1]))); r4.appendChild(d); });
     c.appendChild(r4);
     if (!rs.length) c.appendChild(el('p', 'hint', 'Belum ada baris di DBStatusSewa dengan inventaris: ' + p.invs.join(', ') + '. Tambahkan kamarnya di Penyewa → "+ Unit kosong".'));
-    c.onclick = function () { ksProp = p.nama; ksSel = null; renderKos(); };
+    c.onclick = function () { if (ksProp !== p.nama) ksFilter = ''; ksProp = p.nama; ksSel = null; renderKos(); };
     box.appendChild(c);
   });
   $('ksProp').hidden = !ksProp;
   if (ksProp) renderKosGrid();
 }
-function ksFloor(unit) { var m = String(unit).toUpperCase().replace(/\s+/g, '').match(/^(\d[A-Z])-/); return m ? 'Tower ' + m[1] : 'Lainnya'; }
+function ksTower(r) {  // Meikarta: unit "1B - 19A" / "1B19A" or inventaris "M1B19A" -> Tower 1B
+  var u = String(r.unit).toUpperCase().replace(/[\s-]+/g, ''), i = String(r.inv).toUpperCase().replace(/[\s-]+/g, '');
+  var m = i.match(/^M(\d[A-Z])\d/) || u.match(/^(\d[A-Z])\d/);
+  return m ? 'Tower ' + m[1] : 'Lainnya';
+}
+function ksCode(p, r) { var n = String(r.inv).toUpperCase().replace(/[^A-Z0-9]/g, ''); for (var i = 0; i < p.invs.length; i++) { var c = p.invs[i].toUpperCase().replace(/[^A-Z0-9]/g, ''); if (c && n.indexOf(c) === 0) return p.invs[i]; } return r.inv; }
 function ksUnitSort(a, b) {
   var na = String(a.unit).toUpperCase().replace(/\s+/g, ''), nb = String(b.unit).toUpperCase().replace(/\s+/g, '');
   return na.localeCompare(nb, 'id', { numeric: true }) || (a.kosong ? 1 : -1);
@@ -4656,7 +4711,8 @@ function renderKosGrid() {
   var box = $('ksGrid'); box.innerHTML = '';
   if (!rs.length) { emptyBox(box, ksFilter ? 'Tidak ada kamar dengan status ini.' : 'Belum ada kamar.'); }
   var apt = p && p.tipe === 'Apartemen', groups = {}, order = [];
-  rs.forEach(function (r) { var g = (p.invs.length > 1 ? r.inv + (apt ? ' · ' : '') : '') + (apt ? ksFloor(r.unit) : ''); if (!groups[g]) { groups[g] = []; order.push(g); } groups[g].push(r); });
+  rs.forEach(function (r) { var g = apt ? ksTower(r) : (p.invs.length > 1 ? ksCode(p, r) : ''); if (!groups[g]) { groups[g] = []; order.push(g); } groups[g].push(r); });
+  order.sort(function (a, b) { return a === 'Lainnya' ? 1 : b === 'Lainnya' ? -1 : a.localeCompare(b, 'id', { numeric: true }); });
   order.forEach(function (g) {
     var sec = el('div', 'ks-floor'); if (g) sec.appendChild(el('h4', '', g));
     var tiles = el('div', 'ks-tiles');
@@ -4828,7 +4884,7 @@ function openCk(o) {
     if (c.catatan) mid.appendChild(el('div', '', c.catatan));
     mid.appendChild(el('div', 'muted', c.lat ? (c.jarak !== null ? '📍 ' + c.jarak.toLocaleString('id-ID') + ' m dari titik lahan' : '📍 lokasi tercatat (titik pertama)') + (c.acc ? ' · akurasi ±' + c.acc + ' m' : '') : '📍 tanpa lokasi (HP tidak mengizinkan)'));
     var ph = el('div', 'ck-photos');
-    c.foto.forEach(function (f, i) { var a = el('button', 'mini-btn', '📷 ' + (i + 1)); a.type = 'button'; a.onclick = function () { openFile(f.id, 'cek', o.nama + ' · ' + fdtY(pdt(c.waktu)) + ' · foto ' + (i + 1), f.url); }; ph.appendChild(a); });
+    if (c.foto.length) ph.appendChild(galBtn('📷 Lihat ' + c.foto.length + ' foto', c.foto.map(function (f, i) { return { id: f.id, ctx: 'cek', cap: o.nama + ' · ' + fdtY(pdt(c.waktu)) + ' · ' + c.petugas + ' · foto ' + (i + 1) }; }), 'Cek lahan · ' + o.nama + ' · ' + fdtY(pdt(c.waktu))));
     mid.appendChild(ph);
     if (c.temuan) {
       var tm = el('div', 'msg ' + (c.selesai ? 'okmsg' : 'err'), (c.selesai ? '✓ Temuan selesai: ' : 'Temuan: ') + c.temuan + (c.selesai ? ' → ' + c.selesai + ' (' + c.selesaiOleh + ', ' + fdtY(pdt(c.selesaiPada)) + ')' : ''));
@@ -5451,6 +5507,66 @@ function reportModal(t) {
     });
   });
 }
+
+
+/* ====================== GALERI FOTO: all photos load at once, arrows / swipe / thumbnails ====================== */
+var galItems = [], galIdx = 0, galBlobs = {}, galSeq = 0;
+function openGallery(items, start, title) {
+  items = (items || []).filter(function (x) { return x && x.id; });
+  if (!items.length) { toast('Tidak ada foto.'); return; }
+  galItems = items; galIdx = Math.max(0, Math.min(start || 0, items.length - 1)); galSeq++;
+  $('galTitle').textContent = title || 'Foto';
+  var th = $('galThumbs'); th.innerHTML = '';
+  items.forEach(function (it, i) { var b = el('button', '', '…'); b.type = 'button'; b.title = it.cap || ''; b.onclick = function () { galShow(i); }; th.appendChild(b); });
+  th.hidden = items.length < 2; $('galPrev').hidden = $('galNext').hidden = items.length < 2;
+  $('gal').hidden = false;
+  galShow(galIdx);
+  var seq = galSeq, queue = items.map(function (it, i) { return i; });
+  queue.sort(function (a, b) { return Math.abs(a - galIdx) - Math.abs(b - galIdx); });  // the photo you clicked first, then its neighbours
+  function next() {
+    if (seq !== galSeq || !queue.length) return Promise.resolve();
+    var i = queue.shift(), it = items[i];
+    if (galBlobs[it.id]) { galPaint(i); return next(); }
+    return call('getFile', { id: it.id, ctx: it.ctx }).then(function (f) {
+      var bin = atob(f.data), arr = new Uint8Array(bin.length); for (var k = 0; k < bin.length; k++) arr[k] = bin.charCodeAt(k);
+      galBlobs[it.id] = { url: URL.createObjectURL(new Blob([arr], { type: f.mime })), mime: f.mime, name: f.name };
+    }, function (e) { galBlobs[it.id] = { err: errText(e) }; }).then(function () { if (seq === galSeq) galPaint(i); return next(); });
+  }
+  next(); next(); next();
+}
+function galPaint(i) {
+  var it = galItems[i], b = galBlobs[it.id], t = $('galThumbs').children[i];
+  if (t && b) { t.innerHTML = ''; if (b.url && /^image\//.test(b.mime)) { var im = new Image(); im.src = b.url; im.alt = ''; t.appendChild(im); } else t.textContent = b.err ? '⚠' : 'PDF'; }
+  if (i === galIdx) galShow(i);
+}
+function galShow(i) {
+  galIdx = i;
+  var it = galItems[i], b = galBlobs[it.id], st = $('galStage');
+  $('galCount').textContent = galItems.length > 1 ? (i + 1) + ' / ' + galItems.length : '';
+  $('galCap').textContent = it.cap || '';
+  $('galPrev').disabled = i === 0; $('galNext').disabled = i === galItems.length - 1;
+  $$('#galThumbs button').forEach(function (x, k) { x.classList.toggle('on', k === i); if (k === i) x.scrollIntoView({ block: 'nearest', inline: 'center' }); });
+  st.innerHTML = '';
+  if (!b) { st.textContent = 'Memuat foto…'; $('galDl').hidden = true; return; }
+  if (b.err) { st.textContent = b.err; $('galDl').hidden = true; return; }
+  if (/^image\//.test(b.mime)) { var im = new Image(); im.src = b.url; im.alt = it.cap || ''; st.appendChild(im); }
+  else { var fr = document.createElement('iframe'); fr.src = b.url; st.appendChild(fr); }
+  $('galDl').href = b.url; $('galDl').download = b.name || 'foto'; $('galDl').hidden = false;
+}
+function galClose() { $('gal').hidden = true; $('galStage').innerHTML = ''; galSeq++; }
+$('galClose').onclick = galClose;
+$('galPrev').onclick = function () { if (galIdx > 0) galShow(galIdx - 1); };
+$('galNext').onclick = function () { if (galIdx < galItems.length - 1) galShow(galIdx + 1); };
+$('gal').addEventListener('click', function (e) { if (e.target === this) galClose(); });
+document.addEventListener('keydown', function (e) {
+  if ($('gal').hidden) return;
+  if (e.key === 'ArrowLeft') $('galPrev').onclick(); else if (e.key === 'ArrowRight') $('galNext').onclick(); else if (e.key === 'Escape') galClose();
+});
+(function () { var x0 = null; var m = $('galStage');
+  m.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+  m.addEventListener('touchend', function (e) { if (x0 === null) return; var dx = e.changedTouches[0].clientX - x0; x0 = null; if (dx > 40) $('galPrev').onclick(); else if (dx < -40) $('galNext').onclick(); }, { passive: true });
+})();
+function galBtn(label, items, title) { var b = el('button', 'mini-btn', label); b.type = 'button'; b.onclick = function () { openGallery(items, 0, title); }; return b; }
 
 /* ====================== FILE VIEWER (inside the website, no Drive access needed) ====================== */
 function driveId(u) { var m = String(u).match(/\/d\/([-\w]{20,})/) || String(u).match(/[?&]id=([-\w]{20,})/); return m ? m[1] : ''; }
