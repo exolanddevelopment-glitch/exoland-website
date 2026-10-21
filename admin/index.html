@@ -532,6 +532,29 @@
   .tbl tr.pb-sel td { background:var(--tint, #ede7fd); }
   .prog { height:7px; background:var(--subtle); border-radius:9px; overflow:hidden; margin-top:4px; min-width:70px; } .prog i { display:block; height:100%; background:#22c55e; }
   .jl-veh-chips { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; }
+
+  .ks-cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:14px; max-width:1360px; margin-bottom:16px; }
+  .ks-card { display:flex; flex-direction:column; justify-content:flex-start; text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:16px 18px; cursor:pointer; color:var(--ink); font:inherit; }
+  .ks-card:hover { border-color:color-mix(in srgb, var(--ink) 30%, var(--line)); }
+  .ks-card.on { border-color:var(--accent); box-shadow:0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent); }
+  .ks-card h3 { margin:0; font-size:18px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .ks-card .big { font-size:28px; font-weight:800; letter-spacing:-.02em; margin-top:8px; } .ks-card .big small { font-size:14px; color:var(--muted); font-weight:600; }
+  .ks-card .row4 { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin-top:10px; font-size:12.5px; color:var(--muted); } .ks-card .row4 b { display:block; color:var(--ink); font-size:15px; }
+  .ks-tools { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; max-width:1360px; }
+  .ks-legend { display:flex; flex-wrap:wrap; gap:12px; font-size:12.5px; color:var(--muted); } .ks-legend i { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:5px; vertical-align:-1px; }
+  .ks-floor { margin:0 0 14px; } .ks-floor h4 { margin:0 0 6px; font-size:13px; color:var(--muted); font-weight:700; }
+  .ks-tiles { display:grid; grid-template-columns:repeat(auto-fill, minmax(118px, 1fr)); gap:8px; }
+  .ks-tile { justify-content:flex-start; text-align:left; border-radius:12px; padding:9px 10px; border:1px solid var(--line); cursor:pointer; font:inherit; color:var(--ink); min-height:74px; display:flex; flex-direction:column; gap:2px; }
+  .ks-tile b { font-size:14px; } .ks-tile span { font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .ks-tile small { font-size:11px; opacity:.85; }
+  .ks-tile.on { outline:2px solid var(--accent); outline-offset:1px; }
+  .ks-legend i.ok { background:var(--ok-bg); } .ks-tile.ok { background:var(--ok-bg); border-color:color-mix(in srgb, var(--ok) 25%, transparent); }
+  .ks-tile.segera, .ks-legend i.segera { background:#fdebc8; } .ks-tile.segera { border-color:#f0c66b; }
+  .ks-tile.telat, .ks-legend i.telat { background:#fbd5d1; } .ks-tile.telat { border-color:#f2a69e; }
+  .ks-tile.kosong, .ks-legend i.kosong { background:var(--subtle); } .ks-tile.kosong { border-style:dashed; color:var(--muted); }
+  .ks-tile.salah, .ks-legend i.salah { background:repeating-linear-gradient(45deg, var(--subtle), var(--subtle) 4px, #fde68a 4px, #fde68a 8px); }
+  :root[data-theme="dark"] .ks-tile.segera, :root[data-theme="dark"] .ks-legend i.segera { background:#4a3410; } :root[data-theme="dark"] .ks-tile.telat, :root[data-theme="dark"] .ks-legend i.telat { background:#4c1d1d; }
+  :root[data-theme="dark"] .ks-tile.salah, :root[data-theme="dark"] .ks-legend i.salah { background:repeating-linear-gradient(45deg, #232329, #232329 4px, #5a4a12 4px, #5a4a12 8px); }
+  .idbox { display:grid; grid-template-columns:96px minmax(0,1fr); gap:6px; }
   .svc-next { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:6px; }
   .svc-box { background:var(--subtle); border:1px solid var(--line); border-radius:12px; padding:10px 12px; }
   .svc-box span { display:block; font-size:12.5px; color:var(--muted); font-weight:600; } .svc-box b { display:block; font-size:16px; } .svc-box small { color:var(--muted); font-size:12px; }
@@ -779,6 +802,9 @@
       <button class="nav" data-view="penyewa" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>
         Penyewa <span class="badge" data-tn-badge hidden></span></button>
+      <button class="nav" data-view="kos" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2M10 21v-3h4v3"/></svg>
+        Kos &amp; Apartemen <span class="badge" data-kos-badge hidden></span></button>
       <div class="nav-group">Admin</div>
       <button class="nav" data-view="set" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
@@ -1049,6 +1075,41 @@
     </section>
 
 
+
+    <!-- ================= KOS & APARTEMEN ================= -->
+    <section id="view-kos" hidden>
+      <div class="page-head" style="max-width:1360px">
+        <div><h1>Kos &amp; Apartemen</h1><p>Kamar dan unit sewa di gedung kos dan apartemen. Datanya sama dengan Penyewa (DBStatusSewa): satu baris per kamar, Aktif atau Kosong.</p></div>
+        <button class="btn sec" id="ksManage" type="button" style="width:auto;margin:0;padding:11px 18px" hidden>Atur properti</button>
+      </div>
+      <div class="ks-cards" id="ksCards"><div class="empty">Memuat…</div></div>
+      <div id="ksProp" hidden>
+        <div class="toolbar ks-tools">
+          <div class="segs" id="ksSegs">
+            <button type="button" data-ksf="" class="on">Semua</button>
+            <button type="button" data-ksf="kosong">Kosong</button>
+            <button type="button" data-ksf="telat">Telat</button>
+            <button type="button" data-ksf="segera">Jatuh tempo dekat</button>
+            <button type="button" data-ksf="habis">Kontrak habis ≤ 30 hari</button>
+          </div>
+          <div class="ks-legend"><span><i class="ok"></i>Lunas</span><span><i class="segera"></i>Jatuh tempo dekat</span><span><i class="telat"></i>Telat</span><span><i class="kosong"></i>Kosong</span><span><i class="salah"></i>Data salah</span></div>
+        </div>
+        <div class="grid-bukti tn-split" id="ksSplit">
+          <div class="tn-listcol"><div id="ksGrid"></div></div>
+          <div class="tn-detailcol sticky">
+            <div class="card">
+              <div class="empty" id="ksEmpty">Pilih kamar / unit.</div>
+              <div id="ksBody" hidden>
+                <button class="link back" id="ksBack" type="button">← Kembali ke kamar</button>
+                <div class="tn-head"><div class="avatar plot" id="ksAv">🚪</div><div style="min-width:0"><h2 id="ksTitle"></h2><div class="muted" id="ksSub"></div></div><span class="st" id="ksState"></span></div>
+                <div id="ksDetail"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ================= PENGECEKAN TANAH ================= -->
     <section id="view-cek" hidden>
       <div class="page-head" style="max-width:1360px">
@@ -1205,11 +1266,11 @@
               </div>
               <div id="tnDocsWrap">
                 <h3 class="tn-h3">Dokumen (Google Drive)</h3>
-                <p class="hint" style="margin:0 0 8px">Foto KTP, foto penyewa, scan kontrak. Disimpan di folder Drive khusus penyewa ini (opsional).</p>
+                <p class="hint" style="margin:0 0 8px">Foto KTP / SIM / paspor, foto penyewa, scan kontrak. Disimpan di folder Drive khusus penyewa ini (opsional).</p>
                 <div class="doc-list" id="tnDocs" data-ctx="penyewa"></div>
                 <div id="tnDocUp">
                   <div style="margin-top:10px">
-                    <div class="fld"><label for="tnDocJenis">Jenis</label><select id="tnDocJenis"><option>KTP</option><option>Foto penyewa</option><option>Kontrak</option><option>Lainnya</option></select></div>
+                    <div class="fld"><label for="tnDocJenis">Jenis</label><select id="tnDocJenis"><option value="Identitas">Identitas (KTP / SIM / Paspor)</option><option>Foto penyewa</option><option>Kontrak</option><option>Lainnya</option></select></div>
                     <div class="fld"><label for="tnDocFile">File (foto atau PDF)</label><input id="tnDocFile" type="file" accept="image/*,application/pdf" multiple></div>
                   </div>
                   <div class="files" id="tnDocList"></div>
@@ -1701,7 +1762,7 @@ function call(fn, arg) {
   }, function () { throw new Error('Tidak ada koneksi ke server. Cek internet lalu coba lagi.'); })
     .then(function (j) {
       if (j.ok) return j.data;
-      if (j.code === 'AUTH' || j.code === 'DENIED') signOut(j.error);
+      if (j.code === 'AUTH' || j.code === 'DENIED') signOut(j.code === 'AUTH' && String(idToken).indexOf('S.') === 0 ? 'Sesi login berakhir (12 jam tidak dipakai, atau sudah 7 hari). Silakan masuk lagi.' : j.error);
       throw new Error(j.error || 'Terjadi kesalahan.');
     });
 }
@@ -1709,7 +1770,8 @@ function errText(e) { return (e && e.message) ? e.message : String(e); }
 /* ---------- speed: every page first shows the data it had last time (kept in this browser), then refreshes it.
  * The engine still checks access on every call; the copy is only for showing the page faster. Cleared on Keluar. */
 var CACHE_V = 'c1';
-function tokEmail() { try { return JSON.parse(atob(idToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).email || ''; } catch (e) { return ''; } }
+var sesEmail = '';
+function tokEmail() { if (sesEmail) return sesEmail; try { return JSON.parse(atob(idToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).email || ''; } catch (e) { return ''; } }
 function ckey(fn) { return 'elc:' + CACHE_V + ':' + String(tokEmail()).toLowerCase() + ':' + fn; }
 function cacheRead(fn) { try { var v = localStorage.getItem(ckey(fn)); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
 var lastWrite = {};  // when a save already gave us newer data, a slower background refresh must not overwrite it
@@ -1752,15 +1814,17 @@ $$('[data-theme-switch]').forEach(function (s) {
 applyTheme(document.documentElement.getAttribute('data-theme') || 'light');
 
 /* ---------- navigation ---------- */
-var VIEWS = ['dash', 'kal', 'tugas', 'set', 'soon', 'catat', 'bukti', 'jalan', 'pbb', 'penyewa', 'tanah', 'cek'];
+var VIEWS = ['dash', 'kal', 'tugas', 'set', 'soon', 'catat', 'bukti', 'jalan', 'pbb', 'penyewa', 'kos', 'tanah', 'cek'];
 var SOON = {
   'soon-edai': ['Ask EDAI', 'Exotic Land Development AI', 'Tanya apa saja tentang data tanah, penyewa, dan pembayaran dalam bahasa sehari-hari, misalnya "siapa yang telat bayar bulan ini?" atau "berapa pemasukan Meikarta tahun ini?". EDAI menjawab dari database perusahaan.']
 
 };
 var curView = 'dash';
+function saveWhere() { try { localStorage.setItem('elWhere', JSON.stringify({ v: curView, jt: typeof jlTab === 'string' ? jlTab : '', st: typeof setTab === 'string' ? setTab : '' })); history.replaceState(null, '', '#' + curView); } catch (e) {} }
+function readWhere() { try { return JSON.parse(localStorage.getItem('elWhere') || '{}') || {}; } catch (e) { return {}; } }
 /* ---------- access per page: "-" (Akses ditolak), "L" (lihat), "U" (ubah). The engine checks it again on every call. ---------- */
-var PAGE_NAME = { dash: 'Dashboard', kal: 'Kalender', tugas: 'Tugas', catat: 'Catat pembayaran', bukti: 'Riwayat pembayaran', jalan: 'Perjalanan Kantor', pbb: 'PBB', penyewa: 'Penyewa', tanah: 'Data tanah', cek: 'Pengecekan tanah', set: 'Pengaturan' };
-function lv(page) { return me && me.perms ? (me.perms[page] || '-') : '-'; }
+var PAGE_NAME = { dash: 'Dashboard', kal: 'Kalender', tugas: 'Tugas', catat: 'Catat pembayaran', bukti: 'Riwayat pembayaran', jalan: 'Perjalanan Kantor', pbb: 'PBB', penyewa: 'Penyewa', kos: 'Kos & Apartemen', tanah: 'Data tanah', cek: 'Pengecekan tanah', set: 'Pengaturan' };
+function lv(page) { if (me && me.owner) return 'U'; return me && me.perms ? (me.perms[page] || '-') : '-'; }
 function canPay() { return lv('catat') === 'U'; }
 function isAdmin() { return !!(me && (me.owner || me.heavy)); }
 function applyLocks() {
@@ -1778,7 +1842,7 @@ function show(view) {
   var sec = SOON[view] ? 'soon' : view;
   var denied = PAGE_NAME[view] && lv(view) === '-';
   if (denied) { $('deniedPage').textContent = PAGE_NAME[view]; $('deniedOwner').textContent = me && me.ownerName ? me.ownerName : 'Pemilik'; sec = 'denied'; }
-  curView = view;
+  curView = view; saveWhere();
   VIEWS.concat(['denied']).forEach(function (v) { $('view-' + v).hidden = v !== sec; });
   $$('.viewonly').forEach(function (x) { x.remove(); });
   if (!denied && PAGE_NAME[view] && lv(view) === 'L') {
@@ -1798,6 +1862,7 @@ function show(view) {
   if (view === 'jalan') loadTrips();
   if (view === 'cek') loadChecks();
   if (view === 'pbb') loadPbb();
+  if (view === 'kos') loadKos();
   if (view === 'set') openSetTab(setTab);
   window.scrollTo(0, 0);
   setTimeout(fitAll, 0);
@@ -1821,7 +1886,7 @@ function fitSplit(id, minW) {
   var top = sp.getBoundingClientRect().top + window.scrollY;
   sp.style.height = Math.max(460, window.innerHeight - top - 20) + 'px';
 }
-function fitAll() { fitSplit('tnSplit', 1181); fitSplit('split', 900); fitSplit('tdSplit', 1181); fitSplit('jlSplit', 1181); fitSplit('ckSplit', 1181); fitSplit('pbSplit', 1181); }
+function fitAll() { fitSplit('tnSplit', 1181); fitSplit('split', 900); fitSplit('tdSplit', 1181); fitSplit('jlSplit', 1181); fitSplit('ckSplit', 1181); fitSplit('pbSplit', 1181); fitSplit('ksSplit', 1181); }
 window.addEventListener('resize', function () { clearTimeout(fitAll.t); fitAll.t = setTimeout(fitAll, 120); });
 /* ---------- files ---------- */
 function readFiles(input, opts) {
@@ -2878,6 +2943,7 @@ $('tq').oninput = renderTasks;
 /* ====================== PENGATURAN ====================== */
 var setTab = 'log', setCache = {}, cekLevel = '', errJenis = '';
 function openSetTab(tab) {
+  setTimeout(saveWhere, 0);
   setTab = tab;
   $$('.set-tab').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-st') === tab); });
   ['log', 'cek', 'err', 'users', 'backup', 'soon'].forEach(function (x) { $('st-' + x).hidden = x !== tab; });
@@ -3081,6 +3147,21 @@ function fieldBox(id, label, input, hint) {
   return w;
 }
 function inp(type, val, attrs) { var i = document.createElement('input'); i.type = type; i.value = val === undefined || val === null ? '' : val; for (var k in (attrs || {})) i.setAttribute(k, attrs[k]); return i; }
+/* ID of the tenant: KTP / SIM / Paspor (foreigners) + the number */
+var ID_HINT = { KTP: '16 angka (NIK)', SIM: '12–16 angka', Paspor: 'Huruf + angka, misalnya X1234567' };
+function idField(jenis, val, hint) {
+  jenis = jenis || 'KTP';
+  var w = el('div', 'idbox'); w.id = 'idbox_' + Math.random().toString(36).slice(2, 7);
+  var sel = document.createElement('select'); sel.id = 'f_idJenis'; sel.setAttribute('aria-label', 'Jenis identitas');
+  ['KTP', 'SIM', 'Paspor'].forEach(function (x) { var o = el('option', '', x); o.value = x; sel.appendChild(o); }); sel.value = jenis;
+  var i = inp('text', val || '', { maxlength: 20, id: 'f_ktp', autocomplete: 'off' });
+  function upd() { i.placeholder = ID_HINT[sel.value]; i.setAttribute('inputmode', sel.value === 'Paspor' ? 'text' : 'numeric'); i.className = sel.value === 'Paspor' ? '' : 'num'; }
+  sel.addEventListener('change', upd); upd();
+  w.appendChild(sel); w.appendChild(i);
+  var fb = fieldBox('ktp', 'No. identitas', w, hint);
+  fb.querySelector('label').htmlFor = 'f_ktp';
+  return fb;
+}
 function buildForm(t, canEdit) {
   var f = $('tnForm'); f.innerHTML = '';
   var sk = t.siklus || (tnMode === 'new' ? 'Bulanan' : '');
@@ -3090,7 +3171,7 @@ function buildForm(t, canEdit) {
   var inv = inp('text', t.inv, { list: 'tanahList', autocomplete: 'off', placeholder: 'Contoh: Waru 012' });
   var rows = [
     ['one', fieldBox('nama', 'Nama penyewa', inp('text', t.nama, { maxlength: 120 }))],
-    ['row', fieldBox('ktp', 'No. KTP (NIK)', inp('text', t.ktp, { inputmode: 'numeric', maxlength: 20, placeholder: '16 angka', class: 'num' })), fieldBox('wa', 'No WhatsApp', inp('tel', t.wa, { placeholder: '08…' }))],
+    ['row', idField(t.idJenis, t.ktp), fieldBox('wa', 'No WhatsApp', inp('tel', t.wa, { placeholder: '08…' }))],
     ['row', fieldBox('inv', 'Inventaris', inv, 'Kode dari DBTanah, muncul saat diketik.'), fieldBox('unit', 'No Unit', inp('text', t.unit, { placeholder: 'Pakai - kalau tidak ada' }))],
     ['row', fieldBox('siklus', 'Siklus bayar', s, once ? 'Seluruh kontrak dibayar sekali di depan.' : 'Seberapa sering penyewa membayar.'),
       fieldBox('harga', once ? 'Harga seluruh kontrak (Rp)' : 'Harga per pembayaran (Rp)', inp('text', t.harga ? Number(t.harga).toLocaleString('id-ID') : '', { inputmode: 'numeric', class: 'num money' }))],
@@ -3123,7 +3204,7 @@ function buildForm(t, canEdit) {
 }
 function readForm() {
   var g = function (id) { var e = $('f_' + id); return e ? e.value : ''; };
-  return { key: tnMode === 'new' ? '' : tnSel.key, nama: g('nama'), ktp: g('ktp'), wa: g('wa'), inv: g('inv'), unit: g('unit'), siklus: readSiklus('siklus'), harga: num(g('harga')),
+  return { key: tnMode === 'new' ? '' : tnSel.key, nama: g('nama'), ktp: g('ktp'), idJenis: g('idJenis') || 'KTP', wa: g('wa'), inv: g('inv'), unit: g('unit'), siklus: readSiklus('siklus'), harga: num(g('harga')),
     mulaiIso: g('mulai'), selesaiIso: g('selesai'), tempo: g('tempo'), deposit: num(g('deposit')), awalIso: g('awal'), catatan: g('catatan') };
 }
 function openTenant(t) {
@@ -3245,7 +3326,7 @@ function buildNewForm(pre) {
   var f = $('tnForm'); f.innerHTML = '';
   f.appendChild(fieldBox('nama', 'Nama penyewa', inp('text', '', { maxlength: 120 })));
   var r = el('div', 'row');
-  r.appendChild(fieldBox('ktp', 'No. KTP (NIK)', inp('text', '', { inputmode: 'numeric', maxlength: 20, placeholder: '16 angka', class: 'num' }), 'Sama untuk semua plot orang ini.'));
+  r.appendChild(idField('KTP', '', 'Sama untuk semua plot orang ini.'));
   r.appendChild(fieldBox('wa', 'No WhatsApp', inp('tel', '', { placeholder: '08…' }))); f.appendChild(r);
   f.appendChild(el('h3', 'tn-h3', 'Plot yang disewa'));
   var pl = el('div', 'plots'); pl.id = 'tnPlots'; f.appendChild(pl);
@@ -3261,7 +3342,7 @@ function buildNewForm(pre) {
 function saveNewTenant(btn) {
   syncPlots();
   var g = function (id) { var e = $('f_' + id); return e ? e.value : ''; };
-  var p = { nama: g('nama'), ktp: g('ktp'), wa: g('wa'), catatan: g('catatan'), plots: newPlots };
+  var p = { nama: g('nama'), ktp: g('ktp'), idJenis: g('idJenis') || 'KTP', wa: g('wa'), catatan: g('catatan'), plots: newPlots };
   $('tnErr').hidden = true; btn.disabled = true; btn.textContent = 'Menyimpan…';
   call('saveTenantsMulti', p).then(function (r) {
     tnMode = 'view';
@@ -3860,6 +3941,7 @@ function applyTrips(d, keepId, seq) {
   if (t) openTrip(t); else closeTrip();
 }
 function renderJl() {
+  saveWhere();
   if (!jlData) return;
   $$('[data-jt]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-jt') === jlTab); });
   ['trips', 'klaim', 'veh'].forEach(function (x) { $('jt-' + x).hidden = x !== jlTab; });
@@ -4443,14 +4525,14 @@ $('jlVehNew').onclick = function () { vehicleModal(null); };
 $('jlBack').onclick = function () { if (jlDirtyCheck()) return; closeTrip(); renderTripList(); };
 
 /* ====================== PENGGUNA & AKSES ====================== */
-var ACC_PAGES = ['dash', 'kal', 'tugas', 'catat', 'bukti', 'jalan', 'pbb', 'penyewa', 'tanah', 'cek', 'set'];
-var ACC_SHORT = { dash: 'Dashboard', kal: 'Kalender', tugas: 'Tugas', catat: 'Catat bayar', bukti: 'Riwayat bayar', jalan: 'Perjalanan', pbb: 'PBB', penyewa: 'Penyewa', tanah: 'Data tanah', cek: 'Cek tanah', set: 'Pengaturan' };
+var ACC_PAGES = ['dash', 'kal', 'tugas', 'catat', 'bukti', 'jalan', 'pbb', 'penyewa', 'kos', 'tanah', 'cek', 'set'];
+var ACC_SHORT = { dash: 'Dashboard', kal: 'Kalender', tugas: 'Tugas', catat: 'Catat bayar', bukti: 'Riwayat bayar', jalan: 'Perjalanan', pbb: 'PBB', penyewa: 'Penyewa', kos: 'Kos & Apt', tanah: 'Data tanah', cek: 'Cek tanah', set: 'Pengaturan' };
 var TEMPLATES = {
-  'Staf keuangan': { dash: 'L', kal: 'L', tugas: 'U', catat: 'U', bukti: 'U', jalan: 'U', pbb: 'U', penyewa: 'U', tanah: 'L', cek: 'L', set: '-' },
-  'Staf tanah': { dash: '-', kal: '-', tugas: 'U', catat: '-', bukti: '-', jalan: 'U', pbb: 'L', penyewa: '-', tanah: 'U', cek: 'U', set: '-' },
-  'Manajemen': { dash: 'L', kal: 'L', tugas: 'L', catat: '-', bukti: 'L', jalan: 'U', pbb: 'L', penyewa: 'L', tanah: 'L', cek: 'L', set: '-' },
-  'Semua (ubah)': { dash: 'U', kal: 'U', tugas: 'U', catat: 'U', bukti: 'U', jalan: 'U', pbb: 'U', penyewa: 'U', tanah: 'U', cek: 'U', set: 'L' },
-  'Tidak ada': { dash: '-', kal: '-', tugas: '-', catat: '-', bukti: '-', jalan: '-', pbb: '-', penyewa: '-', tanah: '-', cek: '-', set: '-' }
+  'Staf keuangan': { dash: 'L', kal: 'L', tugas: 'U', catat: 'U', bukti: 'U', jalan: 'U', pbb: 'U', penyewa: 'U', kos: 'U', tanah: 'L', cek: 'L', set: '-' },
+  'Staf tanah': { dash: '-', kal: '-', tugas: 'U', catat: '-', bukti: '-', jalan: 'U', pbb: 'L', penyewa: '-', kos: '-', tanah: 'U', cek: 'U', set: '-' },
+  'Manajemen': { dash: 'L', kal: 'L', tugas: 'L', catat: '-', bukti: 'L', jalan: 'U', pbb: 'L', penyewa: 'L', kos: 'L', tanah: 'L', cek: 'L', set: '-' },
+  'Semua (ubah)': { dash: 'U', kal: 'U', tugas: 'U', catat: 'U', bukti: 'U', jalan: 'U', pbb: 'U', penyewa: 'U', kos: 'U', tanah: 'U', cek: 'U', set: 'L' },
+  'Tidak ada': { dash: '-', kal: '-', tugas: '-', catat: '-', bukti: '-', jalan: '-', pbb: '-', penyewa: '-', kos: '-', tanah: '-', cek: '-', set: '-' }
 };
 var newUserRow = false;
 var userDrafts = {};   // unsaved changes per user, kept when the list redraws (after another card is saved or data refreshes)
@@ -4523,6 +4605,132 @@ function renderUsers(d) {
   if (!edit) $('usersHint').textContent = 'Hanya Pemilik yang bisa mengubah akses.';
 }
 $('userAdd').onclick = function () { newUserRow = true; renderUsers(setCache.users); var e = $('usersBox').querySelector('input[type=email]'); if (e) e.focus(); };
+
+/* ====================== KOS & APARTEMEN ====================== */
+var ksData = null, ksProp = null, ksSel = null, ksFilter = '';
+function loadKos() {
+  if (!ksData) emptyBox($('ksCards'), 'Memuat…');
+  return swr('getKos', null, function (d) { applyKos(d); }).catch(function (e) { emptyBox($('ksCards'), 'Gagal memuat: ' + errText(e)); });
+}
+function applyKos(d) {
+  ksData = d; cacheWrite('getKos', d);
+  $('ksManage').hidden = !d.canManage;
+  if (!ksProp || !d.props.some(function (p) { return p.nama === ksProp; })) ksProp = d.props.length ? d.props[0].nama : null;
+  var telat = d.rooms.filter(function (r) { return r.lvl === 'telat'; }).length;
+  $$('[data-kos-badge]').forEach(function (x) { x.hidden = !telat; x.textContent = telat; x.title = telat + ' kamar telat bayar'; });
+  renderKos();
+}
+function ksMonthly(r) { return r.kosong || r.once || !r.harga ? 0 : r.harga / Math.max(1, r.bulan || 1); }
+function renderKos() {
+  var box = $('ksCards'); box.innerHTML = '';
+  if (!ksData.props.length) { emptyBox(box, ksData.canManage ? 'Belum ada properti. Tekan "Atur properti".' : 'Belum ada properti.'); $('ksProp').hidden = true; return; }
+  ksData.props.forEach(function (p) {
+    var rs = ksData.rooms.filter(function (r) { return r.prop === p.nama; }), isi = rs.filter(function (r) { return !r.kosong; });
+    var tel = rs.filter(function (r) { return r.lvl === 'telat'; }).length, mon = isi.reduce(function (a, r) { return a + ksMonthly(r); }, 0);
+    var c = el('button', 'ks-card' + (ksProp === p.nama ? ' on' : '')); c.type = 'button';
+    var h = el('h3', '', p.nama); h.appendChild(el('span', 'st ' + (p.tipe === 'Apartemen' ? 'blue' : 'grey'), p.tipe)); c.appendChild(h);
+    var big = el('div', 'big', isi.length + ' / ' + rs.length + ' '); big.appendChild(el('small', '', rs.length ? 'terisi · ' + Math.round(isi.length / rs.length * 100) + '%' : 'belum ada kamar')); c.appendChild(big);
+    var bar = el('div', 'prog'); var fl = el('i'); fl.style.width = (rs.length ? Math.round(isi.length / rs.length * 100) : 0) + '%'; bar.appendChild(fl); c.appendChild(bar);
+    var r4 = el('div', 'row4');
+    [['Kosong', rs.length - isi.length], ['Telat', tel], ['± per bulan', mon ? rpShort(mon) : '-']].forEach(function (x) { var d = el('div', '', x[0]); d.appendChild(el('b', x[0] === 'Telat' && x[1] ? 'neg' : '', String(x[1]))); r4.appendChild(d); });
+    c.appendChild(r4);
+    if (!rs.length) c.appendChild(el('p', 'hint', 'Belum ada baris di DBStatusSewa dengan inventaris: ' + p.invs.join(', ') + '. Tambahkan kamarnya di Penyewa → "+ Unit kosong".'));
+    c.onclick = function () { ksProp = p.nama; ksSel = null; renderKos(); };
+    box.appendChild(c);
+  });
+  $('ksProp').hidden = !ksProp;
+  if (ksProp) renderKosGrid();
+}
+function ksFloor(unit) { var m = String(unit).toUpperCase().replace(/\s+/g, '').match(/^(\d[A-Z])-/); return m ? 'Tower ' + m[1] : 'Lainnya'; }
+function ksUnitSort(a, b) {
+  var na = String(a.unit).toUpperCase().replace(/\s+/g, ''), nb = String(b.unit).toUpperCase().replace(/\s+/g, '');
+  return na.localeCompare(nb, 'id', { numeric: true }) || (a.kosong ? 1 : -1);
+}
+function renderKosGrid() {
+  $$('#ksSegs [data-ksf]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-ksf') === ksFilter); });
+  var p = ksData.props.filter(function (x) { return x.nama === ksProp; })[0];
+  var rs = ksData.rooms.filter(function (r) { return r.prop === ksProp; }).filter(function (r) {
+    if (ksFilter === 'habis') return r.habis !== undefined;
+    return !ksFilter || r.lvl === ksFilter;
+  }).sort(ksUnitSort);
+  var box = $('ksGrid'); box.innerHTML = '';
+  if (!rs.length) { emptyBox(box, ksFilter ? 'Tidak ada kamar dengan status ini.' : 'Belum ada kamar.'); }
+  var apt = p && p.tipe === 'Apartemen', groups = {}, order = [];
+  rs.forEach(function (r) { var g = (p.invs.length > 1 ? r.inv + (apt ? ' · ' : '') : '') + (apt ? ksFloor(r.unit) : ''); if (!groups[g]) { groups[g] = []; order.push(g); } groups[g].push(r); });
+  order.forEach(function (g) {
+    var sec = el('div', 'ks-floor'); if (g) sec.appendChild(el('h4', '', g));
+    var tiles = el('div', 'ks-tiles');
+    groups[g].forEach(function (r) {
+      var t = el('button', 'ks-tile ' + r.lvl + (ksSel === r.key ? ' on' : '')); t.type = 'button'; t.title = (r.nama || 'Kosong') + (r.st ? ' · ' + r.st : '');
+      t.appendChild(el('b', '', r.unit || '-'));
+      t.appendChild(el('span', '', r.kosong ? 'Kosong' : r.nama.split('/')[0]));
+      t.appendChild(el('small', '', r.kosong ? (r.harga ? rpShort(r.harga) : '') : (r.habis !== undefined ? (r.habis < 0 ? 'Kontrak habis' : 'Habis ' + r.habis + ' hr') : (r.st || ''))));
+      t.onclick = function () { openKosRoom(r); };
+      tiles.appendChild(t);
+    });
+    sec.appendChild(tiles); box.appendChild(sec);
+  });
+  var r0 = ksSel && ksData.rooms.filter(function (r) { return r.key === ksSel; })[0];
+  if (r0) openKosRoom(r0, true); else closeKosRoom();
+  setTimeout(fitAll, 0);
+}
+function closeKosRoom() { ksSel = null; $('ksEmpty').hidden = false; $('ksBody').hidden = true; $('ksSplit').classList.remove('show-detail'); $('view-kos').classList.remove('detail-open'); }
+function openKosRoom(r, noRedraw) {
+  ksSel = r.key;
+  $('ksTitle').textContent = r.kosong ? 'Unit ' + r.unit + ' · Kosong' : r.nama;
+  $('ksSub').textContent = r.inv + ' · unit ' + r.unit + (r.id ? ' · ' + r.id : '');
+  var cls = { ok: 'white', segera: 'orange', telat: 'red', kosong: 'grey', salah: 'red' }[r.lvl];
+  $('ksState').className = 'st ' + cls; $('ksState').textContent = r.kosong ? 'Kosong' : r.st || '-';
+  var box = $('ksDetail'); box.innerHTML = '';
+  var acts = el('div', 'tn-actions');
+  if (r.kosong) {
+    box.appendChild(kvGrid([['Harga', r.harga ? rp(r.harga) + ' / ' + (r.siklus || 'bulan') : '-'], r.catatan ? ['Catatan', r.catatan] : null]));
+    if (ksData.canTenant && lv('penyewa') === 'U') acts.appendChild(btnEl('Isi penyewa', '', function () { tnPendingKey = r.key; show('penyewa'); }));
+  } else {
+    var wa = null; if (r.wa) { wa = el('a', '', r.wa); wa.href = 'https://wa.me/' + String(r.wa).replace(/\D/g, '').replace(/^0/, '62'); wa.target = '_blank'; wa.rel = 'noopener'; }
+    box.appendChild(kvGrid([['WhatsApp', wa || '-'], ['Siklus', r.siklus || '-'], ['Harga', rp(r.harga)], ['Mulai', r.mulaiIso ? dmy(parseIso(r.mulaiIso)) : '-'],
+      r.dueDay ? ['Bayar tiap', 'tanggal ' + r.dueDay] : ['Selesai', r.selesaiIso ? dmy(parseIso(r.selesaiIso)) + (r.habis !== undefined ? (r.habis < 0 ? ' (sudah lewat)' : ' (' + r.habis + ' hari lagi)') : '') : '-'],
+      ['Lunas s/d', r.lunasIso ? dmy(parseIso(r.lunasIso)) : '-'], r.catatan ? ['Catatan', r.catatan] : null]));
+    if (r.bad) box.appendChild(el('p', 'msg err', 'Ada tanggal yang salah di kontrak ini. Perbaiki di halaman Penyewa.'));
+    if (ksData.canPay && !r.bad) acts.appendChild(btnEl('Catat bayar', '', function () { payFor(r.key); }));
+    if (r.wa && (r.lvl === 'telat' || r.lvl === 'segera')) { var rm = el('a', 'btn sec', 'Ingatkan via WhatsApp'); rm.target = '_blank'; rm.rel = 'noopener';
+      rm.href = 'https://wa.me/' + String(r.wa).replace(/\D/g, '').replace(/^0/, '62') + '?text=' + encodeURIComponent('Halo ' + r.nama.split('/')[0].trim() + ', sewa ' + r.inv + ' unit ' + r.unit + ' sebesar ' + rp(r.harga) + (r.lunasIso ? ' sudah lunas sampai ' + dmy(parseIso(r.lunasIso)) : '') + '. Mohon dibayar ya. Terima kasih. - Exotic Land Development');
+      acts.appendChild(rm); }
+  }
+  if (ksData.canTenant) acts.appendChild(btnEl('Buka di Penyewa', 'sec', function () { tnPendingKey = r.key; show('penyewa'); }));
+  if (acts.children.length) box.appendChild(acts);
+  if (!r.kosong) {
+    box.appendChild(el('h3', 'tn-h3', 'Pembayaran terakhir'));
+    if (!r.pays.length) box.appendChild(el('div', 'muted', 'Belum ada pembayaran tercatat.'));
+    else box.appendChild(table(['Tanggal', 'Jenis', { t: 'Jumlah', cls: 'r' }, 'Lunas s/d'], r.pays.map(function (x) { return [{ t: x.tglIso ? dmy(parseIso(x.tglIso)) : '-', cls: 'num nowrap' }, x.jenis, { t: rp(x.jumlah), cls: 'r num nowrap' }, { t: x.sd || '-', cls: 'num nowrap' }]; })));
+  }
+  $('ksEmpty').hidden = true; $('ksBody').hidden = false; $('ksSplit').classList.add('show-detail'); $('view-kos').classList.add('detail-open'); fitAll();
+  if (!noRedraw) renderKosGridOnce();
+  if (window.matchMedia('(max-width: 1180px)').matches) window.scrollTo(0, 0);
+}
+function renderKosGridOnce() { if (renderKosGridOnce.busy) return; renderKosGridOnce.busy = true; try { renderKosGrid(); } finally { renderKosGridOnce.busy = false; } }
+function kosPropModal(p) {
+  jlModal(p ? 'Ubah properti' : 'Tambah properti', 'Kamar-kamarnya adalah baris di DBStatusSewa (Penyewa). Di sini cukup tulis kode inventarisnya.', function (b) {
+    var r = el('div', 'row'); r.appendChild(fieldBox('m_ks_nama', 'Nama', inp('text', p ? p.nama : '', { maxlength: 60, placeholder: 'Misalnya: Kost ACU 100OP' })));
+    var t = document.createElement('select'); ['Kos', 'Apartemen'].forEach(function (x) { var o = el('option', '', x); o.value = x; t.appendChild(o); }); t.value = p ? p.tipe : 'Kos';
+    r.appendChild(fieldBox('m_ks_tipe', 'Tipe', t)); b.appendChild(r);
+    b.appendChild(fieldBox('m_ks_inv', 'Kode inventaris (pisahkan dengan koma)', inp('text', p ? p.invs.join(', ') : '', { maxlength: 300, placeholder: 'Misalnya: Maphar 002A, Maphar 002B' }),
+      'Sama dengan kolom Inventaris di DBStatusSewa. "Sparman" juga mencakup "Sparman 001", "Sparman 002", dst.'));
+    b.appendChild(fieldBox('m_ks_cat', 'Catatan (opsional)', inp('text', p ? p.catatan : '', { maxlength: 200, placeholder: 'Alamat, dll.' })));
+    if (p) { var del = btnEl('Hapus dari daftar', 'danger', function () { if (!confirm('Hapus ' + p.nama + ' dari daftar Kos & Apartemen? Kamar dan penyewanya tetap ada di Penyewa.')) return; call('saveKosProp', { old: p.nama, hapus: true }).then(function (d) { $('jlModal').hidden = true; toast('Dihapus dari daftar.'); ksProp = null; applyKos(d); }).catch(function (e) { toast(errText(e)); }); }); del.style.marginTop = '10px'; b.appendChild(del); }
+  }, p ? 'Simpan' : 'Tambah', function () {
+    return call('saveKosProp', { old: p ? p.nama : '', nama: $('f_m_ks_nama').value, tipe: $('f_m_ks_tipe').value, invs: $('f_m_ks_inv').value.split(','), catatan: $('f_m_ks_cat').value })
+      .then(function (d) { ksProp = $('f_m_ks_nama').value.trim(); toast('Properti tersimpan.'); applyKos(d); });
+  });
+}
+function kosManage() {
+  jlModal('Atur properti', 'Pilih properti untuk diubah, atau tambah yang baru.', function (b) {
+    ksData.props.forEach(function (p) { var bt = btnEl(p.nama + ' · ' + p.tipe + ' · ' + p.invs.join(', '), 'sec', function () { kosPropModal(p); }); bt.style.marginTop = '8px'; bt.style.justifyContent = 'flex-start'; b.appendChild(bt); });
+  }, '+ Tambah properti', function () { setTimeout(function () { kosPropModal(null); }, 0); });
+}
+$('ksManage').onclick = kosManage;
+$('ksBack').onclick = function () { closeKosRoom(); renderKosGrid(); };
+$$('#ksSegs [data-ksf]').forEach(function (b) { b.onclick = function () { ksFilter = b.getAttribute('data-ksf'); renderKosGrid(); }; });
 
 /* ====================== PENGECEKAN TANAH ====================== */
 var ckData = null, ckSel = null, ckFilter = '', ckHealth = '';
@@ -5358,12 +5566,21 @@ $('signSave').onclick = function () {
 function jwtExp(t) { try { return JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).exp * 1000; } catch (e) { return 0; } }
 function showLogin(msg) { $('app').hidden = true; $('login').hidden = false; $('loginErr').hidden = !msg; $('loginErr').textContent = msg || ''; }
 function signOut(msg) {
-  idToken = null;
-  try { sessionStorage.removeItem('idt'); } catch (e) {}
+  idToken = null; sesEmail = '';
+  try { sessionStorage.removeItem('idt'); localStorage.removeItem('elSes'); } catch (e) {}
   try { google.accounts.id.disableAutoSelect(); } catch (e) {}
   renderGoogleButton(); showLogin(msg);
 }
-function onCredential(resp) { idToken = resp.credential; try { sessionStorage.setItem('idt', idToken); } catch (e) {} boot(); }
+function onCredential(resp) {
+  idToken = resp.credential; sesEmail = '';
+  $('gbtn').innerHTML = '<span class="muted">Memeriksa akses…</span>';
+  // Google's proof lasts 1 hour; swap it for the engine's own session (ends after 12 hours idle) so nobody is logged out while working
+  call('startSession').then(function (r) {
+    idToken = r.session; sesEmail = r.email;
+    try { localStorage.setItem('elSes', JSON.stringify({ t: r.session, e: r.email })); } catch (e) {}
+    boot();
+  }, function (e) { if (idToken) { renderGoogleButton(); showLogin(errText(e)); } });
+}
 function boot() {
   $('loginErr').hidden = true;
   $('gbtn').innerHTML = '<span class="muted">Memeriksa akses…</span>';
@@ -5385,14 +5602,16 @@ function boot() {
     if (payAny) { refreshSignSelects(); if (firstTime || !chosen) resetForm(); else renderList(); if (firstTime) refreshBadge(); }
     if (!firstTime) { if (lv(curView) === '-' && PAGE_NAME[curView]) show(curView); return; }
     var first = ['dash', 'tugas', 'catat', 'tanah', 'penyewa', 'bukti', 'jalan', 'kal', 'set'].filter(function (p) { return lv(p) !== '-'; })[0] || 'dash';
+    // after a refresh, go back to the page (and tab) the person was on
+    var w = readWhere(), want = (location.hash || '').slice(1) || w.v;
+    if (w.jt) jlTab = w.jt;
+    if (w.st) setTab = w.st;
+    if (want && (SOON[want] || (PAGE_NAME[want] && lv(want) !== '-'))) first = want;
     show(first);
   }).catch(function (e) {
     renderGoogleButton();
     if (!$('login').hidden) { $('loginErr').textContent = errText(e); $('loginErr').hidden = false; }
   });
-  clearTimeout(boot.t);
-  var left = jwtExp(idToken) - Date.now() - 60000;
-  if (left > 0) boot.t = setTimeout(function () { signOut('Sesi login berakhir. Silakan masuk lagi.'); }, left);
 }
 function renderGoogleButton() {
   if (!window.google || !google.accounts || !google.accounts.id) return;
@@ -5405,12 +5624,12 @@ function initGoogle() {
   }
   google.accounts.id.initialize({ client_id: APP_CONFIG.GOOGLE_CLIENT_ID, callback: onCredential, auto_select: true, cancel_on_tap_outside: false });
   renderGoogleButton();
-  var saved = null;
-  try { saved = sessionStorage.getItem('idt'); } catch (e) {}
-  if (saved && jwtExp(saved) - Date.now() > 120000) { idToken = saved; boot(); }
+  var ses = null;
+  try { ses = JSON.parse(localStorage.getItem('elSes') || 'null'); } catch (e) {}
+  if (ses && ses.t) { idToken = ses.t; sesEmail = ses.e || ''; boot(); }
   else google.accounts.id.prompt();
 }
-$$('[data-logout]').forEach(function (b) { b.onclick = function () { $('userMenu').hidden = true; cacheClear(); signOut(''); location.href = '/'; }; });
+$$('[data-logout]').forEach(function (b) { b.onclick = function () { $('userMenu').hidden = true; var t = idToken; var done = function () { cacheClear(); try { localStorage.removeItem('elWhere'); } catch (e) {} signOut(''); location.href = '/'; }; if (t && t.indexOf('S.') === 0) call('endSession', { session: t }).then(done, done); else done(); }; });
 (function waitForGoogle(n) {
   if (window.google && google.accounts && google.accounts.id) return initGoogle();
   if (n > 100) { $('gbtn').innerHTML = ''; return showLogin('Login Google gagal dimuat. Cek koneksi internet lalu muat ulang halaman.'); }
