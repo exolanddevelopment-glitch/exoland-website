@@ -695,7 +695,7 @@
      The split gets the height of the screen (set by fitSplit in the script), so nothing needs the page scrollbar. */
   .fit { overflow:hidden; align-items:stretch !important; }
   .fit > .tn-listcol, .fit > .bukti-listcol { display:flex; flex-direction:column; min-height:0; }
-  .fit #tnList, .fit #payList, .fit #tdList, .fit #jlList { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; }
+  .fit #tnList, .fit #payList, .fit #tdList, .fit #jlList, .fit #ckList, .fit #pbList, .fit #ksGrid { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; }
   .fit > .tn-detailcol, .fit > .bukti-detailcol { position:static; min-height:0; height:100%; overflow-y:auto; overscroll-behavior:contain; padding:2px 4px 2px 2px; }
   .fit ::-webkit-scrollbar { width:10px; } .fit ::-webkit-scrollbar-thumb { background:color-mix(in srgb, var(--muted) 45%, transparent); border-radius:10px; border:2px solid transparent; background-clip:padding-box; }
   .fit ::-webkit-scrollbar-track { background:transparent; }
@@ -4711,7 +4711,7 @@ function renderKosGrid() {
   var box = $('ksGrid'); box.innerHTML = '';
   if (!rs.length) { emptyBox(box, ksFilter ? 'Tidak ada kamar dengan status ini.' : 'Belum ada kamar.'); }
   var apt = p && p.tipe === 'Apartemen', groups = {}, order = [];
-  rs.forEach(function (r) { var g = apt ? ksTower(r) : (p.invs.length > 1 ? ksCode(p, r) : ''); if (!groups[g]) { groups[g] = []; order.push(g); } groups[g].push(r); });
+  rs.forEach(function (r) { var g = !apt && p.invs.length > 1 ? ksCode(p, r) : ''; if (!groups[g]) { groups[g] = []; order.push(g); } groups[g].push(r); });
   order.sort(function (a, b) { return a === 'Lainnya' ? 1 : b === 'Lainnya' ? -1 : a.localeCompare(b, 'id', { numeric: true }); });
   order.forEach(function (g) {
     var sec = el('div', 'ks-floor'); if (g) sec.appendChild(el('h4', '', g));
