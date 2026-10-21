@@ -257,6 +257,8 @@
   .kt-cats button.on { background:var(--accent, #7c3aed); border-color:var(--accent, #7c3aed); color:var(--accent-ink, #fff); font-weight:700; }
   .kt-mini { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; align-items:center; padding:8px 0; border-top:1px solid var(--line-2); font-size:13.5px; }
   .kt-mini:first-child { border-top:0; }
+  .jl-who div { font-weight:600; } .jl-who small { display:block; font-size:12px; margin-top:2px; }
+  .jl-appr { margin-top:12px; padding:10px 12px; background:var(--subtle); border-radius:10px; }
   .lz-more { padding:14px; text-align:center; color:var(--muted); font-size:13px; }
   /* moving dots on anything that is waiting: "Menyimpan .", "Menyimpan . .", "Menyimpan . . ." */
   .dots i { font-style:normal; opacity:0; animation:dot2 1.2s steps(1) infinite; }
@@ -573,6 +575,9 @@
   .ks-legend i.ok { background:var(--ok-bg); } .ks-tile.ok { background:var(--ok-bg); border-color:color-mix(in srgb, var(--ok) 25%, transparent); }
   .ks-tile.segera, .ks-legend i.segera { background:#fdebc8; } .ks-tile.segera { border-color:#f0c66b; }
   .ks-tile.telat, .ks-legend i.telat { background:#fbd5d1; } .ks-tile.telat { border-color:#f2a69e; }
+  .ks-tile.karyawan, .ks-legend i.karyawan { background:#e6ecfb; } .ks-tile.karyawan { border-color:#a9bdf0; }
+  :root[data-theme="dark"] .ks-tile.karyawan, :root[data-theme="dark"] .ks-legend i.karyawan { background:#1e2a4a; border-color:#3b5bab; }
+  .tag.gratis { background:#e6ecfb; color:#1e3a8a; } :root[data-theme="dark"] .tag.gratis { background:#1e2a4a; color:#a5b8f5; }
   .ks-tile.kosong, .ks-legend i.kosong { background:var(--subtle); } .ks-tile.kosong { border-style:dashed; color:var(--muted); }
   .ks-tile.salah, .ks-legend i.salah { background:repeating-linear-gradient(45deg, var(--subtle), var(--subtle) 4px, #fde68a 4px, #fde68a 8px); }
   :root[data-theme="dark"] .ks-tile.segera, :root[data-theme="dark"] .ks-legend i.segera { background:#4a3410; } :root[data-theme="dark"] .ks-tile.telat, :root[data-theme="dark"] .ks-legend i.telat { background:#4c1d1d; }
@@ -1108,6 +1113,7 @@
         </div>
       </div>
       <div id="jt-klaim" hidden>
+        <div class="segs" id="jlClaimSegs" style="margin-bottom:12px"><button type="button" data-jc="wait" class="on">Perlu tindakan</button><button type="button" data-jc="all">Semua klaim</button></div>
         <div class="tbl-wrap" id="jlClaims"><div class="empty">Memuat…</div></div>
         <p class="hint" id="jlClaimsHint"></p>
       </div>
@@ -1131,11 +1137,12 @@
           <div class="segs" id="ksSegs">
             <button type="button" data-ksf="" class="on">Semua</button>
             <button type="button" data-ksf="kosong">Kosong</button>
+            <button type="button" data-ksf="karyawan">Karyawan</button>
             <button type="button" data-ksf="telat">Telat</button>
             <button type="button" data-ksf="segera">Jatuh tempo dekat</button>
             <button type="button" data-ksf="habis">Kontrak habis ≤ 30 hari</button>
           </div>
-          <div class="ks-legend"><span><i class="ok"></i>Lunas</span><span><i class="segera"></i>Jatuh tempo dekat</span><span><i class="telat"></i>Telat</span><span><i class="kosong"></i>Kosong</span><span><i class="salah"></i>Data salah</span></div>
+          <div class="ks-legend"><span><i class="ok"></i>Lunas</span><span><i class="segera"></i>Jatuh tempo dekat</span><span><i class="telat"></i>Telat</span><span><i class="kosong"></i>Kosong</span><span><i class="karyawan"></i>Karyawan (gratis)</span><span><i class="salah"></i>Data salah</span></div>
         </div>
         <div class="grid-bukti tn-split" id="ksSplit">
           <div class="tn-listcol"><div id="ksGrid"></div></div>
@@ -1307,6 +1314,7 @@
             <div class="segs" id="tnSegs">
               <button type="button" data-ts="aktif" class="on">Aktif</button>
               <button type="button" data-ts="kosong">Kosong</button>
+              <button type="button" data-ts="gratis">Karyawan</button>
               <button type="button" data-ts="selesai">Selesai</button>
               <button type="button" data-ts="arsip">Arsip</button>
               <button type="button" data-ts="semua">Semua</button>
@@ -1788,6 +1796,7 @@ function parseIso(v) { var p = String(v || '').split('-'); return p.length === 3
 function parseDmy(v) { var p = String(v || '').split('/'); return p.length === 3 ? new Date(+p[2], +p[1] - 1, +p[0]) : null; }
 /* Siklus bayar = how often a tenant pays: Bulanan, Tahunan, "N Bulan", "N Tahun", or "Sekali bayar" (whole contract at once). */
 function isOnce(s) { return /sekali/i.test(String(s || '')); }
+function isGratis(s) { return /gratis/i.test(String(s || '')); }  // employee lives there for free: never late, not income
 function months(siklus, bulan) {
   if (bulan) return bulan;
   var s = String(siklus || '').toLowerCase(), m;
@@ -3166,6 +3175,7 @@ $$('#errSegs [data-ej]').forEach(function (b) { b.onclick = function () { errJen
 var tnData = null, tnSel = null, tnStatus = 'aktif', tnHealth = '', tnDirty = false, tnMode = 'view';
 /* Siklus bayar control: "Setiap [n] [Bulan|Tahun]" or "Sekali bayar". The select keeps the id f_<id>, the number f_<id>_n. */
 function parseSiklus(v) {
+  if (isGratis(v)) return { n: 1, unit: 'Gratis' };
   if (isOnce(v)) return { n: 1, unit: 'Sekali' };
   if (!String(v || '').trim()) return { n: 1, unit: 'Bulan' };
   var m = months(v); return m % 12 === 0 ? { n: m / 12, unit: 'Tahun' } : { n: m, unit: 'Bulan' };
@@ -3175,9 +3185,9 @@ function siklusControl(id, v, onChange) {
   var pre = el('span', 'muted', 'Setiap');
   var n = inp('number', p.n, { min: 1, max: 36, inputmode: 'numeric', 'aria-label': 'Jumlah' }); n.id = 'f_' + id + '_n'; n.className = 'num';
   var u = document.createElement('select'); u.id = 'f_' + id;
-  [['Bulan', 'bulan'], ['Tahun', 'tahun'], ['Sekali', 'Sekali bayar (lunas di depan)']].forEach(function (o) { var x = el('option', '', o[1]); x.value = o[0]; u.appendChild(x); });
+  [['Bulan', 'bulan'], ['Tahun', 'tahun'], ['Sekali', 'Sekali bayar (lunas di depan)'], ['Gratis', 'Gratis (karyawan, tidak bayar)']].forEach(function (o) { var x = el('option', '', o[1]); x.value = o[0]; u.appendChild(x); });
   u.value = p.unit;
-  function sync() { var once = u.value === 'Sekali'; n.hidden = once; pre.hidden = once; }
+  function sync() { var once = u.value === 'Sekali' || u.value === 'Gratis'; n.hidden = once; pre.hidden = once; }
   u.addEventListener('change', function () { sync(); if (onChange) onChange(); });
   n.addEventListener('change', function () { if (onChange) onChange(); });
   sync(); w.appendChild(pre); w.appendChild(n); w.appendChild(u);
@@ -3186,6 +3196,7 @@ function siklusControl(id, v, onChange) {
 function readSiklus(id) {
   var u = $('f_' + id); if (!u) return '';
   if (u.value === 'Sekali') return 'Sekali bayar';
+  if (u.value === 'Gratis') return 'Gratis';
   var n = Math.max(1, Math.round(+$('f_' + id + '_n').value || 1));
   return n === 1 ? (u.value === 'Tahun' ? 'Tahunan' : 'Bulanan') : n + ' ' + u.value;
 }
@@ -3227,6 +3238,7 @@ function tnInStatus(t) {
   if (t.arsip) return tnStatus === 'semua' ? false : false;
   if (tnStatus === 'aktif') return t.aktif;
   if (tnStatus === 'kosong') return !!t.kosong;
+  if (tnStatus === 'gratis') return t.aktif && !!t.gratis;
   if (tnStatus === 'selesai') return !t.aktif && !t.kosong;
   return true;
 }
@@ -3259,11 +3271,12 @@ function renderTnList() {
     mid.appendChild(el('div', 't-name', t.kosong ? 'Unit kosong' : t.nama));
     mid.appendChild(metaEl([t.inv || '?', 'Unit ' + (t.unit || '?') + (t.id ? ' · ' + t.id : '')]));
     var right = el('div', 'pay-right');
-    right.appendChild(el('b', '', t.harga ? rp(t.harga) : '-'));
+    right.appendChild(el('b', '', t.gratis ? 'Gratis' : t.harga ? rp(t.harga) : '-'));
     var tags = el('div', 'tn-tags');
     if (t.arsip) tags.appendChild(el('span', 'tag void', 'Arsip'));
     else if (t.kosong) tags.appendChild(el('span', 'tag sewa', 'Kosong · siap disewa'));
     else if (!t.aktif) tags.appendChild(el('span', 'tag', 'Selesai'));
+    else if (t.gratis) tags.appendChild(el('span', 'tag gratis', 'Gratis · karyawan'));
     var k = kindsOf(t);
     if (!t.arsip) {
       if (k.error) tags.appendChild(el('span', 'tag void', k.error + ' error'));
@@ -3306,7 +3319,7 @@ function idField(jenis, val, hint) {
 function buildForm(t, canEdit) {
   var f = $('tnForm'); f.innerHTML = '';
   var sk = t.siklus || (tnMode === 'new' ? 'Bulanan' : '');
-  var once = isOnce(sk), monthly = !once && months(sk || 'Bulanan') === 1;
+  var once = isOnce(sk), gratis = isGratis(sk), monthly = !once && !gratis && months(sk || 'Bulanan') === 1;
   var s = siklusControl('siklus', sk, function () { var vals = readForm(); vals.issues = t.issues || []; vals.bulan = 0; buildForm(vals, canEdit); tnDirty = true; $('tnSave').disabled = false; });
   var tempoIsDate = /^\d{4}-\d{2}-\d{2}$/.test(t.tempo || '');
   var inv = inp('text', t.inv, { list: 'tanahList', autocomplete: 'off', placeholder: 'Contoh: Waru 012' });
@@ -3314,17 +3327,17 @@ function buildForm(t, canEdit) {
     ['one', fieldBox('nama', 'Nama penyewa', inp('text', t.nama, { maxlength: 120 }))],
     ['row', idField(t.idJenis, t.ktp), fieldBox('wa', 'No WhatsApp', inp('tel', t.wa, { placeholder: '08…' }))],
     ['row', fieldBox('inv', 'Inventaris', inv, 'Kode dari DBTanah, muncul saat diketik.'), fieldBox('unit', 'No Unit', inp('text', t.unit, { placeholder: 'Pakai - kalau tidak ada' }))],
-    ['row', fieldBox('siklus', 'Siklus bayar', s, once ? 'Seluruh kontrak dibayar sekali di depan.' : 'Seberapa sering penyewa membayar.'),
-      fieldBox('harga', once ? 'Harga seluruh kontrak (Rp)' : 'Harga per pembayaran (Rp)', inp('text', t.harga ? Number(t.harga).toLocaleString('id-ID') : '', { inputmode: 'numeric', class: 'num money' }))],
+    ['row', fieldBox('siklus', 'Siklus bayar', s, gratis ? 'Karyawan tinggal tanpa bayar: tidak pernah telat, tidak ditagih, tidak dihitung pemasukan.' : once ? 'Seluruh kontrak dibayar sekali di depan.' : 'Seberapa sering penyewa membayar.'),
+      fieldBox('harga', gratis ? 'Nilai sewa normal (Rp, opsional)' : once ? 'Harga seluruh kontrak (Rp)' : 'Harga per pembayaran (Rp)', inp('text', t.harga ? Number(t.harga).toLocaleString('id-ID') : '', { inputmode: 'numeric', class: 'num money' }))],
     monthly ? ['row', fieldBox('mulai', 'Tanggal mulai', inp('date', t.mulaiIso)),
         fieldBox('tempo', 'Bayar tiap tanggal', inp('number', /^\d+$/.test(String(t.tempo)) ? t.tempo : '', { min: 1, max: 31, inputmode: 'numeric', placeholder: 'Misalnya 22' }), 'Angka saja, 1 sampai 31. Disimpan di kolom Tanggal Selesai.')]
-      : ['row', fieldBox('mulai', 'Tanggal mulai', inp('date', t.mulaiIso)), fieldBox('selesai', 'Tanggal selesai', inp('date', t.selesaiIso), 'Wajib diisi.')],
+      : ['row', fieldBox('mulai', 'Tanggal mulai', inp('date', t.mulaiIso)), fieldBox('selesai', 'Tanggal selesai', inp('date', t.selesaiIso), gratis ? 'Opsional, misalnya akhir masa tugas.' : 'Wajib diisi.')],
     ['one', (function () { var d = el('p', 'hint lama'); d.id = 'tnLama'; return d; })()],
     ['row', fieldBox('deposit', 'Deposit (Rp)', inp('text', t.deposit ? Number(t.deposit).toLocaleString('id-ID') : '', { inputmode: 'numeric', class: 'num money' }))],
-    ['one', fieldBox('awal', 'Lunas s/d awal (opsional)', inp('date', t.awalIso), 'Isi hanya untuk penyewa yang sudah telat saat sistem mulai dipakai. Jika kosong, dihitung dari tanggal di atas.')],
+    gratis ? null : ['one', fieldBox('awal', 'Lunas s/d awal (opsional)', inp('date', t.awalIso), 'Isi hanya untuk penyewa yang sudah telat saat sistem mulai dipakai. Jika kosong, dihitung dari tanggal di atas.')],
     ['one', fieldBox('catatan', 'Catatan', (function () { var x = document.createElement('textarea'); x.rows = 2; x.maxLength = 500; x.value = t.catatan || ''; return x; })())]
   ];
-  rows.forEach(function (r) { var d = el('div', r[0] === 'row' ? 'row' : ''); r.slice(1).forEach(function (x) { d.appendChild(x); }); f.appendChild(d); });
+  rows.forEach(function (r) { if (!r) return; var d = el('div', r[0] === 'row' ? 'row' : ''); r.slice(1).forEach(function (x) { d.appendChild(x); }); f.appendChild(d); });
   if ($('f_selesai')) lamaHint('f_mulai', 'f_selesai', $('tnLama'));
   // highlight problem fields
   (t.issues || []).forEach(function (x) {
@@ -3358,7 +3371,8 @@ function openTenant(t) {
   $('tnSub').textContent = [t.id || 'Belum punya ID', t.inv + ' ' + t.unit].join(' · ');
   var st = $('tnState'); st.className = 'st ' + (t.arsip ? 'grey' : t.aktif ? 'white' : 'grey'); st.textContent = t.arsip ? 'Arsip' : t.aktif ? 'Aktif' : 'Selesai';
   var info = [];
-  if (t.aktif && t.lunasIso) { var l = dueLevel({ siklus: t.siklus || 'Bulanan', lunasIso: t.lunasIso, bulan: t.bulan, once: t.once }, today0()); info.push('Lunas s/d ' + dmy(parseIso(t.lunasIso)) + ' · ' + l.txt); }
+  if (t.aktif && t.gratis) info.push('Gratis (karyawan): tidak ditagih');
+  else if (t.aktif && t.lunasIso) { var l = dueLevel({ siklus: t.siklus || 'Bulanan', lunasIso: t.lunasIso, bulan: t.bulan, once: t.once }, today0()); info.push('Lunas s/d ' + dmy(parseIso(t.lunasIso)) + ' · ' + l.txt); }
   if (!t.aktif && t.alasan) info.push('Diakhiri: ' + t.alasan);
   if (t.arsip && t.arsipInfo) info.push('Diarsipkan: ' + t.arsipInfo);
   if (t.dari) info.push('Lanjutan dari ' + t.dari);
@@ -3384,7 +3398,7 @@ function openTenant(t) {
   $('tnSave').hidden = !canEdit; $('tnSave').disabled = true; $('tnSave').textContent = 'Simpan perubahan';
   $('tnChange').hidden = !(canEdit && t.aktif); $('tnEnd').hidden = !(canEdit && t.aktif);
   $('tnArchive').hidden = !(tnData.isAdmin && !t.aktif); $('tnArchive').textContent = t.arsip ? 'Pulihkan dari arsip' : 'Arsipkan';
-  $('tnPay').hidden = !(canPay() && t.aktif && !t.arsip);
+  $('tnPay').hidden = !(canPay() && t.aktif && !t.arsip && !t.gratis);
   $('tnCancelNew').hidden = true; $('tnFill').hidden = true; $('tnVacSave').hidden = true;
   $('tnPaysWrap').hidden = false;
   loadDocs(t);
@@ -3435,7 +3449,7 @@ function renderPlots() {
     var h = el('div', 'plot-head'); h.appendChild(el('b', '', 'Plot ' + (i + 1)));
     if (newPlots.length > 1) { var x = el('button', 'file-x', '×'); x.type = 'button'; x.title = 'Hapus plot ini'; x.onclick = function () { syncPlots(); newPlots.splice(i, 1); renderPlots(); }; h.appendChild(x); }
     c.appendChild(h);
-    var monthly = !isOnce(v.siklus) && months(v.siklus || 'Bulanan') === 1;
+    var gratis = isGratis(v.siklus), monthly = !isOnce(v.siklus) && !gratis && months(v.siklus || 'Bulanan') === 1;
     var r1 = el('div', 'row');
     r1.appendChild(fieldBox('p' + i + '_inv', 'Inventaris', inp('text', v.inv, { list: 'tanahList', autocomplete: 'off', placeholder: 'Contoh: Waru 012' })));
     r1.appendChild(fieldBox('p' + i + '_unit', 'No Unit', inp('text', v.unit, { placeholder: 'Pakai - kalau tidak ada' }))); c.appendChild(r1);
@@ -3443,12 +3457,13 @@ function renderPlots() {
     var sc = siklusControl('p' + i + '_siklus', v.siklus || 'Bulanan', function () { syncPlots(); renderPlots(); });
     var r2 = el('div', 'row');
     r2.appendChild(fieldBox('p' + i + '_siklus', 'Siklus bayar', sc));
-    r2.appendChild(fieldBox('p' + i + '_harga', isOnce(v.siklus) ? 'Harga seluruh kontrak (Rp)' : 'Harga per pembayaran (Rp)', inp('text', v.harga ? Number(v.harga).toLocaleString('id-ID') : '', { inputmode: 'numeric', class: 'num money' })));
+    r2.appendChild(fieldBox('p' + i + '_harga', gratis ? 'Nilai sewa normal (Rp, opsional)' : isOnce(v.siklus) ? 'Harga seluruh kontrak (Rp)' : 'Harga per pembayaran (Rp)', inp('text', v.harga ? Number(v.harga).toLocaleString('id-ID') : '', { inputmode: 'numeric', class: 'num money' })));
     c.appendChild(r2);
     var r3 = el('div', 'row');
     r3.appendChild(fieldBox('p' + i + '_mulai', 'Tanggal mulai', inp('date', v.mulaiIso || iso(today0()))));
     if (monthly) r3.appendChild(fieldBox('p' + i + '_tempo', 'Bayar tiap tanggal', inp('number', v.tempo || '', { min: 1, max: 31, inputmode: 'numeric', placeholder: 'Misalnya 22' })));
-    else r3.appendChild(fieldBox('p' + i + '_selesai', 'Tanggal selesai', inp('date', v.selesaiIso || '')));
+    else r3.appendChild(fieldBox('p' + i + '_selesai', gratis ? 'Tanggal selesai (opsional)' : 'Tanggal selesai', inp('date', v.selesaiIso || '')));
+    if (gratis) c.appendChild(el('p', 'hint', 'Gratis (karyawan): tidak pernah telat, tidak ditagih, tidak dihitung pemasukan. Unit tetap dihitung terisi.'));
     c.appendChild(r3);
     c.appendChild(fieldBox('p' + i + '_deposit', 'Deposit (Rp, opsional)', inp('text', v.deposit ? Number(v.deposit).toLocaleString('id-ID') : '', { inputmode: 'numeric', class: 'num money' })));
     function vac() {
@@ -3694,7 +3709,7 @@ function openTnModal(kind) {
     b.appendChild(fieldBox('m_selesai', 'Tanggal selesai kontrak baru', inp('date', ''), 'Wajib, kecuali sewa bulanan. Boleh bertahun-tahun, misalnya 10 tahun.'));
     var lm = el('p', 'hint lama'); b.appendChild(lm); setTimeout(function () { lamaHint('f_m_mulai', 'f_m_selesai', lm); }, 0);
     b.appendChild(fieldBox('m_ket', 'Alasan perubahan (opsional)', inp('text', '', { maxlength: 200, placeholder: 'Misalnya: pindah ke bulanan atas permintaan penyewa' })));
-    function sync() { var v = readSiklus('m_siklus'); $('f_m_tempo').closest('.fld').hidden = isOnce(v) || months(v) !== 1;
+    function sync() { var v = readSiklus('m_siklus'); $('f_m_tempo').closest('.fld').hidden = isOnce(v) || isGratis(v) || months(v) !== 1;
       $('f_m_harga').previousSibling.textContent = isOnce(v) ? 'Harga seluruh kontrak (Rp)' : 'Harga per pembayaran (Rp)'; }
     setTimeout(sync, 0);
     $('tnmOk').textContent = 'Buat kontrak baru'; $('tnmOk').className = 'btn';
@@ -4279,11 +4294,14 @@ function openTrip(t) {
     if (exps.length || t.uangMuka) { var rb = btnEl('⬇ Unduh laporan (PDF)', 'sec', function () { reportModal(t); }); rb.id = 'jlReport'; acts2.appendChild(rb); }
     if (acts2.children.length) box.appendChild(acts2);
     if (t.klaim === 'Diajukan' && !reviewing) box.appendChild(el('p', 'hint', mine && appr && !me.owner ? 'Klaim sendiri disetujui oleh Pemilik atau penyetuju lain.' : 'Klaim diajukan ' + fdtY(pdt(t.diajukan)) + '. Menunggu persetujuan.'));
-    if (t.periksaOleh) box.appendChild(el('p', 'hint', (t.klaim === 'Ditolak' ? 'Ditolak' : 'Diperiksa') + ' oleh ' + t.periksaOleh + ', ' + fdtY(pdt(t.periksaPada)) + '.'));
-    if (t.klaim === 'Lunas') {
-      var pl = el('p', 'hint', 'Lunas: ' + t.bayarOleh + ', ' + fdtY(pdt(t.bayarPada)) + '. ');
-      t.bukti.forEach(function (s, i) { var a = el('button', 'link', 'Bukti bayar' + (t.bukti.length > 1 ? ' ' + (i + 1) : '')); a.type = 'button'; a.onclick = function () { openFile(s.id, 'jalan', 'Bukti bayar ' + t.id, s.url); }; pl.appendChild(a); });
-      box.appendChild(pl);
+    if (t.periksaOleh && t.klaim !== 'Diajukan') {
+      var rows = [[t.klaim === 'Ditolak' ? 'Ditolak oleh' : 'Disetujui oleh', t.periksaOleh + ' · ' + fdtY(pdt(t.periksaPada))]];
+      if (t.klaim === 'Lunas') {
+        var pl = el('span', '', (t.bayarOleh || '-') + ' · ' + fdtY(pdt(t.bayarPada)));
+        t.bukti.forEach(function (s, i) { pl.appendChild(document.createTextNode(' · ')); var a = el('button', 'link', 'Bukti bayar' + (t.bukti.length > 1 ? ' ' + (i + 1) : '')); a.type = 'button'; a.onclick = function () { openFile(s.id, 'jalan', 'Bukti bayar ' + t.id, s.url); }; pl.appendChild(a); });
+        rows.push(['Dibayar oleh', pl]);
+      }
+      var ab = el('div', 'jl-appr'); ab.appendChild(kvGrid(rows)); box.appendChild(ab);
     }
   }
   jlShowBody(); renderWeek(); renderTripList();
@@ -4487,22 +4505,33 @@ function vehicleModal(v) {
       .then(function (d) { toast(v ? 'Kendaraan diubah.' : 'Kendaraan ditambahkan.'); applyTrips(d, jlSel); });
   });
 }
+var jlClaimAll = false;
 function renderClaims() {
   var appr = jlData.canApprove, box = $('jlClaims'); box.innerHTML = '';
+  $$('#jlClaimSegs [data-jc]').forEach(function (b) { b.classList.toggle('on', (b.getAttribute('data-jc') === 'all') === jlClaimAll); });
   var list = jlData.trips.filter(function (t) {
     if (t.status === 'Batal') return false;
+    if (jlClaimAll) return (appr || isMine(t)) && (t.klaim || tripState(t).k === 'klaim');
     if (appr) return t.klaim === 'Diajukan' || t.klaim === 'Disetujui' || (isMine(t) && tripState(t).k === 'klaim');
     return isMine(t) && (t.klaim || tripState(t).k === 'klaim');
   }).sort(function (a, b) { var r = { Diajukan: 0, Disetujui: 1, '': 2, Ditolak: 3, Lunas: 4 }; return (r[a.klaim] - r[b.klaim]) || (a.diajukan < b.diajukan ? 1 : -1); });
-  $('jlClaimsHint').textContent = appr ? 'Klaim yang menunggu persetujuan Anda, dan yang sudah disetujui tetapi belum dibayar.' : 'Klaim perjalanan Anda.';
-  if (!list.length) { emptyBox(box, appr ? '✓ Tidak ada klaim yang menunggu.' : 'Belum ada klaim.'); return; }
-  box.appendChild(table(['Diajukan', 'Peminjam', 'Perjalanan', { t: 'Biaya', cls: 'r' }, { t: 'Uang muka', cls: 'r' }, 'Hasil', 'Status'], list.map(function (t) {
+  $('jlClaimsHint').textContent = jlClaimAll ? 'Semua klaim, termasuk yang sudah lunas dan ditolak.' : appr ? 'Klaim yang menunggu persetujuan Anda, dan yang sudah disetujui tetapi belum dibayar.' : 'Klaim perjalanan Anda.';
+  if (!list.length) { emptyBox(box, jlClaimAll ? 'Belum ada klaim.' : appr ? '✓ Tidak ada klaim yang menunggu.' : 'Belum ada klaim.'); return; }
+  var who = function (t, k) {  // who approved (or rejected) and when; below it who paid
+    var w = el('div', 'jl-who');
+    w.appendChild(el('div', '', (k === 'Ditolak' ? '✕ Ditolak ' : '✓ ') + t.periksaOleh + ' · ' + fdtY(pdt(t.periksaPada))));
+    if (k === 'Lunas' && t.bayarOleh) w.appendChild(el('small', 'muted', 'Dibayar ' + t.bayarOleh + ' · ' + fdtY(pdt(t.bayarPada))));
+    return w;
+  };
+  box.appendChild(table(['Diajukan', 'Peminjam', 'Perjalanan', { t: 'Biaya', cls: 'r' }, { t: 'Uang muka', cls: 'r' }, 'Hasil', 'Status', 'Disetujui / dibayar'], list.map(function (t) {
     var exps = tripExps(t), total = exps.reduce(function (a, e) { return a + e.jumlah; }, 0), basis = t.klaim === 'Disetujui' || t.klaim === 'Lunas' ? t.disetujui : (t.total || total);
     var res = result(basis, t.uangMuka, t.nama.split(' ')[0]), st = tripState(t);
     return [{ t: t.diajukan ? fdtY(pdt(t.diajukan)) : '-', cls: 'nowrap num' }, { t: t.nama, cls: 'nowrap' }, t.keperluan + ' · ' + t.tujuan, { t: rp(t.total || total), cls: 'r nowrap num' },
-      { t: t.uangMuka ? rp(t.uangMuka) : '-', cls: 'r nowrap num' }, { t: res.txt.replace(/ ke .*$/, '') + ': ' + res.val, cls: 'nowrap' }, { node: el('span', 'st ' + st.cls, st.txt) }];
+      { t: t.uangMuka ? rp(t.uangMuka) : '-', cls: 'r nowrap num' }, { t: res.txt.replace(/ ke .*$/, '') + ': ' + res.val, cls: 'nowrap' }, { node: el('span', 'st ' + st.cls, st.txt) },
+      t.periksaOleh && t.klaim !== 'Diajukan' ? { node: who(t, t.klaim), cls: 'nowrap' } : { t: '-', cls: 'muted' }];
   }), { onRow: function (i) { jlTab = 'trips'; renderJl(); openTrip(list[i]); } }));
 }
+$$('#jlClaimSegs [data-jc]').forEach(function (b) { b.onclick = function () { jlClaimAll = b.getAttribute('data-jc') === 'all'; renderClaims(); }; });
 function renderVehicles() {
   var box = $('jlVehs'); box.innerHTML = '';
   if (!jlData.vehicles.length) { emptyBox(box, jlData.canApprove ? 'Belum ada kendaraan. Tekan "+ Tambah kendaraan".' : 'Belum ada kendaraan.'); return; }
@@ -4965,7 +4994,7 @@ function applyKos(d) {
   $$('[data-kos-badge]').forEach(function (x) { x.hidden = !telat; x.textContent = telat; x.title = telat + ' kamar telat bayar'; });
   renderKos();
 }
-function ksMonthly(r) { return r.kosong || r.once || !r.harga ? 0 : r.harga / Math.max(1, r.bulan || 1); }
+function ksMonthly(r) { return r.kosong || r.once || r.gratis || !r.harga ? 0 : r.harga / Math.max(1, r.bulan || 1); }
 function renderKos() {
   var box = $('ksCards'); box.innerHTML = '';
   if (!ksData.props.length) { emptyBox(box, ksData.canManage ? 'Belum ada properti. Tekan "Atur properti".' : 'Belum ada properti.'); $('ksProp').hidden = true; return; }
@@ -5030,7 +5059,7 @@ function openKosRoom(r, noRedraw) {
   ksSel = r.key;
   $('ksTitle').textContent = r.kosong ? 'Unit ' + r.unit + ' · Kosong' : r.nama;
   $('ksSub').textContent = r.inv + ' · unit ' + r.unit + (r.id ? ' · ' + r.id : '');
-  var cls = { ok: 'white', segera: 'orange', telat: 'red', kosong: 'grey', salah: 'red' }[r.lvl];
+  var cls = { ok: 'white', segera: 'orange', telat: 'red', kosong: 'grey', salah: 'red', karyawan: 'blue' }[r.lvl];
   $('ksState').className = 'st ' + cls; $('ksState').textContent = r.kosong ? 'Kosong' : r.st || '-';
   var box = $('ksDetail'); box.innerHTML = '';
   var acts = el('div', 'tn-actions');
@@ -5039,11 +5068,11 @@ function openKosRoom(r, noRedraw) {
     if (ksData.canTenant && lv('penyewa') === 'U') acts.appendChild(btnEl('Isi penyewa', '', function () { tnPendingKey = r.key; show('penyewa'); }));
   } else {
     var wa = null; if (r.wa) { wa = el('a', '', r.wa); wa.href = 'https://wa.me/' + String(r.wa).replace(/\D/g, '').replace(/^0/, '62'); wa.target = '_blank'; wa.rel = 'noopener'; }
-    box.appendChild(kvGrid([['WhatsApp', wa || '-'], ['Siklus', r.siklus || '-'], ['Harga', rp(r.harga)], ['Mulai', r.mulaiIso ? dmy(parseIso(r.mulaiIso)) : '-'],
+    box.appendChild(kvGrid([['WhatsApp', wa || '-'], ['Siklus', r.gratis ? 'Gratis (karyawan)' : r.siklus || '-'], [r.gratis ? 'Nilai sewa normal' : 'Harga', r.harga ? rp(r.harga) : '-'], ['Mulai', r.mulaiIso ? dmy(parseIso(r.mulaiIso)) : '-'],
       r.dueDay ? ['Bayar tiap', 'tanggal ' + r.dueDay] : ['Selesai', r.selesaiIso ? dmy(parseIso(r.selesaiIso)) + (r.habis !== undefined ? (r.habis < 0 ? ' (sudah lewat)' : ' (' + r.habis + ' hari lagi)') : '') : '-'],
-      ['Lunas s/d', r.lunasIso ? dmy(parseIso(r.lunasIso)) : '-'], r.catatan ? ['Catatan', r.catatan] : null]));
+      r.gratis ? null : ['Lunas s/d', r.lunasIso ? dmy(parseIso(r.lunasIso)) : '-'], r.catatan ? ['Catatan', r.catatan] : null]));
     if (r.bad) box.appendChild(el('p', 'msg err', 'Ada tanggal yang salah di kontrak ini. Perbaiki di halaman Penyewa.'));
-    if (ksData.canPay && !r.bad) acts.appendChild(btnEl('Catat bayar', '', function () { payFor(r.key); }));
+    if (ksData.canPay && !r.bad && !r.gratis) acts.appendChild(btnEl('Catat bayar', '', function () { payFor(r.key); }));
     if (r.wa && (r.lvl === 'telat' || r.lvl === 'segera')) { var rm = el('a', 'btn sec', 'Ingatkan via WhatsApp'); rm.target = '_blank'; rm.rel = 'noopener';
       rm.href = 'https://wa.me/' + String(r.wa).replace(/\D/g, '').replace(/^0/, '62') + '?text=' + encodeURIComponent('Halo ' + r.nama.split('/')[0].trim() + ', sewa ' + r.inv + ' unit ' + r.unit + ' sebesar ' + rp(r.harga) + (r.lunasIso ? ' sudah lunas sampai ' + dmy(parseIso(r.lunasIso)) : '') + '. Mohon dibayar ya. Terima kasih. - Exotic Land Development');
       acts.appendChild(rm); }
