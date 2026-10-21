@@ -730,7 +730,7 @@
 
   /* ---------- phone ---------- */
   @media (max-width: 899px) {
-    .app { grid-template-columns:1fr; background:var(--bg); }
+    .app { grid-template-columns:1fr; grid-template-rows:auto 1fr; align-content:start; background:var(--bg); }  /* top bar keeps its size; the page takes the rest */
     .side { display:none; }
     .topbar { display:flex; align-items:center; gap:10px; position:sticky; top:0; z-index:30; background:var(--side); color:var(--side-strong); padding:10px 12px 10px 16px; }
     .topbar .logo { width:30px; height:30px; }
