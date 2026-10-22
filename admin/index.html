@@ -52,6 +52,19 @@
   body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 var(--body); -webkit-font-smoothing:antialiased; }
   button { font:inherit; color:inherit; }
   [hidden] { display:none !important; }
+  .ptabs { display:flex; border-bottom:1px solid var(--line); margin:-12px 0 22px; max-width:1360px; }
+  .ptabs > div { display:flex; gap:2px; overflow-x:auto; scrollbar-width:none; }
+  .ptabs button { background:none; border:0; padding:10px 16px; font:inherit; font-weight:600; font-size:14.5px; color:var(--muted); border-bottom:2.5px solid transparent; margin-bottom:-1px; cursor:pointer; display:flex; gap:7px; align-items:center; white-space:nowrap; }
+  .ptabs button:hover { color:var(--ink); }
+  .ptabs button.on { color:var(--ink); border-color:#7c3aed; }
+  .ptabs .badge { position:static; margin:0; }
+  @media (max-width:760px) { .ptabs { margin:-4px -16px 16px; padding:0 8px; } .ptabs button { padding:10px 12px; font-size:14px; } }
+  .un-av { font-size:12px; font-weight:700; }
+  .un-hist { width:100%; border-collapse:collapse; font-size:13.5px; }
+  .un-hist td, .un-hist th { text-align:left; padding:9px 8px; border-bottom:1px solid var(--line-2); vertical-align:top; }
+  .un-hist th { color:var(--muted); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+  .un-hist tr.go { cursor:pointer; } .un-hist tr.go:hover td { background:var(--subtle); }
+  .un-off { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; } .un-off input { flex:1; min-width:180px; }
   .num { font-variant-numeric:tabular-nums; }
 
   /* ---------- login ---------- */
@@ -837,42 +850,27 @@
       <button class="nav" data-view="soon-edai" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3l1.8 4.6L18 9.5l-4.2 1.9L12 16l-1.8-4.6L6 9.5l4.2-1.9z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>
         Ask EDAI <span class="soon">Coming soon</span></button>
-      <button class="nav" data-view="kal" type="button">
+      <button class="nav" data-group="agenda" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
-        Kalender</button>
-      <button class="nav" data-view="tugas" type="button">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>
-        Tugas <span class="badge" data-task-badge hidden></span></button>
-      <div class="nav-group">Keuangan</div>
-      <button class="nav" data-view="catat" type="button">
+        Agenda <span class="badge" data-gbadge="agenda" hidden></span></button>
+      <button class="nav" data-group="bayar" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
-        Catat pembayaran</button>
-      <button class="nav" data-view="bukti" type="button">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>
-        Riwayat pembayaran <span class="badge" data-badge hidden></span></button>
+        Pembayaran <span class="badge" data-gbadge="bayar" hidden></span></button>
       <button class="nav" data-view="jalan" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 16l1.6-5.2A2 2 0 0 1 8.5 9.4h7a2 2 0 0 1 1.9 1.4L19 16"/><rect x="3" y="16" width="18" height="4" rx="1.5"/><circle cx="7.5" cy="20" r="1.2"/><circle cx="16.5" cy="20" r="1.2"/><path d="M9 6h6"/></svg>
         Perjalanan Kantor <span class="badge" data-jl-badge hidden></span></button>
       <button class="nav" data-view="pbb" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-6h6v6"/><path d="M8 11h.01M16 11h.01"/></svg>
         PBB <span class="badge" data-pbb-badge hidden></span></button>
-      <div class="nav-group">Properti</div>
-      <button class="nav" data-view="tanah" type="button">
+      <button class="nav" data-group="tanah" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 15l9-4.5 9 4.5-9 4.5z"/><path d="M3 10l9-4.5 9 4.5"/></svg>
-        Data tanah <span class="badge" data-td-badge hidden></span></button>
-      <button class="nav" data-view="cek" type="button">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><path d="M9 10l2 2 4-4"/></svg>
-        Pengecekan tanah <span class="badge" data-cek-badge hidden></span></button>
-      <button class="nav" data-view="penyewa" type="button">
+        Tanah <span class="badge" data-gbadge="tanah" hidden></span></button>
+      <button class="nav" data-group="sewa" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>
-        Penyewa <span class="badge" data-tn-badge hidden></span></button>
-      <button class="nav" data-view="kos" type="button">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2M10 21v-3h4v3"/></svg>
-        Kos &amp; Apartemen <span class="badge" data-kos-badge hidden></span></button>
+        Sewa <span class="badge" data-gbadge="sewa" hidden></span></button>
       <button class="nav" data-view="kontak" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>
         Kontak</button>
-      <div class="nav-group">Admin</div>
       <button class="nav" data-view="set" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
         Pengaturan</button>
@@ -907,6 +905,12 @@
   </div>
 
   <main class="main">
+    <div class="ptabs" id="ptabs" hidden>
+      <div data-pgroup="agenda"><button type="button" data-view="kal">Kalender</button><button type="button" data-view="tugas">Tugas <span class="badge" data-task-badge hidden></span></button></div>
+      <div data-pgroup="bayar"><button type="button" data-view="catat">Catat</button><button type="button" data-view="bukti">Riwayat <span class="badge" data-badge hidden></span></button><button type="button" data-view="laporan">Laporan</button></div>
+      <div data-pgroup="tanah"><button type="button" data-view="tanah">Data tanah <span class="badge" data-td-badge hidden></span></button><button type="button" data-view="cek">Pengecekan <span class="badge" data-cek-badge hidden></span></button></div>
+      <div data-pgroup="sewa"><button type="button" data-view="penyewa">Penyewa <span class="badge" data-tn-badge hidden></span></button><button type="button" data-view="unit">Unit</button><button type="button" data-view="kos">Kos &amp; Apartemen <span class="badge" data-kos-badge hidden></span></button></div>
+    </div>
     <!-- ================= DASHBOARD ================= -->
     <section id="view-dash">
       <div class="page-head" style="max-width:1320px">
@@ -1147,7 +1151,7 @@
     <!-- ================= KOS & APARTEMEN ================= -->
     <section id="view-kos" hidden>
       <div class="page-head" style="max-width:1360px">
-        <div><h1>Kos &amp; Apartemen</h1><p>Kamar dan unit sewa di gedung kos dan apartemen. Datanya sama dengan Penyewa (DBStatusSewa): satu baris per kamar, Aktif atau Kosong.</p></div>
+        <div><h1>Kos &amp; Apartemen</h1><p>Kamar dan unit sewa di gedung kos dan apartemen. Kamarnya dari Unit Sewa, penyewanya dari Penyewa. Kamar tanpa kontrak Aktif otomatis Kosong.</p></div>
         <button class="btn sec" id="ksManage" type="button" style="width:auto;margin:0;padding:11px 18px" hidden>Atur properti</button>
       </div>
       <div class="ks-cards" id="ksCards"><div class="empty">Memuat…</div></div>
@@ -1311,6 +1315,37 @@
     </section>
 
     <!-- ================= PENYEWA ================= -->
+    <section id="view-unit" hidden>
+      <div class="page-head" style="max-width:1360px">
+        <div><h1>Unit sewa</h1><p>Semua plot dan unit yang bisa disewakan. Disewa / Kosong dihitung otomatis dari kontrak, tidak perlu diketik.</p></div>
+        <div class="head-btns"><button class="btn" id="unNew" type="button" style="width:auto;margin:0;padding:11px 18px" hidden>+ Unit</button></div>
+      </div>
+      <div class="health" id="unCards"></div>
+      <p class="hint" id="unNote" style="margin:-6px 0 16px"></p>
+      <div class="grid-bukti tn-split" id="unSplit">
+        <div class="tn-listcol">
+          <div class="toolbar">
+            <div class="search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              <input id="unq" type="search" placeholder="Cari kode, unit, atau nama penyewa" autocomplete="off" aria-label="Cari unit">
+            </div>
+            <div class="segs" id="unSegs">
+              <button type="button" data-us="semua" class="on">Semua</button>
+              <button type="button" data-us="sewa">Disewa</button>
+              <button type="button" data-us="kosong">Kosong</button>
+              <button type="button" data-us="off">Tidak disewakan</button>
+            </div>
+          </div>
+          <div class="pay-list" id="unList"><div class="empty">Memuat unit…</div></div>
+        </div>
+        <div class="tn-detailcol sticky">
+          <div class="card">
+            <div class="empty" id="unEmpty">Pilih unit di daftar.</div>
+            <div id="unBody" hidden></div>
+          </div>
+        </div>
+      </div>
+    </section>
     <section id="view-penyewa" hidden>
       <div class="page-head" style="max-width:1360px">
         <div><h1>Penyewa</h1><p>Semua kontrak sewa. Perbaiki data yang kurang atau salah di sini, bukan langsung di spreadsheet. Kontrak tidak pernah dihapus.</p></div>
@@ -1332,7 +1367,6 @@
             </div>
             <div class="segs" id="tnSegs">
               <button type="button" data-ts="aktif" class="on">Aktif</button>
-              <button type="button" data-ts="kosong">Kosong</button>
               <button type="button" data-ts="gratis">Karyawan</button>
               <button type="button" data-ts="selesai">Selesai</button>
               <button type="button" data-ts="arsip">Arsip</button>
@@ -1978,7 +2012,44 @@ $$('[data-theme-switch]').forEach(function (s) {
 applyTheme(document.documentElement.getAttribute('data-theme') || 'light');
 
 /* ---------- navigation ---------- */
-var VIEWS = ['dash', 'kal', 'tugas', 'set', 'soon', 'catat', 'bukti', 'jalan', 'pbb', 'penyewa', 'kos', 'tanah', 'cek', 'kontak', 'laporan'];
+var VIEWS = ['dash', 'kal', 'tugas', 'set', 'soon', 'catat', 'bukti', 'jalan', 'pbb', 'penyewa', 'unit', 'kos', 'tanah', 'cek', 'kontak', 'laporan'];
+/* Menu groups: one menu item, its pages as tabs at the top of the page. */
+var GROUPS = { agenda: ['kal', 'tugas'], bayar: ['catat', 'bukti', 'laporan'], tanah: ['tanah', 'cek'], sewa: ['penyewa', 'unit', 'kos'] };
+var PERM_OF = { unit: 'penyewa', laporan: 'bukti' };  // pages that use the access of another page
+var lastTab = {};
+function permOf(v) { return PERM_OF[v] || v; }
+function groupOf(v) { for (var g in GROUPS) if (GROUPS[g].indexOf(v) >= 0) return g; return ''; }
+function tabOk(v) { return v === 'laporan' ? lv('bukti') === 'U' : lv(permOf(v)) !== '-'; }
+function syncTabs(view) {
+  var g = groupOf(view);
+  $('ptabs').hidden = !g;
+  $$('#ptabs [data-pgroup]').forEach(function (d) { d.hidden = d.getAttribute('data-pgroup') !== g; });
+  var lap = document.querySelector('#ptabs [data-view="laporan"]'); if (lap) lap.hidden = view !== 'laporan' && !tabOk('laporan');
+  $$('[data-group]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-group') === g); });
+  if (g) lastTab[g] = view;
+}
+function syncGroupBadges() {
+  Object.keys(GROUPS).forEach(function (g) {
+    var n = 0;
+    $$('#ptabs [data-pgroup="' + g + '"] .badge').forEach(function (b) { if (!b.hidden) n += parseInt(b.textContent, 10) || 0; });
+    $$('[data-gbadge="' + g + '"]').forEach(function (x) { x.textContent = n; x.hidden = !n; });
+  });
+}
+function groupLocks() {
+  $$('[data-group]').forEach(function (b) {
+    var locked = !GROUPS[b.getAttribute('data-group')].some(tabOk), ic = b.querySelector('.lock-ic');
+    b.classList.toggle('locked', locked);
+    if (locked && !ic) { ic = el('span', 'lock-ic', '🔒'); b.appendChild(ic); }
+    if (!locked && ic) ic.remove();
+  });
+}
+document.addEventListener('click', function (e) {
+  var b = e.target.closest && e.target.closest('[data-group]');
+  if (!b) return;
+  e.preventDefault();
+  var g = b.getAttribute('data-group'), list = GROUPS[g];
+  show(lastTab[g] && tabOk(lastTab[g]) ? lastTab[g] : (list.filter(tabOk)[0] || list[0]));
+});
 var SOON = {
   'soon-edai': ['Ask EDAI', 'Exotic Land Development AI', 'Tanya apa saja tentang data tanah, penyewa, dan pembayaran dalam bahasa sehari-hari, misalnya "siapa yang telat bayar bulan ini?" atau "berapa pemasukan Meikarta tahun ini?". EDAI menjawab dari database perusahaan.']
 
@@ -1992,6 +2063,7 @@ function lv(page) { if (me && me.owner) return 'U'; return me && me.perms ? (me.
 function canPay() { return lv('catat') === 'U'; }
 function isAdmin() { return !!(me && (me.owner || me.heavy)); }
 function applyLocks() {
+  try { groupLocks(); } catch (e) {}
   $$('[data-view]').forEach(function (b) {
     var page = b.getAttribute('data-view'); if (!PAGE_NAME[page]) return;
     var locked = lv(page) === '-';
@@ -2004,16 +2076,17 @@ function applyLocks() {
 function show(view) {
   if (SOON[view]) { $('soonTitle').textContent = SOON[view][0]; $('soonSub').textContent = SOON[view][1]; $('soonText').textContent = SOON[view][2]; }
   var sec = SOON[view] ? 'soon' : view;
-  var denied = PAGE_NAME[view] && lv(view) === '-';
-  if (denied) { $('deniedPage').textContent = PAGE_NAME[view]; $('deniedOwner').textContent = me && me.ownerName ? me.ownerName : 'Pemilik'; sec = 'denied'; }
+  var pg = permOf(view), denied = PAGE_NAME[pg] && lv(pg) === '-';
+  if (denied) { $('deniedPage').textContent = PAGE_NAME[pg]; $('deniedOwner').textContent = me && me.ownerName ? me.ownerName : 'Pemilik'; sec = 'denied'; }
   curView = view; saveWhere();
   VIEWS.concat(['denied']).forEach(function (v) { $('view-' + v).hidden = v !== sec; });
   $$('.viewonly').forEach(function (x) { x.remove(); });
-  if (!denied && PAGE_NAME[view] && lv(view) === 'L') {
+  if (!denied && PAGE_NAME[pg] && lv(pg) === 'L') {
     var head = $('view-' + view).querySelector('.page-head');
     if (head) { var vb = el('span', 'viewonly', '👁 Hanya lihat'); vb.title = 'Anda bisa membuka halaman ini, tetapi tidak bisa mengubah apa pun.'; (head.querySelector('h1') || head).appendChild(vb); }
   }
   $$('[data-view]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-view') === view); });
+  syncTabs(view);
   $('userMenu').hidden = true;
   if (denied) { window.scrollTo(0, 0); return; }
   $$('[data-view]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-view') === view); });
@@ -2027,6 +2100,7 @@ function show(view) {
   if (view === 'cek') loadChecks();
   if (view === 'pbb') loadPbb();
   if (view === 'kos') loadKos();
+  if (view === 'unit') loadUnits();
   if (view === 'kontak') loadContacts();
   if (view === 'laporan') loadReport();
   if (view === 'set') openSetTab(setTab);
@@ -2052,7 +2126,7 @@ function fitSplit(id, minW) {
   var top = sp.getBoundingClientRect().top + window.scrollY;
   sp.style.height = Math.max(460, window.innerHeight - top - 20) + 'px';
 }
-function fitAll() { fitSplit('tnSplit', 1181); fitSplit('split', 900); fitSplit('tdSplit', 1181); fitSplit('jlSplit', 1181); fitSplit('ckSplit', 1181); fitSplit('pbSplit', 1181); fitSplit('ksSplit', 1181); fitSplit('ktSplit', 1181); }
+function fitAll() { fitSplit('unSplit', 1181); fitSplit('tnSplit', 1181); fitSplit('split', 900); fitSplit('tdSplit', 1181); fitSplit('jlSplit', 1181); fitSplit('ckSplit', 1181); fitSplit('pbSplit', 1181); fitSplit('ksSplit', 1181); fitSplit('ktSplit', 1181); }
 window.addEventListener('resize', function () { clearTimeout(fitAll.t); fitAll.t = setTimeout(fitAll, 120); });
 /* ---------- files ---------- */
 function readFiles(input, opts) {
@@ -3323,10 +3397,11 @@ function applyTenants(d, keepKey, seq) {
     tnData = d;
     var dl = $('tanahList'); dl.innerHTML = '';
     (d.tanah || []).forEach(function (c) { var o = document.createElement('option'); o.value = c; dl.appendChild(o); });
-    $('tnNew').hidden = !d.canEdit; $('tnVacNew').hidden = !d.canEdit;
+    $('tnNew').hidden = !d.canEdit; $('tnVacNew').hidden = true;
     var nk = d.tenants.filter(function (x) { return x.kosong && !x.arsip; }).length;
     var kb = document.querySelector('#tnSegs [data-ts="kosong"]'); if (kb) kb.textContent = 'Kosong' + (nk ? ' (' + nk + ')' : '');
     renderTnList();
+    if (tnPendingNew) { var pn = tnPendingNew; tnPendingNew = null; tnSeq++; newTenant(pn); return; }
     if (seq !== tnSeq || tnMode === 'new' || tnMode === 'vacnew') return;
     var k = keepKey || (tnSel && tnSel.key); tnPendingKey = null;
     var t = k && tnData.tenants.filter(function (x) { return x.key === k; })[0];
@@ -3641,7 +3716,7 @@ function newTenant(pre) {
   $('tnState').className = 'st white'; $('tnState').textContent = 'Baru'; $('tnInfo').textContent = '';
   $('tnIssues').hidden = true; $('tnFormTitle').textContent = 'Data kontrak';
   buildNewForm(pre); $('tnAlso').hidden = true;
-  if (pre.inv) $('tnSub').textContent = 'Mengisi unit kosong ' + pre.inv + ' ' + pre.unit + '. ID kontrak tetap ' + (pre.id || 'baru') + '.';
+  if (pre.inv) $('tnSub').textContent = pre.unitId ? 'Menyewakan unit ' + pre.inv + (pre.unit && pre.unit !== '-' ? ' ' + pre.unit : '') + ' (' + pre.unitId + '). ID kontrak dibuat saat disimpan.' : 'Mengisi unit kosong ' + pre.inv + ' ' + pre.unit + '. ID kontrak tetap ' + (pre.id || 'baru') + '.';
   $('tnErr').hidden = true; $('tnSave').hidden = false; $('tnSave').disabled = false; $('tnSave').textContent = 'Simpan penyewa';
   ['tnChange', 'tnEnd', 'tnArchive', 'tnPay'].forEach(function (id) { $(id).hidden = true; });
   $('tnCancelNew').hidden = false;
@@ -3859,6 +3934,7 @@ $('tnmOk').onclick = function () {
 };
 
 /* ====================== DATA TANAH ====================== */
+var tnPendingNew = null, unPendingId = null;
 var tdData = null, tdSel = null, tdStatus = 'aktif', tdHealth = '', tdDirty = false, tdMode = 'view', tdSeq = 0, tdShow = 300, tnPendingKey = null;
 var TD_SECTIONS = [
   ['Lokasi', [['inv', 'Kode Inventaris'], ['area', 'Area', 'areasel'], ['kota', 'Kota', 'list:kota'], ['kec', 'Kecamatan'], ['kel', 'Kelurahan'], ['tipe', 'Tipe', 'list:tipe'], ['alamat', 'Alamat', 'wide']]],
@@ -4159,11 +4235,11 @@ function renderOcc() {
   [['Unit', tot], ['Disewa', dis], ['Kosong', tot - dis], ['% disewa', pct + '%']].forEach(function (x, i) { var c = el('div', i === 3 ? 'pct' : ''); c.appendChild(document.createTextNode(x[0])); c.appendChild(el('b', '', x[1])); g.appendChild(c); });
   body.appendChild(g);
   var bar = el('div', 'bar'); var i = document.createElement('i'); i.style.width = pct + '%'; bar.appendChild(i); body.appendChild(bar);
-  if (pot) body.appendChild(el('p', 'hint', 'Potensi pemasukan unit kosong: ' + rp(pot) + ' per bulan (dari harga yang diisi di baris Kosong).'));
+  if (pot) body.appendChild(el('p', 'hint', 'Potensi pemasukan unit kosong: ' + rp(pot) + ' per bulan (dari harga standar di Unit).'));
   if (kos.length) body.appendChild(el('p', 'hint', 'Kosong: ' + kos.slice(0, 8).join(', ') + (kos.length > 8 ? ' dan ' + (kos.length - 8) + ' lainnya' : '')));
   if (!o.nKosong) {
-    body.appendChild(el('p', 'hint', 'Belum ada unit berstatus Kosong. Tambahkan unit yang siap disewakan di halaman Penyewa (tombol "+ Unit kosong") supaya persentasenya benar.'));
-    var go = el('button', 'mini-btn', 'Buka Penyewa'); go.type = 'button'; go.style.marginTop = '6px'; go.onclick = function () { show('penyewa'); }; body.appendChild(go);
+    body.appendChild(el('p', 'hint', 'Belum ada unit Kosong. Tambahkan unit yang siap disewakan di Sewa → Unit (tombol "+ Unit") supaya persentasenya benar.'));
+    var go = el('button', 'mini-btn', 'Buka Unit'); go.type = 'button'; go.style.marginTop = '6px'; go.onclick = function () { show('unit'); }; body.appendChild(go);
   }
 }
 $('occArea').onchange = renderOcc;
@@ -5120,7 +5196,7 @@ function renderKos() {
     var r4 = el('div', 'row4');
     [['Kosong', rs.length - isi.length], ['Telat', tel], ['± per bulan', mon ? rpShort(mon) : '-']].forEach(function (x) { var d = el('div', '', x[0]); d.appendChild(el('b', x[0] === 'Telat' && x[1] ? 'neg' : '', String(x[1]))); r4.appendChild(d); });
     c.appendChild(r4);
-    if (!rs.length) c.appendChild(el('p', 'hint', 'Belum ada baris di DBStatusSewa dengan inventaris: ' + p.invs.join(', ') + '. Tambahkan kamarnya di Penyewa → "+ Unit kosong".'));
+    if (!rs.length) c.appendChild(el('p', 'hint', 'Belum ada unit di Unit Sewa dengan inventaris: ' + p.invs.join(', ') + '. Tambahkan kamarnya di Sewa → Unit → "+ Unit".'));
     c.onclick = function () { if (ksProp !== p.nama) ksFilter = ''; ksProp = p.nama; ksSel = null; renderKos(); };
     box.appendChild(c);
   });
@@ -5177,7 +5253,7 @@ function openKosRoom(r, noRedraw) {
   var acts = el('div', 'tn-actions');
   if (r.kosong) {
     box.appendChild(kvGrid([['Harga', r.harga ? rp(r.harga) + ' / ' + (r.siklus || 'bulan') : '-'], r.catatan ? ['Catatan', r.catatan] : null]));
-    if (ksData.canTenant && lv('penyewa') === 'U') acts.appendChild(btnEl('Isi penyewa', '', function () { tnPendingKey = r.key; show('penyewa'); }));
+    if (ksData.canTenant && lv('penyewa') === 'U') acts.appendChild(btnEl('Isi penyewa', '', function () { tnPendingNew = { inv: r.inv, unit: r.unit || '-', harga: r.harga, siklus: r.siklus || 'Bulanan', unitId: r.key }; show('penyewa'); }));
   } else {
     var wa = null; if (r.wa) { wa = el('a', '', r.wa); wa.href = 'https://wa.me/' + String(r.wa).replace(/\D/g, '').replace(/^0/, '62'); wa.target = '_blank'; wa.rel = 'noopener'; }
     box.appendChild(kvGrid([['WhatsApp', wa || '-'], ['Siklus', r.gratis ? 'Gratis (karyawan)' : r.siklus || '-'], [r.gratis ? 'Nilai sewa normal' : 'Harga', r.harga ? rp(r.harga) : '-'], ['Mulai', r.mulaiIso ? dmy(parseIso(r.mulaiIso)) : '-'],
@@ -5189,7 +5265,7 @@ function openKosRoom(r, noRedraw) {
       rm.href = 'https://wa.me/' + String(r.wa).replace(/\D/g, '').replace(/^0/, '62') + '?text=' + encodeURIComponent('Halo ' + r.nama.split('/')[0].trim() + ', sewa ' + r.inv + ' unit ' + r.unit + ' sebesar ' + rp(r.harga) + (r.lunasIso ? ' sudah lunas sampai ' + dmy(parseIso(r.lunasIso)) : '') + '. Mohon dibayar ya. Terima kasih. - Exotic Land Development');
       acts.appendChild(rm); }
   }
-  if (ksData.canTenant) acts.appendChild(btnEl('Buka di Penyewa', 'sec', function () { tnPendingKey = r.key; show('penyewa'); }));
+  if (ksData.canTenant) acts.appendChild(r.kosong ? btnEl('Buka di Unit', 'sec', function () { unPendingId = r.key; show('unit'); }) : btnEl('Buka di Penyewa', 'sec', function () { tnPendingKey = r.key; show('penyewa'); }));
   if (acts.children.length) box.appendChild(acts);
   if (!r.kosong) {
     box.appendChild(el('h3', 'tn-h3', 'Pembayaran terakhir'));
@@ -5961,7 +6037,6 @@ function loadReport(force) {
   repFillPickers();
   $$('#repMode [data-rm]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-rm') === repMode); });
   $('repMonth').hidden = repMode !== 'm'; $('repYear').hidden = repMode !== 'y';
-  $$('[data-view="bukti"]').forEach(function (b) { b.classList.add('on'); });
   if (lv('bukti') !== 'U') { emptyBox($('repBody'), 'Laporan hanya untuk yang punya akses "Ubah" di Riwayat pembayaran.'); return; }
   var arg = repMode === 'm' ? { y: +$('repMonth').value.split('-')[0], m: +$('repMonth').value.split('-')[1] } : { y: +$('repYear').value, m: -1 };
   var key = arg.y + '_' + arg.m, seq = ++repSeq;
@@ -6243,6 +6318,189 @@ $('repBack').onclick = function () { show('bukti'); };
 $('repReload').onclick = function () { loadReport(true); };
 $('repOpen').onclick = openReport;
 
+/* ====================== UNIT SEWA ====================== */
+var unData = null, unSel = null, unStatus = 'semua', unMode = 'view', unShow = 200, unOffOpen = false;
+function unKey(x) { return x.id || ('?' + x.inv + '|' + x.unit); }
+function unLabel(x) { return x.inv + (x.unit ? ' · ' + x.unit : ''); }
+function loadUnits() {
+  if (!unData) emptyBox($('unList'), 'Memuat unit…');
+  return swr('getUnits', null, function (d) { applyUnits(d); }).catch(function (e) { emptyBox($('unList'), 'Gagal memuat: ' + errText(e)); });
+}
+function applyUnits(d) {
+  unData = d;
+  $('unNew').hidden = !d.canEdit;
+  var dl = $('tanahList'); if (dl && !dl.children.length) (d.tanah || []).forEach(function (c) { var o = document.createElement('option'); o.value = c; dl.appendChild(o); });
+  renderUnCards(); renderUnList();
+  if (!d.ready) { emptyBox($('unList'), 'Sheet "Unit Sewa" belum dibuat. Pemilik: jalankan "setup" di Apps Script sekali.'); return; }
+  var want = unPendingId || (unSel && unMode === 'view' ? unKey(unSel) : null); unPendingId = null;
+  if (unMode === 'new') return;
+  var x = want && d.units.filter(function (u) { return unKey(u) === want; })[0];
+  if (x) openUnit(x); else if (want) closeUnit();
+}
+function unCounts() {
+  var c = { semua: 0, sewa: 0, kosong: 0, off: 0 };
+  unData.units.forEach(function (x) { c[x.st]++; if (x.st !== 'off') c.semua++; });
+  return c;
+}
+function renderUnCards() {
+  var box = $('unCards'); box.innerHTML = '';
+  if (!unData) return;
+  var c = unCounts(), pct = c.semua ? Math.round(c.sewa / c.semua * 100) : 0;
+  [['cek', 'semua', 'Total unit', c.semua, 'bisa disewakan'], ['ok', 'sewa', 'Disewa', c.sewa, 'ada kontrak aktif'], ['kurang', 'kosong', 'Kosong', c.kosong, 'siap disewakan'], ['cek', '', 'Terisi', pct + '%', 'dari semua unit']].forEach(function (k) {
+    var b = el('button', 'hc ' + k[0]); b.type = 'button';
+    b.appendChild(el('span', '', k[2])); b.appendChild(el('b', '', String(k[3]))); b.appendChild(el('small', '', k[4]));
+    if (k[1]) b.onclick = function () { unStatus = k[1]; renderUnList(); };
+    box.appendChild(b);
+  });
+  $('unNote').textContent = 'Setiap unit tercatat sekali. Kalau kontrak selesai, unitnya otomatis jadi Kosong.' + (c.off ? ' ' + c.off + ' unit tidak disewakan lagi.' : '');
+  var kb = document.querySelector('#unSegs [data-us="kosong"]'); if (kb) kb.textContent = 'Kosong' + (c.kosong ? ' (' + c.kosong + ')' : '');
+}
+function unSort(a, b) { return a.inv.localeCompare(b.inv, 'id', { numeric: true }) || String(a.unit).localeCompare(String(b.unit), 'id', { numeric: true }); }
+function unLast(x) { var h = (x.hist || []).filter(function (t) { return !t.ikut || true; }); return h[0] || null; }
+function renderUnList() {
+  if (!unData) return;
+  $$('#unSegs [data-us]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-us') === unStatus); });
+  var q = $('unq').value.trim().toLowerCase();
+  var list = unData.units.filter(function (x) {
+    if (unStatus === 'semua' ? x.st === 'off' : x.st !== unStatus) return false;
+    return !q || [x.id, x.inv, x.unit, x.jenis, x.kos, x.ten ? x.ten.nama + ' ' + x.ten.id : ''].join(' ').toLowerCase().indexOf(q) >= 0;
+  }).sort(unSort);
+  var box = $('unList'); box.innerHTML = '';
+  if (!list.length) { emptyBox(box, q ? 'Tidak ada unit yang cocok.' : 'Tidak ada unit di sini.'); return; }
+  list.slice(0, unShow).forEach(function (x) {
+    var b = el('button', 'pay' + (unSel && unKey(unSel) === unKey(x) ? ' on' : '')); b.type = 'button';
+    var av = el('div', 'avatar un-av', (x.unit || x.inv.replace(/[^A-Za-z0-9]/g, '').slice(-3)).slice(0, 4));
+    var col = x.st === 'sewa' ? ['#e3f6ea', '#17663a'] : x.st === 'kosong' ? ['#fdf0d8', '#8a5a00'] : ['#eeeeee', '#666'];
+    av.style.background = col[0]; av.style.color = col[1];
+    var mid = el('div', ''); mid.style.minWidth = '0';
+    mid.appendChild(el('div', 't-name', unLabel(x)));
+    var meta = el('div', 't-meta');
+    var chip = x.kos || x.jenis; if (chip) meta.appendChild(el('span', 'chip', chip));
+    var last = unLast(x);
+    meta.appendChild(document.createTextNode(x.st === 'sewa' ? x.ten.nama + ' · ' + (x.ten.id || '') + (x.ten.ikut ? ' (ikut ' + x.ten.ikut + ')' : '')
+      : x.st === 'off' ? 'Tidak disewakan' : x.sejakIso ? 'Kosong sejak ' + dmy(parseIso(x.sejakIso)) : last ? 'Terakhir: ' + last.nama : 'Belum pernah disewa'));
+    mid.appendChild(meta);
+    var right = el('div', 'pay-right');
+    var h = x.st === 'sewa' ? (x.ten.ikut ? 0 : x.ten.harga) : x.harga;
+    right.appendChild(el('b', '', x.st === 'sewa' && x.ten.ikut ? 'ikut kontrak' : h ? rp(h) : '-'));
+    var tags = el('div', 'tn-tags'); tags.appendChild(el('span', 'tag ' + (x.st === 'sewa' ? 'sewa' : x.st === 'kosong' ? 'no' : 'void'), x.st === 'sewa' ? 'Disewa' : x.st === 'kosong' ? 'Kosong' : 'Tidak disewakan'));
+    if (x.unreg) tags.appendChild(el('span', 'tag no', 'belum terdaftar'));
+    right.appendChild(tags);
+    b.appendChild(av); b.appendChild(mid); b.appendChild(right);
+    b.onclick = function () { openUnit(x); };
+    box.appendChild(b);
+  });
+  if (list.length > unShow) { var more = el('button', 'btn sec', 'Tampilkan ' + Math.min(200, list.length - unShow) + ' lagi (' + (list.length - unShow) + ' tersisa)'); more.type = 'button'; more.style.margin = '12px'; more.onclick = function () { unShow += 200; renderUnList(); }; box.appendChild(more); }
+}
+$('unq').addEventListener('input', function () { unShow = 200; clearTimeout(renderUnList.t); renderUnList.t = setTimeout(renderUnList, 120); });
+$$('#unSegs [data-us]').forEach(function (b) { b.onclick = function () { unStatus = b.getAttribute('data-us'); unShow = 200; renderUnList(); }; });
+function closeUnit() { unSel = null; unMode = 'view'; $('unEmpty').hidden = false; $('unBody').hidden = true; $('unSplit').classList.remove('show-detail'); $('view-unit').classList.remove('detail-open'); renderUnList(); }
+function goRent(x) { tnPendingNew = { inv: x.inv, unit: x.unit || '-', harga: x.harga || '', siklus: x.siklus || 'Bulanan', unitId: x.id }; show('penyewa'); }
+function openUnit(x) {
+  var isNew = !x; unMode = isNew ? 'new' : 'view'; unSel = x; unOffOpen = false;
+  x = x || { id: '', inv: '', unit: '', jenis: '', harga: 0, siklus: 'Bulanan', catatan: '', aktif: true, st: 'kosong', hist: [] };
+  var can = unData && unData.canEdit, body = $('unBody'); body.innerHTML = '';
+  $('unEmpty').hidden = true; body.hidden = false;
+  var back = el('button', 'link back', '← Kembali ke daftar'); back.type = 'button'; back.onclick = closeUnit; body.appendChild(back);
+  var head = el('div', 'tn-head');
+  var av = el('div', 'avatar un-av', isNew ? '+' : (x.unit || x.inv.replace(/[^A-Za-z0-9]/g, '').slice(-3)).slice(0, 4));
+  var col = x.st === 'sewa' ? ['#e3f6ea', '#17663a'] : x.st === 'kosong' ? ['#fdf0d8', '#8a5a00'] : ['#eeeeee', '#666']; av.style.background = col[0]; av.style.color = col[1];
+  head.appendChild(av);
+  var hm = el('div', ''); hm.style.minWidth = '0';
+  hm.appendChild(el('h2', '', isNew ? 'Unit baru' : unLabel(x)));
+  hm.appendChild(el('div', 'muted', isNew ? 'ID unit dibuat otomatis saat disimpan.' : [x.id || 'belum terdaftar', x.kos || x.jenis].filter(Boolean).join(' · ')));
+  head.appendChild(hm);
+  head.appendChild(el('span', 'st ' + (x.st === 'sewa' ? 'white' : x.st === 'kosong' ? 'orange' : 'grey'), isNew ? 'Baru' : x.st === 'sewa' ? 'Disewa' : x.st === 'kosong' ? 'Kosong' : 'Tidak disewakan'));
+  body.appendChild(head);
+  if (!isNew) {
+    var info = x.st === 'sewa' ? 'Disewa ' + x.ten.nama + ' (' + (x.ten.id || '-') + ')' + (x.ten.ikut ? ', ikut kontrak ' + x.ten.ikut : x.ten.harga ? ' · ' + rp(x.ten.harga) + ' / ' + cycleWord(x.ten.siklus) : '') + (x.ten.selesaiIso ? ' · s/d ' + dmy(parseIso(x.ten.selesaiIso)) : '')
+      : x.st === 'kosong' ? (x.sejakIso ? 'Kosong sejak ' + dmy(parseIso(x.sejakIso)) : 'Kosong') + (x.harga ? ' · Harga standar ' + rp(x.harga) + (x.siklus ? ' / ' + cycleWord(x.siklus) : '') : '')
+      : 'Tidak disewakan lagi.';
+    body.appendChild(el('p', 'muted', info)).style.margin = '10px 0 0';
+    if (x.unreg) body.appendChild(el('div', 'msg warn', 'Unit ini ada di kontrak tetapi belum tercatat di Unit Sewa. Tekan "Simpan unit" untuk mendaftarkannya.'));
+    var acts = el('div', 'tn-actions'); acts.style.marginTop = '14px';
+    if (x.st === 'kosong' && x.id && lv('penyewa') === 'U') acts.appendChild(btnEl('Sewakan unit ini', '', function () { goRent(x); }));
+    if (x.st === 'sewa' && x.ten) acts.appendChild(btnEl('Buka kontrak', x.st === 'sewa' ? '' : 'sec', function () { tnPendingKey = x.ten.key; show('penyewa'); }));
+    if (can && x.id && x.st === 'kosong') acts.appendChild(btnEl('Tidak disewakan lagi', 'sec', function () { unOffOpen = !unOffOpen; offBox.hidden = !unOffOpen; if (unOffOpen) offIn.focus(); }));
+    if (can && x.id && x.st === 'off') acts.appendChild(btnEl('Disewakan lagi', 'sec', function () { unSetAktif(x, true, ''); }));
+    if (acts.children.length) body.appendChild(acts);
+    if (x.st === 'kosong' && x.id) body.appendChild(el('p', 'hint', '"Sewakan unit ini" membuka form Tambah penyewa dengan unit dan harga sudah terisi.'));
+    var offBox = el('div', 'un-off'); offBox.hidden = true;
+    var offIn = inp('text', '', { placeholder: 'Alasan, misalnya: dipakai kantor sendiri', maxlength: 200 });
+    offBox.appendChild(offIn); offBox.appendChild(btnEl('Simpan', '', function () { unSetAktif(x, false, offIn.value); }));
+    body.appendChild(offBox);
+  }
+  body.appendChild(el('h3', 'tn-h3', 'Data unit'));
+  var form = el('div', ''); form.id = 'unForm';
+  var r1 = el('div', 'row');
+  var fInv = inp('text', x.inv, { list: 'tanahList', autocomplete: 'off', placeholder: 'Contoh: Waru 02A' }); fInv.id = 'u_inv';
+  var fUnit = inp('text', x.unit, { placeholder: 'Kosongkan kalau tidak ada' }); fUnit.id = 'u_unit';
+  r1.appendChild(fieldBox('u_inv', 'Inventaris', fInv, 'Kode dari Data tanah.')); r1.appendChild(fieldBox('u_unit', 'No Unit', fUnit)); form.appendChild(r1);
+  var r2 = el('div', 'row');
+  var fJ = document.createElement('select'); fJ.id = 'u_jenis';
+  [''].concat((unData && unData.jenis) || []).forEach(function (j) { var o = el('option', '', j || '—'); o.value = j; fJ.appendChild(o); });
+  if (x.jenis && !(unData.jenis || []).some(function (j) { return j === x.jenis; })) { var o2 = el('option', '', x.jenis); o2.value = x.jenis; fJ.appendChild(o2); }
+  fJ.value = x.jenis || '';
+  var fH = inp('text', x.harga ? Number(x.harga).toLocaleString('id-ID') : '', { inputmode: 'numeric', placeholder: 'Boleh kosong' }); fH.id = 'u_harga'; fH.className = 'num';
+  fH.addEventListener('blur', function () { var n = num(fH.value); fH.value = n ? n.toLocaleString('id-ID') : ''; });
+  r2.appendChild(fieldBox('u_jenis', 'Jenis', fJ)); r2.appendChild(fieldBox('u_harga', 'Harga standar (Rp)', fH)); form.appendChild(r2);
+  var fS = document.createElement('select'); fS.id = 'u_siklus';
+  [['', '—'], ['Bulanan', 'per bulan'], ['3 Bulan', 'per 3 bulan'], ['6 Bulan', 'per 6 bulan'], ['Tahunan', 'per tahun']].forEach(function (s) { var o = el('option', '', s[1]); o.value = s[0]; fS.appendChild(o); });
+  fS.value = /bulan|tahun/i.test(x.siklus || '') ? x.siklus : '';
+  var fC = inp('text', x.catatan, { maxlength: 500, placeholder: 'Contoh: AC, kamar mandi dalam' }); fC.id = 'u_catatan';
+  var r3 = el('div', 'row'); r3.appendChild(fieldBox('u_siklus', 'Harga untuk', fS)); r3.appendChild(fieldBox('u_catatan', 'Catatan', fC)); form.appendChild(r3);
+  if (x.st === 'sewa') { fInv.disabled = true; fUnit.disabled = true; form.appendChild(el('p', 'hint', 'Unit ini sedang disewa: Inventaris dan No Unit diubah lewat kontraknya di halaman Penyewa.')); }
+  if (!can) [fInv, fUnit, fJ, fH, fS, fC].forEach(function (i) { i.disabled = true; });
+  body.appendChild(form);
+  var err = el('p', 'msg err'); err.hidden = true; err.id = 'unErr'; body.appendChild(err);
+  if (can) {
+    var sv = btnEl(isNew ? 'Simpan unit baru' : 'Simpan unit', '', function () { saveUnitForm(x, sv, isNew); }); sv.id = 'unSave';
+    var row = el('div', 'tn-actions'); row.appendChild(sv);
+    if (isNew) row.appendChild(btnEl('Batal', 'sec', closeUnit));
+    body.appendChild(row);
+  }
+  if (!isNew) {
+    body.appendChild(el('h3', 'tn-h3', 'Riwayat penyewa'));
+    if (!x.hist.length) body.appendChild(el('div', 'muted', 'Belum pernah disewa.'));
+    else {
+      var wrap = el('div', 'tbl-wrap'), tb = el('table', 'un-hist'), hr = el('tr', '');
+      ['Penyewa', 'Kontrak', 'Periode', 'Status'].forEach(function (h) { hr.appendChild(el('th', '', h)); }); tb.appendChild(hr);
+      x.hist.forEach(function (t) {
+        var tr = el('tr', 'go');
+        tr.appendChild(el('td', '', t.nama || '-'));
+        tr.appendChild(el('td', '', (t.id || '-') + (t.ikut ? ' (ikut ' + t.ikut + ')' : '')));
+        tr.appendChild(el('td', '', (t.mulaiIso ? dmy(parseIso(t.mulaiIso)) : '?') + ' – ' + (t.selesaiIso ? dmy(parseIso(t.selesaiIso)) : t.status === 'Aktif' ? 'sekarang' : '?')));
+        tr.appendChild(el('td', '', t.status + (t.alasan && t.status !== 'Aktif' ? ' · ' + t.alasan : '')));
+        tr.onclick = function () { tnPendingKey = t.key; show('penyewa'); };
+        tb.appendChild(tr);
+      });
+      wrap.appendChild(tb); body.appendChild(wrap);
+    }
+  }
+  $('unSplit').classList.add('show-detail'); $('view-unit').classList.add('detail-open');
+  renderUnList();
+  if (isNew) setTimeout(function () { fInv.focus(); }, 30);
+}
+function saveUnitForm(x, btn, isNew) {
+  var p = { id: isNew ? '' : x.id, inv: $('u_inv').value, unit: $('u_unit').value, jenis: $('u_jenis').value, harga: num($('u_harga').value), siklus: $('u_siklus').value, catatan: $('u_catatan').value };
+  $('unErr').hidden = true; btn.disabled = true; btn.textContent = 'Menyimpan…';
+  call('saveUnit', p).then(function (d) {
+    cacheWrite('getUnits', d); unMode = 'view'; unPendingId = d.id; toast(isNew ? 'Unit baru tersimpan (' + d.id + ').' : 'Unit tersimpan.'); dashData = null; ksData = null;
+    applyUnits(d);
+  }).catch(function (e) { btn.disabled = false; btn.textContent = isNew ? 'Simpan unit baru' : 'Simpan unit'; $('unErr').textContent = errText(e); $('unErr').hidden = false; });
+}
+function unSetAktif(x, on, alasan) {
+  call('setUnitAktif', { id: x.id, aktif: on, alasan: alasan }).then(function (d) {
+    cacheWrite('getUnits', d); unPendingId = d.id; toast(on ? 'Unit disewakan lagi.' : 'Unit tidak disewakan lagi.'); dashData = null; ksData = null;
+    if (!on) unStatus = 'off'; else unStatus = 'kosong';
+    applyUnits(d);
+  }).catch(function (e) { toast(errText(e)); });
+}
+$('unNew').onclick = function () { openUnit(null); };
+new MutationObserver(function () { clearTimeout(syncGroupBadges.t); syncGroupBadges.t = setTimeout(syncGroupBadges, 30); })
+  .observe($('ptabs'), { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['hidden'] });
+
+
 /* ====================== UANG MASUK BELUM TERIDENTIFIKASI: hubungkan ke penyewa ====================== */
 function isUnk(p) { return p && p.jenis === 'Belum teridentifikasi'; }
 function linkModal(p) {
@@ -6492,13 +6750,13 @@ function boot() {
     $('menuNav').innerHTML = '<nav class="side-nav">' + $('sideNav').innerHTML + '</nav>';
     $('taskDel').hidden = true;
     if (payAny) { refreshSignSelects(); if (firstTime || !chosen) resetForm(); else renderList(); if (firstTime) refreshBadge(); }
-    if (!firstTime) { if (lv(curView) === '-' && PAGE_NAME[curView]) show(curView); return; }
+    if (!firstTime) { if (lv(permOf(curView)) === '-' && PAGE_NAME[permOf(curView)]) show(curView); return; }
     var first = ['dash', 'tugas', 'catat', 'tanah', 'penyewa', 'bukti', 'jalan', 'kal', 'set'].filter(function (p) { return lv(p) !== '-'; })[0] || 'dash';
     // after a refresh, go back to the page (and tab) the person was on
     var w = readWhere(), want = (location.hash || '').slice(1) || w.v;
     if (w.jt) jlTab = w.jt;
     if (w.st) setTab = w.st;
-    if (want && (SOON[want] || (PAGE_NAME[want] && lv(want) !== '-'))) first = want;
+    if (want && (SOON[want] || (PAGE_NAME[permOf(want)] && tabOk(want)))) first = want;
     show(first);
   }).catch(function (e) {
     renderGoogleButton();
