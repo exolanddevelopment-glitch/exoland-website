@@ -259,6 +259,25 @@
   .kt-mini:first-child { border-top:0; }
   .jl-who div { font-weight:600; } .jl-who small { display:block; font-size:12px; margin-top:2px; }
   .jl-appr { margin-top:12px; padding:10px 12px; background:var(--subtle); border-radius:10px; }
+  .rp-top { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:14px; max-width:1360px; }
+  .rp-top select { width:auto; padding:10px 14px; font-weight:700; }
+  .rp-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:12px; max-width:1360px; }
+  .rp-sec { padding:16px 18px; }
+  .rp-sec h3 { margin:0 0 2px; font-size:16px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .rp-sec .muted { font-size:12.5px; } .rp-sec .rp-lbl { margin-top:10px; }
+  .rp-sec .big { font-size:24px; font-weight:800; letter-spacing:-.02em; margin:2px 0 8px; }
+  .rp-kv { display:grid; grid-template-columns:1fr auto; gap:4px 10px; font-size:13px; border-top:1px solid var(--line-2); padding-top:8px; }
+  .rp-kv span { color:var(--muted); } .rp-kv b { font-weight:500; text-align:right; color:var(--muted); }
+  .rp-kv .rp-out { grid-column:1 / -1; font-size:11px; text-transform:uppercase; letter-spacing:.06em; }
+  .rp-warn { max-width:1360px; margin:14px 0; padding:14px 18px; }
+  .rp-warn .msg { display:flex; gap:10px; align-items:center; margin-top:8px; }
+  .rp-warn .msg .btn { width:auto; margin:0 0 0 auto; padding:7px 12px; font-size:13px; flex:none; }
+  .rp-foot { display:flex; gap:10px; align-items:center; max-width:1360px; margin-top:16px; flex-wrap:wrap; }
+  .rp-foot .btn { width:auto; margin:0; padding:12px 20px; }
+  .rp-list { max-width:1360px; margin-top:12px; } .rp-list td.b { font-weight:700; }
+  tr.rp-unk td { color:var(--err); } tr.rp-jam td { background:var(--subtle); }
+  .unk-bar { max-width:1360px; margin:0 0 14px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; } .unk-bar .link { color:inherit; font-weight:700; text-decoration:underline; }
+  .pay.unk .t-name { color:var(--err); }
   .lz-more { padding:14px; text-align:center; color:var(--muted); font-size:13px; }
   /* moving dots on anything that is waiting: "Menyimpan .", "Menyimpan . .", "Menyimpan . . ." */
   .dots i { font-style:normal; opacity:0; animation:dot2 1.2s steps(1) infinite; }
@@ -1484,6 +1503,12 @@
         <div class="stack">
           <div class="section">
             <h2 class="sec-title"><span class="step-no">1</span>Pilih penyewa</h2>
+            <label class="check" style="margin:0 0 10px"><input id="unk" type="checkbox"> Pengirim tidak teridentifikasi <span class="muted">(belum tahu uang ini dari siapa)</span></label>
+            <div id="unkBox" hidden>
+              <label for="sender" style="margin-top:0">Nama pengirim (seperti di mutasi bank)</label>
+              <input id="sender" type="text" maxlength="120" placeholder="Misalnya: YUDI ISKANDAR - BRI LINK" autocomplete="off">
+              <p class="hint">Disimpan tanpa kwitansi. Setelah tahu dari siapa, buka di Riwayat pembayaran lalu "Hubungkan ke penyewa".</p>
+            </div>
             <div id="pickBox">
               <div class="search">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
@@ -1504,7 +1529,7 @@
 
           <div class="section">
             <h2 class="sec-title"><span class="step-no">2</span>Isi pembayaran</h2>
-            <label for="jenis" style="margin-top:0">Jenis pembayaran</label>
+            <label for="jenis" id="jenisLbl" style="margin-top:0">Jenis pembayaran</label>
             <select id="jenis"><option>Uang sewa</option><option>Uang jaminan</option><option>DP</option><option>Denda keterlambatan</option><option>Lain-lain</option></select>
             <div id="ketBox" hidden><label for="ket">Untuk apa? (wajib)</label><input id="ket" type="text" maxlength="200" placeholder="Misalnya: biaya listrik, ganti kunci"></div>
             <div class="row" style="margin-top:14px">
@@ -1577,11 +1602,27 @@
       </div>
     </section>
 
+    <!-- ================= LAPORAN PEMASUKAN ================= -->
+    <section id="view-laporan" hidden>
+      <div class="page-head" style="max-width:1360px">
+        <div><h1>Laporan pemasukan</h1><p>Hanya uang yang masuk di bulan itu (menurut Tanggal Bayar). Periksa dulu, lalu unduh PDF.</p></div>
+        <div class="head-btns"><button class="btn sec" id="repReload" type="button" style="width:auto;margin:0;padding:11px 18px">Muat ulang</button><button class="btn sec" id="repBack" type="button" style="width:auto;margin:0;padding:11px 18px">← Riwayat pembayaran</button></div>
+      </div>
+      <div class="rp-top">
+        <div class="segs" id="repMode"><button type="button" data-rm="m" class="on">Bulanan</button><button type="button" data-rm="y">Rekap tahunan</button></div>
+        <select id="repMonth" aria-label="Bulan"></select><select id="repYear" aria-label="Tahun" hidden></select>
+        <span class="muted" id="repInfo"></span>
+      </div>
+      <div id="repBody"><div class="empty">Memuat…</div></div>
+    </section>
+
     <!-- ================= RIWAYAT PEMBAYARAN ================= -->
     <section id="view-bukti" hidden>
       <div class="page-head">
         <div><h1>Riwayat pembayaran</h1><p>Semua pembayaran yang dicatat. Tambah bukti transfer, unduh ulang kwitansi, atau batalkan yang salah.</p></div>
+        <button class="btn" id="repOpen" type="button" style="width:auto;margin:0;padding:11px 18px" hidden>Laporan bulanan</button>
       </div>
+      <div class="msg err unk-bar" id="unkBar" hidden><span id="unkBarTxt"></span><button class="link" id="unkBarBtn" type="button">Lihat →</button></div>
       <div class="grid-bukti bukti-split" id="split">
         <div class="bukti-listcol">
           <div class="toolbar">
@@ -1592,6 +1633,7 @@
             <div class="pills">
               <button class="pill on" data-filter="all" type="button">Semua</button>
               <button class="pill" data-filter="no" type="button">Tanpa bukti <span id="cntNo"></span></button>
+              <button class="pill" data-filter="unk" type="button" id="pillUnk" hidden>Belum teridentifikasi <span id="cntUnk"></span></button>
             </div>
             <select class="sort" id="bsort" aria-label="Urutkan">
               <option value="baru">Terbaru dicatat</option>
@@ -1623,6 +1665,10 @@
                 <div class="r-line"><dt>Dicatat oleh</dt><dd id="dOleh"></dd></div>
               </dl>
               <p class="muted" id="dCatatan" style="margin:10px 0 0"></p>
+              <div id="dUnk" hidden>
+                <div class="msg err">Uang masuk belum teridentifikasi. Belum masuk ke penyewa mana pun dan belum ada kwitansi. Setelah tahu dari siapa, hubungkan ke penyewanya.</div>
+                <button class="btn" id="dLink" type="button">Hubungkan ke penyewa</button>
+              </div>
               <div id="dVoid" hidden>
                 <div class="stamp void">BATAL</div>
                 <p class="muted" id="dVoidInfo" style="margin:8px 0 0"></p>
@@ -1931,7 +1977,7 @@ $$('[data-theme-switch]').forEach(function (s) {
 applyTheme(document.documentElement.getAttribute('data-theme') || 'light');
 
 /* ---------- navigation ---------- */
-var VIEWS = ['dash', 'kal', 'tugas', 'set', 'soon', 'catat', 'bukti', 'jalan', 'pbb', 'penyewa', 'kos', 'tanah', 'cek', 'kontak'];
+var VIEWS = ['dash', 'kal', 'tugas', 'set', 'soon', 'catat', 'bukti', 'jalan', 'pbb', 'penyewa', 'kos', 'tanah', 'cek', 'kontak', 'laporan'];
 var SOON = {
   'soon-edai': ['Ask EDAI', 'Exotic Land Development AI', 'Tanya apa saja tentang data tanah, penyewa, dan pembayaran dalam bahasa sehari-hari, misalnya "siapa yang telat bayar bulan ini?" atau "berapa pemasukan Meikarta tahun ini?". EDAI menjawab dari database perusahaan.']
 
@@ -1981,6 +2027,7 @@ function show(view) {
   if (view === 'pbb') loadPbb();
   if (view === 'kos') loadKos();
   if (view === 'kontak') loadContacts();
+  if (view === 'laporan') loadReport();
   if (view === 'set') openSetTab(setTab);
   window.scrollTo(0, 0);
   setTimeout(fitAll, 0);
@@ -2163,6 +2210,7 @@ function downloadKwitansi(k, sel, btn) {
 /* ---------- expected kwitansi number (preview) ---------- */
 function peekNumber() {
   clearTimeout(peekNumber.t);
+  if ($('unk').checked) return;
   if (!chosen || !$('tanggal').value) { $('sNo').textContent = 'pilih penyewa dulu'; $('sNo').className = 'num pending'; $('sNoNote').hidden = true; return; }
   var key = chosen.key, tg = $('tanggal').value;
   $('sNo').textContent = 'menghitung…'; $('sNo').className = 'num pending';
@@ -2258,6 +2306,7 @@ function resetForm() {
   $('mulai').value = iso(d); $('jenis').value = 'Uang sewa'; $('ket').value = ''; $('ketBox').hidden = true; $('sewaBox').hidden = false;
   $('periode').value = 1; $('jumlah').value = ''; jumlahTouched = false; $('catatan').value = ''; $('foto').value = ''; $('fotoList').innerHTML = '';
   $('confirm').checked = false; chosen = null; pastPays = []; gab = null; $('gabBox').hidden = true;
+  $('unk').checked = false; $('sender').value = ''; $('unkBox').hidden = true; $('jenis').hidden = false; $('jenisLbl').hidden = false; $('sSign').closest('.r-sign').hidden = false;
   $('chosenBox').hidden = true; $('pickBox').hidden = false; $('q').value = ''; renderList(); check(); peekNumber();
 }
 
@@ -2331,9 +2380,33 @@ function choose(t) {
   check();
 }
 
+function unkOn() { return $('unk').checked; }
+function setUnkMode() {
+  var on = unkOn();
+  $('unkBox').hidden = !on; $('pickBox').hidden = on || !!chosen; $('chosenBox').hidden = on || !chosen;
+  $('gabBox').hidden = on || !gabOn(); $('jenis').hidden = on; $('jenisLbl').hidden = on;
+  $('sSign').closest('.r-sign').hidden = on; if (on) $('sSigBlock').hidden = true;
+  if (on) { $('jumlah').readOnly = false; if (!jumlahTouched) $('jumlah').value = ''; jumlahTouched = true; setTimeout(function () { $('sender').focus(); }, 0); }
+  else peekNumber();
+  check();
+}
+function checkUnknown() {
+  $('sewaBox').hidden = true; $('ketBox').hidden = true;
+  var ok = true, nFiles = ($('foto').files || []).length, metode = document.querySelector('input[name=metode]:checked').value;
+  var tg = parseIso($('tanggal').value), sender = $('sender').value.trim(), jumlah = num($('jumlah').value);
+  $('sBukti').textContent = nFiles ? 'BUKTI ' + nFiles + ' FILE' : 'BUKTI MENYUSUL'; $('sBukti').className = 'stamp ' + (nFiles ? 'done' : 'pending');
+  $('sNo').textContent = 'tanpa kwitansi'; $('sNo').className = 'num pending'; $('sNoNote').hidden = true;
+  fillLines($('sLines'), [['Tanggal bayar', tg ? dmy(tg) : '-'], ['Dari', sender || '-'], ['Untuk', 'Belum teridentifikasi'], ['Metode', metode]]);
+  $('sJumlah').textContent = jumlah ? jumlah.toLocaleString('id-ID') : '0'; $('sTerbilang').textContent = terbilang(jumlah);
+  if (sender.length < 3 || !jumlah || !$('tanggal').value) ok = false;
+  $('warns').innerHTML = '<div class="msg warn">Disimpan tanpa kwitansi dan belum masuk ke penyewa mana pun. Di laporan bulanan tampil merah sampai dihubungkan ke penyewa.</div>';
+  $('confirmBox').hidden = true;
+  $('save').disabled = !ok; $('save').hidden = lv('catat') !== 'U';
+}
 function check() {
   var w = [], ok = true;
   $('error').hidden = true;
+  if (unkOn()) return checkUnknown();
   var jenis = curJenis(), sewa = jenis === 'Uang sewa';
   $('sewaBox').hidden = !sewa; $('ketBox').hidden = jenis !== 'Lain-lain';
   var n = Math.max(1, Math.round(Number($('periode').value) || 1));
@@ -2446,7 +2519,23 @@ function saveGab() {
     $('error').hidden = false; check();
   });
 }
+function saveUnknownPay() {
+  $('save').disabled = true; $('save').textContent = 'Menyimpan…';
+  var p = { unknown: true, sender: $('sender').value.trim(), tanggal: $('tanggal').value, jumlah: num($('jumlah').value),
+    metode: document.querySelector('input[name=metode]:checked').value, catatan: $('catatan').value };
+  readFiles($('foto')).then(function (files) { p.files = files; return call('savePayment', p); }).then(function (r) {
+    $('save').textContent = 'Simpan pembayaran';
+    toast('Tersimpan sebagai uang masuk belum teridentifikasi.');
+    resetForm(); refreshBadge(); dashData = null; repCache = {};
+    selId = r.id; filter = 'unk'; show('bukti');
+    $$('[data-filter]').forEach(function (x) { x.classList.toggle('on', x.getAttribute('data-filter') === 'unk'); });
+  }).catch(function (e) {
+    $('save').textContent = 'Simpan pembayaran';
+    $('error').textContent = 'Gagal menyimpan: ' + errText(e) + ' Coba lagi.'; $('error').hidden = false; check();
+  });
+}
 function save() {
+  if (unkOn()) return saveUnknownPay();
   if (gabOn()) return saveGab();
   $('save').disabled = true; $('save').textContent = 'Menyimpan…';
   var n = Math.max(1, Math.round(Number($('periode').value) || 1));
@@ -2488,6 +2577,8 @@ $('foto').addEventListener('change', function () { listFiles($('foto'), $('fotoL
 $('jumlah').addEventListener('input', function () { jumlahTouched = true; });
 $('jumlah').addEventListener('blur', function () { var n = num(this.value); this.value = n ? n.toLocaleString('id-ID') : ''; check(); });
 $('save').onclick = save;
+$('unk').addEventListener('change', setUnkMode);
+$('sender').addEventListener('input', check);
 $('tanggal').addEventListener('change', peekNumber);
 $('change').addEventListener('click', peekNumber);
 $('again').onclick = function () { $('doneView').hidden = true; $('formView').hidden = false; resetForm(); };
@@ -2500,6 +2591,11 @@ function setBadge() {
   var c = payments.filter(function (p) { return !p.bukti.length && !isVoid(p); }).length;
   $$('[data-badge]').forEach(function (b) { b.textContent = c; b.hidden = !c; });
   $('cntNo').textContent = '(' + c + ')';
+  var unk = payments.filter(function (p) { return isUnk(p) && !isVoid(p); });
+  $('pillUnk').hidden = !unk.length && filter !== 'unk'; $('cntUnk').textContent = '(' + unk.length + ')';
+  $('unkBar').hidden = !unk.length;
+  $('unkBarTxt').textContent = unk.length ? unk.length + ' uang masuk belum teridentifikasi · ' + rp(unk.reduce(function (a, p) { return a + p.jumlah; }, 0)) + ' · ' + unk.slice(0, 3).map(function (p) { return p.nama + ' (' + p.tgl.slice(0, 5) + ')'; }).join(', ') + (unk.length > 3 ? ', …' : '') : '';
+  $('repOpen').hidden = lv('bukti') !== 'U';
 }
 function refreshBadge() { call('getPayments').then(function (list) { payments = list || []; setBadge(); }).catch(function () {}); }
 
@@ -2525,6 +2621,7 @@ function renderPays() {
   var q = $('bq').value.toLowerCase().trim();
   var rows = payments.filter(function (p) {
     if (filter === 'no' && (p.bukti.length || isVoid(p)) && p.id !== selId) return false;
+    if (filter === 'unk' && (!isUnk(p) || isVoid(p)) && p.id !== selId) return false;
     return !q || (p.nama + ' ' + p.inv + ' ' + p.unit + ' ' + p.id + ' ' + p.kwitansi + ' ' + (p.jenis || '')).toLowerCase().indexOf(q) >= 0;
   });
   if (sortBy === 'unit' || sortBy === 'nama') rows.sort(function (a, b) { return sortKey(a).localeCompare(sortKey(b), 'id', { numeric: true }); });
@@ -2532,19 +2629,21 @@ function renderPays() {
   var box = $('payList'); box.innerHTML = '';
   if (!rows.length) {
     var e = document.createElement('div'); e.className = 'empty';
-    e.textContent = filter === 'no' && !q ? 'Semua pembayaran sudah ada buktinya.' : 'Tidak ada pembayaran yang cocok.';
+    e.textContent = filter === 'no' && !q ? 'Semua pembayaran sudah ada buktinya.' : filter === 'unk' && !q ? '✓ Tidak ada uang masuk yang belum teridentifikasi.' : 'Tidak ada pembayaran yang cocok.';
     box.appendChild(e); return;
   }
   lazyFill(box, rows, function (p) {
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'pay' + (p.id === selId ? ' on' : '') + (isVoid(p) ? ' void' : '');
+    var u = isUnk(p);
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'pay' + (p.id === selId ? ' on' : '') + (isVoid(p) ? ' void' : '') + (u ? ' unk' : '');
     var mid = document.createElement('div'); mid.style.minWidth = '0';
     var nm = document.createElement('div'); nm.className = 't-name'; nm.textContent = p.nama;
-    var kn = document.createElement('div'); kn.className = 'kno'; kn.textContent = p.kwitansi || 'Tanpa no. kwitansi';
-    mid.appendChild(nm); mid.appendChild(metaEl([p.inv, 'Unit ' + p.unit + (isSewa(p) ? ', periode ' + p.mulai + ' – ' + p.sd : ', ' + jenisText(p))])); mid.appendChild(kn);
+    var kn = document.createElement('div'); kn.className = 'kno'; kn.textContent = u ? 'Tanggal bayar ' + p.tgl + ' · belum ada kwitansi' : p.kwitansi || 'Tanpa no. kwitansi';
+    mid.appendChild(nm); mid.appendChild(u ? metaEl(['Belum teridentifikasi', ' pengirim belum diketahui']) : metaEl([p.inv, 'Unit ' + p.unit + (isSewa(p) ? ', periode ' + p.mulai + ' – ' + p.sd : ', ' + jenisText(p))])); mid.appendChild(kn);
     var right = document.createElement('div'); right.className = 'pay-right';
     var amt = document.createElement('b'); amt.textContent = rp(p.jumlah);
     var tag = document.createElement('span');
     if (isVoid(p)) { tag.className = 'tag void'; tag.textContent = 'Batal'; }
+    else if (u) { tag.className = 'tag void'; tag.textContent = 'Belum teridentifikasi'; }
     else { tag.className = 'tag ' + (p.bukti.length ? 'yes' : 'no'); tag.textContent = p.bukti.length ? p.bukti.length + ' bukti' : 'Tanpa bukti'; }
     right.appendChild(amt); right.appendChild(tag);
     b.appendChild(avatarEl(p.nama, p.inv)); b.appendChild(mid); b.appendChild(right);
@@ -2569,7 +2668,10 @@ function openDetail(p) {
   $('dOleh').textContent = p.oleh || '-';
   $('dCatatan').textContent = p.catatan ? 'Catatan: ' + p.catatan : '';
   if (p.grp) { var gk = kwOf(p); $('dCatatan').textContent = 'Bagian dari bayar gabungan: ' + gk.items.length + ' unit (' + gk.items.map(function (x) { return x.inv + ' ' + x.unit; }).join(', ') + '), total ' + rp(gk.jumlah) + '. Bukti dan pembatalan berlaku untuk semua unit ini.'; }
-  var v = isVoid(p);
+  var v = isVoid(p), u = isUnk(p);
+  if (u) { $('dId').textContent = 'belum ada'; fillMeta($('dInfo'), ['Belum teridentifikasi', ' pengirim (seperti di mutasi bank)']); $('dJenis').textContent = 'Belum teridentifikasi'; }
+  $('dUnk').hidden = !u; $('dLink').hidden = v || lv('catat') !== 'U';
+  $('dDownload').hidden = u; $('dSign').closest('.r-sign').hidden = u; if (u) $('dSigBlock').hidden = true;
   $('dVoid').hidden = !v;
   $('dVoidInfo').textContent = v ? 'Dibatalkan ' + p.batalWaktu + ' oleh ' + p.batalOleh + '. Alasan: ' + p.alasan : '';
   var pr = $('dProofs'); pr.innerHTML = '';
@@ -5831,6 +5933,317 @@ function reportModal(t) {
   });
 }
 
+
+/* ====================== LAPORAN PEMASUKAN (bulanan + rekap tahunan), PDF dibuat di browser ====================== */
+var BULAN_L = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+var repMode = 'm', repYMode = 'ringkas', repCache = {}, repData = null, repRows = false, repSeq = 0;
+function repSecName(n) { return n; }
+function repLabelBulan(y, m) { return BULAN_L[m] + ' ' + y; }
+function repFillPickers() {
+  var now = new Date(), ms = $('repMonth'), ys = $('repYear');
+  if (!ms.options.length) {
+    for (var k = 0; k < 36; k++) { var d = new Date(now.getFullYear(), now.getMonth() - k, 1), o = el('option', '', repLabelBulan(d.getFullYear(), d.getMonth())); o.value = d.getFullYear() + '-' + d.getMonth(); ms.appendChild(o); }
+    for (var y = now.getFullYear(); y >= now.getFullYear() - 3; y--) { var oy = el('option', '', String(y)); oy.value = y; ys.appendChild(oy); }
+  }
+}
+function openReport() { show('laporan'); }
+function loadReport(force) {
+  repFillPickers();
+  $$('#repMode [data-rm]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-rm') === repMode); });
+  $('repMonth').hidden = repMode !== 'm'; $('repYear').hidden = repMode !== 'y';
+  $$('[data-view="bukti"]').forEach(function (b) { b.classList.add('on'); });
+  if (lv('bukti') !== 'U') { emptyBox($('repBody'), 'Laporan hanya untuk yang punya akses "Ubah" di Riwayat pembayaran.'); return; }
+  var arg = repMode === 'm' ? { y: +$('repMonth').value.split('-')[0], m: +$('repMonth').value.split('-')[1] } : { y: +$('repYear').value, m: -1 };
+  var key = arg.y + '_' + arg.m, seq = ++repSeq;
+  if (repCache[key] && !force) { repData = repCache[key]; renderReport(); return; }
+  emptyBox($('repBody'), 'Menyusun laporan…'); $('repInfo').textContent = '';
+  syncing(1, 'getIncomeReport');
+  call('getIncomeReport', arg).then(function (d) {
+    syncing(-1, 'getIncomeReport');
+    repCache[key] = d; if (seq !== repSeq) return;
+    repData = d; renderReport();
+  }).catch(function (e) { syncing(-1, 'getIncomeReport'); if (seq === repSeq) emptyBox($('repBody'), 'Gagal menyusun laporan: ' + errText(e)); });
+}
+function repLainTotal(t) { return Object.keys(t.lain).reduce(function (a, k) { return a + t.lain[k]; }, 0); }
+function repCard(s, sub) {
+  var t = s.totals, c = el('div', 'card rp-sec');
+  var h = el('h3', '', s.nama); h.appendChild(el('span', 'st white', t.n + ' bayar')); c.appendChild(h);
+  c.appendChild(el('div', 'muted', sub));
+  c.appendChild(el('div', 'muted rp-lbl', 'Total sewa + DP (bersih)'));
+  c.appendChild(el('div', 'big num', rp(t.sewa)));
+  var kv = el('div', 'rp-kv'); kv.appendChild(el('span', 'rp-out', 'Di luar total'));
+  [['Jaminan', t.jaminan]].concat(t.denda ? [['Denda', t.denda]] : []).concat(Object.keys(t.lain).map(function (k) { return [k.charAt(0) + k.slice(1).toLowerCase(), t.lain[k]]; }))
+    .forEach(function (x) { kv.appendChild(el('span', '', x[0])); kv.appendChild(el('b', 'num', rp(x[1]))); });
+  c.appendChild(kv);
+  return c;
+}
+function renderReport() {
+  var d = repData, box = $('repBody'); box.innerHTML = '';
+  if (d.month) return renderReportMonth(d, box);
+  // yearly
+  var tot = { sewa: 0, jaminan: 0, lain: 0, n: 0 };
+  d.months.forEach(function (mr) { tot.sewa += mr.grand.sewa; tot.jaminan += mr.grand.jaminan; tot.lain += mr.grand.denda + repLainTotal(mr.grand); tot.n += mr.nPay; });
+  $('repInfo').textContent = tot.n + ' pembayaran di ' + d.y + ' · disusun ' + d.made;
+  var names = d.months[0].sections.map(function (s) { return s.nama; });
+  var rows = d.months.map(function (mr) {
+    return [{ t: BULAN_L[mr.m], cls: 'nowrap' }].concat(mr.sections.map(function (s) { return { t: s.totals.sewa ? rp(s.totals.sewa) : '-', cls: 'r num nowrap' }; }))
+      .concat([{ t: rp(mr.grand.sewa), cls: 'r num nowrap b' }, { t: mr.grand.jaminan ? rp(mr.grand.jaminan) : '-', cls: 'r num nowrap' }, { t: mr.grand.denda + repLainTotal(mr.grand) ? rp(mr.grand.denda + repLainTotal(mr.grand)) : '-', cls: 'r num nowrap' }, { t: String(mr.nPay), cls: 'r num' }]);
+  });
+  rows.push([{ t: 'TOTAL ' + d.y, cls: 'b' }].concat(names.map(function (n, i) { return { t: rp(d.months.reduce(function (a, mr) { return a + mr.sections[i].totals.sewa; }, 0)), cls: 'r num nowrap b' }; }))
+    .concat([{ t: rp(tot.sewa), cls: 'r num nowrap b' }, { t: rp(tot.jaminan), cls: 'r num nowrap b' }, { t: rp(tot.lain), cls: 'r num nowrap b' }, { t: String(tot.n), cls: 'r num b' }]));
+  var w = el('div', 'tbl-wrap rp-list');
+  w.appendChild(table([{ t: 'Bulan' }].concat(names.map(function (n) { return { t: n, cls: 'r' }; })).concat([{ t: 'Total sewa', cls: 'r' }, { t: 'Jaminan', cls: 'r' }, { t: 'Lain-lain & denda', cls: 'r' }, { t: 'Bayar', cls: 'r' }]), rows,
+    { onRow: function (i) { if (i < 12) { repMode = 'm'; $('repMonth').value = d.y + '-' + i; loadReport(); } } }));
+  box.appendChild(w);
+  box.appendChild(el('p', 'hint', 'Angka sewa sudah bersih (tanpa jaminan, denda, dan lain-lain). Klik bulan untuk melihat laporannya.'));
+  var foot = el('div', 'rp-foot');
+  var seg = el('div', 'segs'); [['ringkas', 'Ringkas (1 halaman)'], ['lengkap', 'Lengkap (rekap + 12 laporan)']].forEach(function (x) { var b = el('button', repYMode === x[0] ? 'on' : '', x[1]); b.type = 'button'; b.onclick = function () { repYMode = x[0]; renderReport(); }; seg.appendChild(b); });
+  foot.appendChild(seg);
+  foot.appendChild(btnEl('⬇ Unduh PDF rekap ' + d.y, '', function () { repDownload(this); }));
+  foot.appendChild(btnEl('Lihat dulu', 'sec', function () { repPreview(this); }));
+  box.appendChild(foot);
+}
+function renderReportMonth(d, box) {
+  var mr = d.month, lbl = repLabelBulan(mr.y, mr.m);
+  $('repInfo').textContent = mr.nPay + ' pembayaran · disusun ' + d.made;
+  var g = el('div', 'rp-grid');
+  mr.sections.forEach(function (s) { g.appendChild(repCard(s, 'Uang yang masuk ' + lbl)); });
+  box.appendChild(g);
+  var chk = el('div', 'card rp-warn'); chk.appendChild(el('b', '', 'Periksa sebelum mengunduh'));
+  if (!mr.nPay) chk.appendChild(el('div', 'msg warn', '● Belum ada pembayaran tercatat dengan tanggal bayar di ' + lbl + '.'));
+  if (mr.unknown.length) {
+    var u = el('div', 'msg err', '● ' + mr.unknown.length + ' uang masuk belum teridentifikasi: ' + rp(mr.unknown.reduce(function (a, x) { return a + x.jumlah; }, 0)) + ' (' + mr.unknown.map(function (x) { return x.nama; }).slice(0, 4).join(', ') + (mr.unknown.length > 4 ? ', …' : '') + '). Tetap masuk laporan, tulisan merah.');
+    var lb = btnEl('Lihat', 'sec', function () { filter = 'unk'; show('bukti'); setTimeout(function () { $$('[data-filter]').forEach(function (x) { x.classList.toggle('on', x.getAttribute('data-filter') === 'unk'); }); renderPays(); }, 0); }); u.appendChild(lb); chk.appendChild(u);
+  }
+  if (mr.noAddr && mr.noAddr.length) chk.appendChild(el('div', 'msg warn', '● Alamat kosong untuk ' + mr.noAddr.length + ' inventaris (isi Alamat atau Kelurahan di Data tanah): ' + mr.noAddr.slice(0, 6).join(', ') + (mr.noAddr.length > 6 ? ', …' : '')));
+  if (mr.unmatched.length) chk.appendChild(el('div', 'msg warn', '● ' + mr.unmatched.length + ' pembayaran tidak cocok dengan kontrak mana pun (tetap dihitung, alamat mungkin kosong): ' + mr.unmatched.slice(0, 4).join('; ') + (mr.unmatched.length > 4 ? '; …' : '')));
+  var gr = mr.grand, lain = repLainTotal(gr);
+  chk.appendChild(el('div', 'msg okmsg', '✓ ' + mr.nPay + ' pembayaran = ' + rp(gr.total) + ': sewa + DP ' + rp(gr.sewa) + ', jaminan ' + rp(gr.jaminan) + (gr.denda ? ', denda ' + rp(gr.denda) : '') + (lain ? ', lain-lain ' + rp(lain) : '') + '.'));
+  box.appendChild(chk);
+  var foot = el('div', 'rp-foot');
+  foot.appendChild(btnEl('⬇ Unduh PDF ' + lbl, '', function () { repDownload(this); }));
+  foot.appendChild(btnEl('Lihat dulu', 'sec', function () { repPreview(this); }));
+  foot.appendChild(btnEl(repRows ? 'Sembunyikan baris' : 'Lihat semua baris', 'sec', function () { repRows = !repRows; renderReport(); }));
+  var gt = el('span', 'muted'); gt.appendChild(document.createTextNode('Grand total sewa: ')); gt.appendChild(el('b', '', rp(gr.sewa))); gt.appendChild(document.createTextNode(' · jaminan ' + rp(gr.jaminan) + ' (dipisah)')); foot.appendChild(gt);
+  box.appendChild(foot);
+  if (repRows) mr.sections.forEach(function (s) {
+    if (!s.entries.length) return;
+    box.appendChild(el('h3', 'tn-h3', s.nama));
+    var rows = [], cls = [], no = 0;
+    s.entries.forEach(function (e) {
+      no++;
+      e.parts.forEach(function (it, pi) {
+        it.lines.forEach(function (ln, li) {
+          var first = pi === 0 && li === 0, head = li === 0;
+          rows.push([first ? String(no) : '', first ? dmy(parseIso(e.tgl)) : '', head ? (it.unk ? '' : it.inv) : '', head ? it.unit : '', head ? (it.unk ? '?' : it.alamat) : '', head ? it.nama : '', ln.periode, { t: Number(ln.nominal).toLocaleString('id-ID'), cls: 'r num nowrap' }]);
+          cls.push(it.unk ? 'rp-unk' : it.kind === 'jaminan' ? 'rp-jam' : '');
+        });
+      });
+    });
+    var w = el('div', 'tbl-wrap rp-list');
+    w.appendChild(table(['No', 'Tgl Bayar', 'Inventaris', 'Unit', 'Alamat', 'Nama', 'Periode', { t: 'Nominal', cls: 'r' }], rows, { rowCls: function (i) { return cls[i]; } }));
+    box.appendChild(w);
+  });
+}
+/* ---------- PDF ---------- */
+var RP_X = 8, RP_W = [9, 13, 25, 17, 39, 44, 25, 22], RP_FS = 7.5, RP_LH = 3.3, RP_PAD = 0.9, RP_TOP = 8, RP_BOTTOM = 286, RP_FULLW = 194;
+var YELLOW = [255, 255, 0];
+function rpMoney(n) { return (n < 0 ? '-' : '') + Math.abs(Math.round(n)).toLocaleString('id-ID'); }
+/* Paper saving: Umum first (it runs over several pages). After it, each next section (Meikarta, then the kos) is kept in one piece:
+ * it goes under the previous one when it fits in the space left on that page, otherwise it starts on the next page.
+ * The column header is printed only at the top of a page and at the start of a section. */
+function repBar(pdf, y, txt, size) {
+  pdf.rect(RP_X, y, RP_FULLW, 5.6, YELLOW, [0, 0, 0], 0.2);
+  pdf.text(RP_X + RP_FULLW / 2, y + 3.9, txt, { size: size || 8.5, style: 'b', align: 'center' });
+  return y + 5.6;
+}
+function repColHead(pdf, y) {
+  var x = RP_X;
+  ['No', 'Tgl Bayar', 'No Inventaris', 'No Unit', 'Alamat', 'Nama Penyewa', 'Periode', 'Nominal'].forEach(function (h, i) {
+    pdf.rect(x, y, RP_W[i], 4.8, YELLOW, [0, 0, 0], 0.2); pdf.text(x + RP_W[i] / 2, y + 3.3, h, { size: RP_FS, style: 'b', align: 'center' }); x += RP_W[i];
+  });
+  return y + 4.8;
+}
+/** One table row: cells = 8 strings. o.fill, o.color, o.bold, o.from (draw only cells from this index), o.fillCols. Returns new y. */
+function repPdfRow(pdf, y, cells, o) {
+  o = o || {};
+  var wr = cells.map(function (c, i) { return pdf.wrap(c == null ? '' : String(c), RP_FS, o.bold ? 'b' : '', RP_W[i] - 2); });
+  var h = Math.max.apply(null, wr.map(function (l) { return l.length; })) * RP_LH + RP_PAD, x = RP_X;
+  wr.forEach(function (lines, i) {
+    if (o.from && i < o.from) { x += RP_W[i]; return; }
+    var f = o.fillCols ? o.fillCols[i] : o.fill;
+    pdf.rect(x, y, RP_W[i], h, f || null, [0, 0, 0], 0.15);
+    lines.forEach(function (ln, k) {
+      var ty = y + RP_PAD / 2 + RP_LH * (k + 0.76), right = i === 7, center = i === 0 || i === 1;
+      pdf.text(right ? x + RP_W[i] - 1 : center ? x + RP_W[i] / 2 : x + 1, ty, ln, { size: RP_FS, style: o.bold ? 'b' : '', color: o.color, align: right ? 'right' : center ? 'center' : '' });
+    });
+    x += RP_W[i];
+  });
+  return y + h;
+}
+function repRowH(pdf, cells, bold) { return Math.max.apply(null, cells.map(function (c, i) { return pdf.wrap(c == null ? '' : String(c), RP_FS, bold ? 'b' : '', RP_W[i] - 2).length; })) * RP_LH + RP_PAD; }
+/** The rows of one section, ready to draw: [{cells, fill, color, bold, from, fillCols, gap}] (entries kept together by .entry index). */
+function repSectionRows(s) {
+  var out = [], no = 0;
+  s.entries.forEach(function (e, ei) {
+    no++;
+    e.parts.forEach(function (it, pi) {
+      it.lines.forEach(function (ln, li) {
+        var first = pi === 0 && li === 0, head = li === 0;
+        out.push({ entry: ei, cells: [first ? String(no) : '', first ? dmy(parseIso(e.tgl)).slice(0, 5) : '', head ? (it.unk ? '' : it.inv) : '', head ? it.unit : '', head ? (it.unk ? '?' : it.alamat) : '', head ? it.nama : '', ln.periode, rpMoney(ln.nominal)],
+          fill: it.kind === 'jaminan' ? [217, 217, 217] : null, color: it.unk ? [208, 0, 0] : null });
+      });
+    });
+  });
+  var t = s.totals, sum = [['TOTAL', t.total, true], ['JAMINAN', -t.jaminan]];
+  if (t.denda) sum.push(['DENDA', -t.denda]);
+  Object.keys(t.lain).forEach(function (k) { sum.push([k, -t.lain[k]]); });
+  sum.push(['TOTAL SEWA ' + s.nama.toUpperCase(), t.sewa, true]);
+  sum.forEach(function (r, i) { out.push({ entry: 'sum', gap: i === 0 ? 1.2 : 0, cells: ['', '', '', '', '', '', r[0], rpMoney(r[1])], bold: !!r[2], from: 6, fillCols: r[2] ? [0, 0, 0, 0, 0, 0, YELLOW, YELLOW] : null }); });
+  return out;
+}
+function repPdfMonth(pdf, mr) {
+  var lbl = (BULAN_L[mr.m] + ' ' + mr.y).toUpperCase(), y = 0, pageNo = 0;
+  var secs = mr.sections.filter(function (s) { return s.entries.length; });
+  function newPage() { pdf.page(); pageNo++; y = repBar(pdf, RP_TOP, 'PEMASUKAN SEWA BULAN ' + lbl, 9.5) + 1.5; }
+  function rowsH(rows) { return rows.reduce(function (a, r) { return a + (r.gap || 0) + repRowH(pdf, r.cells, r.bold); }, 0); }
+  newPage();
+  secs.forEach(function (s, si) {
+    var rows = repSectionRows(s), secTitle = s.nama.toUpperCase();
+    var whole = 5.6 + 4.8 + rowsH(rows) + 3;
+    // Umum (first) starts right away and flows over pages; the next sections stay in one piece when they fit on one page
+    if (si > 0) { if (y + whole > RP_BOTTOM && whole <= RP_BOTTOM - RP_TOP - 8) newPage(); else y += 3; }
+    y = repColHead(pdf, repBar(pdf, y, secTitle));
+    var i = 0;
+    while (i < rows.length) {
+      var j = i; while (j + 1 < rows.length && rows[j + 1].entry === rows[i].entry) j++;  // one payment (all its lines) stays together
+      var block = rows.slice(i, j + 1), need = rowsH(block);
+      if (y + need > RP_BOTTOM) { newPage(); y = repColHead(pdf, repBar(pdf, y, secTitle + ' (LANJUTAN)')); }
+      block.forEach(function (r) { y += r.gap || 0; y = repPdfRow(pdf, y, r.cells, r); });
+      i = j + 1;
+    }
+  });
+  // month summary at the end, in one piece
+  var g = mr.grand, sumRows = mr.sections.map(function (s) { return { cells: ['', '', '', '', '', s.nama + ' (' + s.totals.n + ' bayar)', 'Sewa + DP', rpMoney(s.totals.sewa)], from: 5 }; });
+  var tail = [['GRAND TOTAL SEWA', g.sewa, true], ['JAMINAN', g.jaminan]];
+  if (g.denda) tail.push(['DENDA', g.denda]);
+  Object.keys(g.lain).forEach(function (k) { tail.push([k, g.lain[k]]); });
+  tail.forEach(function (r, i) { sumRows.push({ gap: i === 0 ? 1.2 : 0, cells: ['', '', '', '', '', '', r[0], rpMoney(r[1])], bold: !!r[2], from: 6, fillCols: r[2] ? [0, 0, 0, 0, 0, 0, YELLOW, YELLOW] : null }); });
+  var needS = 5.6 + rowsH(sumRows) + 3;
+  if (!secs.length) { pdf.text(RP_X, y + 6, 'Belum ada pembayaran tercatat dengan tanggal bayar di bulan ini.', { size: 9, style: 'i' }); y += 10; }
+  if (y + needS > RP_BOTTOM) newPage(); else y += 4;
+  y = repBar(pdf, y, 'RINGKASAN ' + lbl);
+  sumRows.forEach(function (r) { y += r.gap || 0; y = repPdfRow(pdf, y, r.cells, r); });
+}
+function repPdfYear(pdf, d) {
+  var names = d.months[0].sections.map(function (s) { return s.nama; });
+  var cols = ['Bulan'].concat(names).concat(['Total sewa', 'Jaminan', 'Lain-lain & denda']);
+  var W = RP_FULLW, w0 = 22, wn = (W - w0) / (cols.length - 1), ws = [w0]; for (var i = 1; i < cols.length; i++) ws.push(wn);
+  pdf.page(); var y = 10;
+  pdf.rect(RP_X, y, W, 7, [255, 255, 0], [0, 0, 0], 0.2); pdf.text(RP_X + W / 2, y + 4.8, 'REKAP PEMASUKAN SEWA ' + d.y, { size: 10, style: 'b', align: 'center' }); y += 7;
+  function row(cells, o) {
+    o = o || {}; var wr = cells.map(function (c, i) { return pdf.wrap(String(c), 8, o.bold ? 'b' : '', ws[i] - 2); });
+    var h = Math.max.apply(null, wr.map(function (l) { return l.length; })) * 3.5 + 2, x = RP_X;
+    wr.forEach(function (ls, i) { pdf.rect(x, y, ws[i], h, o.fill || null, [0, 0, 0], 0.15); ls.forEach(function (ln, k) { pdf.text(i ? x + ws[i] - 1.2 : x + 1.2, y + 1.2 + 3.5 * (k + 0.8), ln, { size: 8, style: o.bold ? 'b' : '', align: i ? 'right' : '' }); }); x += ws[i]; });
+    y += h;
+  }
+  row(cols, { bold: true, fill: [255, 255, 0] });
+  var tot = names.map(function () { return 0; }), ts = 0, tj = 0, tl = 0;
+  d.months.forEach(function (mr) {
+    var l = mr.grand.denda + repLainTotal(mr.grand);
+    mr.sections.forEach(function (s, i) { tot[i] += s.totals.sewa; });
+    ts += mr.grand.sewa; tj += mr.grand.jaminan; tl += l;
+    row([BULAN_L[mr.m]].concat(mr.sections.map(function (s) { return s.totals.sewa ? rpMoney(s.totals.sewa) : '-'; })).concat([mr.grand.sewa ? rpMoney(mr.grand.sewa) : '-', mr.grand.jaminan ? rpMoney(mr.grand.jaminan) : '-', l ? rpMoney(l) : '-']));
+  });
+  row(['TOTAL'].concat(tot.map(rpMoney)).concat([rpMoney(ts), rpMoney(tj), rpMoney(tl)]), { bold: true, fill: [255, 255, 0] });
+  pdf.text(RP_X, y + 6, 'Sewa = uang sewa + DP, sudah tanpa jaminan, denda, dan lain-lain (pajak, admin, partisi, IPL). Menurut tanggal bayar.', { size: 7.5, style: 'i', color: [90, 90, 90] });
+}
+function repMakePdf() {
+  var d = repData, pdf = new MiniPdf();
+  if (d.month) repPdfMonth(pdf, d.month);
+  else { repPdfYear(pdf, d); if (repYMode === 'lengkap') d.months.forEach(function (mr) { if (mr.nPay) repPdfMonth(pdf, mr); }); }
+  var n = pdf.pages.length;
+  pdf.pages.forEach(function (pg, i) {
+    pdf.cur = pg;
+    pdf.text(RP_X, 292, 'Dicetak dari exotic land · ' + d.made + ' · ' + d.by, { size: 7, color: [110, 110, 110] });
+    pdf.text(RP_X + RP_FULLW, 292, 'Halaman ' + (i + 1) + ' / ' + n, { size: 7, color: [110, 110, 110], align: 'right' });
+  });
+  return pdf.blob();
+}
+function repFileName() { var d = repData; return d.month ? 'Laporan pemasukan ' + repLabelBulan(d.month.y, d.month.m) + '.pdf' : 'Rekap pemasukan ' + d.y + (repYMode === 'lengkap' ? ' (lengkap)' : '') + '.pdf'; }
+function repDownload(btn) {
+  var label = btn.textContent; btn.disabled = true; btn.textContent = 'Membuat PDF…';
+  setTimeout(function () {
+    try {
+      var blob = repMakePdf(), u = URL.createObjectURL(blob), a = document.createElement('a'); a.href = u; a.download = repFileName();
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 60000); toast('Laporan diunduh.');
+    } catch (e) { toast('Gagal membuat PDF: ' + errText(e)); }
+    btn.disabled = false; btn.textContent = label;
+  }, 30);
+}
+function repPreview(btn) {
+  var label = btn.textContent; btn.disabled = true; btn.textContent = 'Membuat PDF…';
+  setTimeout(function () {
+    try {
+      var blob = repMakePdf();
+      if (viewerUrl) URL.revokeObjectURL(viewerUrl);
+      viewerUrl = URL.createObjectURL(blob);
+      $('viewerTitle').textContent = repFileName().replace(/\.pdf$/, ''); $('viewerDrive').hidden = true;
+      var body = $('viewerBody'); body.innerHTML = '';
+      var fr = document.createElement('iframe'); fr.src = viewerUrl; fr.title = 'Laporan'; body.appendChild(fr);
+      $('viewerDl').href = viewerUrl; $('viewerDl').download = repFileName(); $('viewerDl').hidden = false; $('viewer').hidden = false;
+    } catch (e) { toast('Gagal membuat PDF: ' + errText(e)); }
+    btn.disabled = false; btn.textContent = label;
+  }, 30);
+}
+$$('#repMode [data-rm]').forEach(function (b) { b.onclick = function () { repMode = b.getAttribute('data-rm'); loadReport(); }; });
+$('repMonth').onchange = function () { repRows = false; loadReport(); };
+$('repYear').onchange = function () { loadReport(); };
+$('repBack').onclick = function () { show('bukti'); };
+$('repReload').onclick = function () { loadReport(true); };
+$('repOpen').onclick = openReport;
+
+/* ====================== UANG MASUK BELUM TERIDENTIFIKASI: hubungkan ke penyewa ====================== */
+function isUnk(p) { return p && p.jenis === 'Belum teridentifikasi'; }
+function linkModal(p) {
+  var pick = null, sel = { key: '' };
+  var opts = tenants.map(function (t) { return { t: t, label: t.nama + ' — ' + t.inv + ' ' + t.unit }; });
+  jlModal('Hubungkan ke penyewa', p.nama + ' · ' + p.tgl + ' · ' + rp(p.jumlah), function (b) {
+    var ti = inp('text', '', { list: 'lkTenList', placeholder: 'Ketik nama atau unit penyewa', autocomplete: 'off' });
+    var dl = document.createElement('datalist'); dl.id = 'lkTenList'; opts.forEach(function (o) { var x = document.createElement('option'); x.value = o.label; dl.appendChild(x); });
+    var tw = fieldBox('m_lk_ten', 'Penyewa', ti); tw.appendChild(dl); b.appendChild(tw);
+    var js = document.createElement('select'); ['Uang sewa', 'Uang jaminan', 'DP', 'Denda keterlambatan', 'Lain-lain'].forEach(function (j) { var o = el('option', '', j); o.value = j; js.appendChild(o); });
+    b.appendChild(fieldBox('m_lk_jenis', 'Jenis', js));
+    var kw = fieldBox('m_lk_ket', 'Untuk apa? (wajib untuk Lain-lain)', inp('text', '', { maxlength: 200, placeholder: 'Misalnya: Pajak 10%, Admin Surat, Partisi, IPL' })); b.appendChild(kw);
+    var r = el('div', 'row'); r.appendChild(fieldBox('m_lk_mulai', 'Periode mulai', inp('date', ''))); r.appendChild(fieldBox('m_lk_n', 'Berapa periode', inp('number', '1', { min: 1, max: 120 }))); b.appendChild(r);
+    var hint = el('p', 'hint'); b.appendChild(hint);
+    b.appendChild(el('p', 'hint', 'Tanggal bayar tetap ' + p.tgl + ', jadi tetap masuk laporan bulan itu. Kwitansi dibuat saat dihubungkan.'));
+    function sync() {
+      var j = js.value, sewa = j === 'Uang sewa';
+      kw.hidden = j !== 'Lain-lain'; r.hidden = !sewa;
+      pick = (opts.filter(function (o) { return o.label === ti.value; })[0] || {}).t || null;
+      var n = Math.max(1, Math.round(+$('f_m_lk_n').value || 1));
+      hint.textContent = !pick ? 'Pilih penyewa dari daftar.' : sewa && pick.harga ? 'Per ' + cycleWord(pick) + ' ' + rp(pick.harga) + ' × ' + n + ' = ' + rp(pick.harga * n) + (pick.harga * n !== p.jumlah ? ' (berbeda dari uang masuk ' + rp(p.jumlah) + ')' : ' ✓ sama dengan uang masuk') : '';
+    }
+    ti.addEventListener('change', function () {
+      sync();
+      if (pick) { $('f_m_lk_mulai').value = nextStart(pick) || iso(today0()); if (pick.harga) $('f_m_lk_n').value = Math.min(24, Math.max(1, Math.round(p.jumlah / pick.harga))); sync(); }
+    });
+    ti.addEventListener('input', sync); js.onchange = sync; $('f_m_lk_n') ? 0 : 0;
+    setTimeout(function () { $('f_m_lk_n').addEventListener('input', sync); sync(); ti.focus(); }, 0);
+  }, 'Hubungkan & buat kwitansi', function () {
+    if (!pick) throw new Error('Pilih penyewa dari daftar.');
+    var j = $('f_m_lk_jenis').value;
+    if (j === 'Lain-lain' && $('f_m_lk_ket').value.trim().length < 3) throw new Error('Tulis untuk apa pembayaran lain-lain ini.');
+    if (j === 'Uang sewa' && !$('f_m_lk_mulai').value) throw new Error('Isi periode mulai.');
+    return call('linkPayment', { id: p.id, key: pick.key, jenis: j, ket: $('f_m_lk_ket').value, mulai: $('f_m_lk_mulai').value, periode: $('f_m_lk_n').value }).then(function (upd) {
+      mergeUpd(upd); setBadge(); toast('Terhubung ke ' + pick.nama + '. Kwitansi ' + upd.kwitansi + '.');
+      repCache = {}; dashData = null; openDetail(upd);
+    });
+  });
+}
+$('dLink').onclick = function () { var p = current(); if (p) linkModal(p); };
+$('unkBarBtn').onclick = function () { filter = 'unk'; $$('[data-filter]').forEach(function (x) { x.classList.toggle('on', x.getAttribute('data-filter') === 'unk'); }); renderPays(); };
 
 /* ====================== GALERI FOTO: all photos load at once, arrows / swipe / thumbnails ====================== */
 var galItems = [], galIdx = 0, galBlobs = {}, galSeq = 0;
