@@ -6046,7 +6046,7 @@ function renderReportMonth(d, box) {
   });
 }
 /* ---------- PDF ---------- */
-var RP_X = 8, RP_W = [9, 13, 25, 17, 39, 44, 25, 22], RP_FS = 7.5, RP_LH = 3.3, RP_PAD = 0.9, RP_TOP = 8, RP_BOTTOM = 286, RP_FULLW = 194;
+var RP_X = 8, RP_W0 = [9, 13, 25, 17, 39, 44, 25, 22], RP_W = RP_W0.slice(), RP_FS = 7.5, RP_LH = 3.3, RP_PAD = 0.9, RP_TOP = 8, RP_BOTTOM = 286, RP_FULLW = 194;
 var YELLOW = [255, 255, 0];
 function rpMoney(n) { return (n < 0 ? '-' : '') + Math.abs(Math.round(n)).toLocaleString('id-ID'); }
 /* Paper saving: Umum first (it runs over several pages). After it, each next section (Meikarta, then the kos) is kept in one piece:
@@ -6069,6 +6069,13 @@ function repPdfRow(pdf, y, cells, o) {
   o = o || {};
   var wr = cells.map(function (c, i) { return pdf.wrap(c == null ? '' : String(c), RP_FS, o.bold ? 'b' : '', RP_W[i] - 2); });
   var h = Math.max.apply(null, wr.map(function (l) { return l.length; })) * RP_LH + RP_PAD, x = RP_X;
+  if (o.label !== undefined) {  // totals: one wide label box over Nama + Periode, then the amount
+    var lx = RP_X + RP_W[0] + RP_W[1] + RP_W[2] + RP_W[3] + RP_W[4], lw = RP_W[5] + RP_W[6], hh = RP_LH + RP_PAD, fl = o.bold ? YELLOW : null;
+    pdf.rect(lx, y, lw, hh, fl, [0, 0, 0], 0.15); pdf.rect(lx + lw, y, RP_W[7], hh, fl, [0, 0, 0], 0.15);
+    pdf.text(lx + 1, y + RP_PAD / 2 + RP_LH * 0.76, o.label, { size: RP_FS, style: o.bold ? 'b' : '' });
+    pdf.text(lx + lw + RP_W[7] - 1, y + RP_PAD / 2 + RP_LH * 0.76, cells[7], { size: RP_FS, style: o.bold ? 'b' : '', align: 'right' });
+    return y + hh;
+  }
   wr.forEach(function (lines, i) {
     if (o.from && i < o.from) { x += RP_W[i]; return; }
     var f = o.fillCols ? o.fillCols[i] : o.fill;
@@ -6081,7 +6088,7 @@ function repPdfRow(pdf, y, cells, o) {
   });
   return y + h;
 }
-function repRowH(pdf, cells, bold) { return Math.max.apply(null, cells.map(function (c, i) { return pdf.wrap(c == null ? '' : String(c), RP_FS, bold ? 'b' : '', RP_W[i] - 2).length; })) * RP_LH + RP_PAD; }
+function repRowH(pdf, cells, bold, label) { if (label !== undefined) return RP_LH + RP_PAD; return Math.max.apply(null, cells.map(function (c, i) { return pdf.wrap(c == null ? '' : String(c), RP_FS, bold ? 'b' : '', RP_W[i] - 2).length; })) * RP_LH + RP_PAD; }
 /** The rows of one section, ready to draw: [{cells, fill, color, bold, from, fillCols, gap}] (entries kept together by .entry index). */
 function repSectionRows(s) {
   var out = [], no = 0;
@@ -6099,14 +6106,30 @@ function repSectionRows(s) {
   if (t.denda) sum.push(['DENDA', -t.denda]);
   Object.keys(t.lain).forEach(function (k) { sum.push([k, -t.lain[k]]); });
   sum.push(['TOTAL SEWA ' + s.nama.toUpperCase(), t.sewa, true]);
-  sum.forEach(function (r, i) { out.push({ entry: 'sum', gap: i === 0 ? 1.2 : 0, cells: ['', '', '', '', '', '', r[0], rpMoney(r[1])], bold: !!r[2], from: 6, fillCols: r[2] ? [0, 0, 0, 0, 0, 0, YELLOW, YELLOW] : null }); });
+  sum.forEach(function (r, i) { out.push({ entry: 'sum', gap: i === 0 ? 1.2 : 0, cells: ['', '', '', '', '', '', '', rpMoney(r[1])], label: r[0], bold: !!r[2] }); });
   return out;
+}
+/** Column widths fitted to this report's text, so a row stays on one line (same font size): short columns shrink, the room goes to Alamat and Nama. */
+function repFitCols(pdf, rows) {
+  var heads = ['No', 'Tgl Bayar', 'No Inventaris', 'No Unit', 'Alamat', 'Nama Penyewa', 'Periode', 'Nominal'], min = [7, 11, 15, 10, 22, 22, 14, 16];
+  var need = heads.map(function (h, i) { return Math.max(min[i], pdf.w(h, RP_FS, 'b') + 2.4); });
+  rows.forEach(function (r) { if (r.label !== undefined) return; r.cells.forEach(function (c, i) { if (c) need[i] = Math.max(need[i], pdf.w(String(c), RP_FS, r.bold ? 'b' : '') + 2.4); }); });
+  var lab = 0; rows.forEach(function (r) { if (r.label !== undefined) lab = Math.max(lab, pdf.w(r.label, RP_FS, 'b') + 2.4); });
+  if (need[5] + need[6] < lab) need[5] = lab - need[6];  // the totals label box spans Nama + Periode
+  var sum = need.reduce(function (a, b) { return a + b; }, 0);
+  if (sum <= RP_FULLW) { var ex = RP_FULLW - sum; need[4] += ex / 2; need[5] += ex / 2; }
+  else {  // too wide: take the room from the longest text columns (Alamat, Nama, Inventaris); only those may wrap
+    var over = sum - RP_FULLW, give = [4, 5, 2], room = give.reduce(function (a, i) { return a + Math.max(0, need[i] - min[i]); }, 0);
+    give.forEach(function (i) { var r = Math.max(0, need[i] - min[i]); need[i] -= room ? Math.min(r, over * r / room) : 0; });
+  }
+  RP_W = need;
 }
 function repPdfMonth(pdf, mr) {
   var lbl = (BULAN_L[mr.m] + ' ' + mr.y).toUpperCase(), y = 0, pageNo = 0;
   var secs = mr.sections.filter(function (s) { return s.entries.length; });
   function newPage() { pdf.page(); pageNo++; y = repBar(pdf, RP_TOP, 'PEMASUKAN SEWA BULAN ' + lbl, 9.5) + 1.5; }
-  function rowsH(rows) { return rows.reduce(function (a, r) { return a + (r.gap || 0) + repRowH(pdf, r.cells, r.bold); }, 0); }
+  function rowsH(rows) { return rows.reduce(function (a, r) { return a + (r.gap || 0) + repRowH(pdf, r.cells, r.bold, r.label); }, 0); }
+  if (!repPdfMonth.fixed) repFitCols(pdf, secs.reduce(function (a, s) { return a.concat(repSectionRows(s)); }, []));  // one set of widths for every table in the file
   newPage();
   secs.forEach(function (s, si) {
     var rows = repSectionRows(s), secTitle = s.nama.toUpperCase();
@@ -6124,11 +6147,11 @@ function repPdfMonth(pdf, mr) {
     }
   });
   // month summary at the end, in one piece
-  var g = mr.grand, sumRows = mr.sections.map(function (s) { return { cells: ['', '', '', '', '', s.nama + ' (' + s.totals.n + ' bayar)', 'Sewa + DP', rpMoney(s.totals.sewa)], from: 5 }; });
+  var g = mr.grand, sumRows = mr.sections.map(function (s) { return { cells: ['', '', '', '', '', '', '', rpMoney(s.totals.sewa)], label: s.nama + ' (' + s.totals.n + ' bayar) · sewa + DP' }; });
   var tail = [['GRAND TOTAL SEWA', g.sewa, true], ['JAMINAN', g.jaminan]];
   if (g.denda) tail.push(['DENDA', g.denda]);
   Object.keys(g.lain).forEach(function (k) { tail.push([k, g.lain[k]]); });
-  tail.forEach(function (r, i) { sumRows.push({ gap: i === 0 ? 1.2 : 0, cells: ['', '', '', '', '', '', r[0], rpMoney(r[1])], bold: !!r[2], from: 6, fillCols: r[2] ? [0, 0, 0, 0, 0, 0, YELLOW, YELLOW] : null }); });
+  tail.forEach(function (r, i) { sumRows.push({ gap: i === 0 ? 1.2 : 0, cells: ['', '', '', '', '', '', '', rpMoney(r[1])], label: r[0], bold: !!r[2] }); });
   var needS = 5.6 + rowsH(sumRows) + 3;
   if (!secs.length) { pdf.text(RP_X, y + 6, 'Belum ada pembayaran tercatat dengan tanggal bayar di bulan ini.', { size: 9, style: 'i' }); y += 10; }
   if (y + needS > RP_BOTTOM) newPage(); else y += 4;
@@ -6159,9 +6182,16 @@ function repPdfYear(pdf, d) {
   pdf.text(RP_X, y + 6, 'Sewa = uang sewa + DP, sudah tanpa jaminan, denda, dan lain-lain (pajak, admin, partisi, IPL). Menurut tanggal bayar.', { size: 7.5, style: 'i', color: [90, 90, 90] });
 }
 function repMakePdf() {
-  var d = repData, pdf = new MiniPdf();
+  var d = repData, pdf = new MiniPdf(); RP_W = RP_W0.slice();
   if (d.month) repPdfMonth(pdf, d.month);
-  else { repPdfYear(pdf, d); if (repYMode === 'lengkap') d.months.forEach(function (mr) { if (mr.nPay) repPdfMonth(pdf, mr); }); }
+  else {
+    repPdfYear(pdf, d);
+    if (repYMode === 'lengkap') {  // all 12 months share the same column widths
+      var all = []; d.months.forEach(function (mr) { mr.sections.forEach(function (s) { if (s.entries.length) all = all.concat(repSectionRows(s)); }); });
+      repFitCols(pdf, all); repPdfMonth.fixed = true;
+      try { d.months.forEach(function (mr) { if (mr.nPay) repPdfMonth(pdf, mr); }); } finally { repPdfMonth.fixed = false; }
+    }
+  }
   var n = pdf.pages.length;
   pdf.pages.forEach(function (pg, i) {
     pdf.cur = pg;
