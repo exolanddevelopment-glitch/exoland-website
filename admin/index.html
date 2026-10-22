@@ -6318,6 +6318,20 @@ $('repBack').onclick = function () { show('bukti'); };
 $('repReload').onclick = function () { loadReport(true); };
 $('repOpen').onclick = openReport;
 
+/* Speed: a few seconds after opening the website, quietly fetch the other main pages one by one and keep them in this
+ * browser, so the first click on Penyewa, Unit, Kos, Riwayat ... shows data at once (it still refreshes itself after). */
+var PRELOAD = [['getDashboard', 'dash'], ['getPayments', 'bukti'], ['getTenants', 'penyewa'], ['getUnits', 'penyewa'], ['getKos', 'kos'], ['getTrips', 'jalan'], ['getChecks', 'cek'], ['getPbb', 'pbb']];
+function preloadPages() {
+  var list = PRELOAD.filter(function (x) { return lv(x[1]) !== '-'; }), i = 0;
+  (function next() {
+    if (i >= list.length) return;
+    var fn = list[i++][0];
+    if (syncN > 0) { setTimeout(function () { i--; next(); }, 3000); return; }  // the person is waiting for something: go later
+    call(fn).then(function (d) { try { if (!(lastWrite[fn] > 0)) localStorage.setItem(ckey(fn), JSON.stringify(d)); } catch (e) {} })
+      .catch(function () {}).then(function () { setTimeout(next, 800); });
+  })();
+}
+
 /* ====================== UNIT SEWA ====================== */
 var unData = null, unSel = null, unStatus = 'semua', unMode = 'view', unShow = 200, unOffOpen = false;
 function unKey(x) { return x.id || ('?' + x.inv + '|' + x.unit); }
@@ -6758,6 +6772,7 @@ function boot() {
     if (w.st) setTab = w.st;
     if (want && (SOON[want] || (PAGE_NAME[permOf(want)] && tabOk(want)))) first = want;
     show(first);
+    setTimeout(preloadPages, 4000);
   }).catch(function (e) {
     renderGoogleButton();
     if (!$('login').hidden) { $('loginErr').textContent = errText(e); $('loginErr').hidden = false; }
