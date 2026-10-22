@@ -52,7 +52,9 @@
   body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 var(--body); -webkit-font-smoothing:antialiased; }
   button { font:inherit; color:inherit; }
   [hidden] { display:none !important; }
-  .ptabs { display:flex; border-bottom:1px solid var(--line); margin:-12px 0 22px; max-width:1360px; }
+  :root { --pw:1360px; }
+  @media (min-width:1600px) { :root { --pw:100%; } .grid-bukti.tn-split { grid-template-columns:minmax(0,1fr) minmax(440px, 640px); } .grid-bukti { grid-template-columns:minmax(0,1fr) 480px; } }
+  .ptabs { display:flex; border-bottom:1px solid var(--line); margin:-12px 0 22px; max-width:var(--pw); }
   .ptabs > div { display:flex; gap:2px; overflow-x:auto; scrollbar-width:none; }
   .ptabs button { background:none; border:0; padding:10px 16px; font:inherit; font-weight:600; font-size:14.5px; color:var(--muted); border-bottom:2.5px solid transparent; margin-bottom:-1px; cursor:pointer; display:flex; gap:7px; align-items:center; white-space:nowrap; }
   .ptabs button:hover { color:var(--ink); }
@@ -231,7 +233,7 @@
   .done-title { font-size:22px; font-weight:700; margin:0 0 4px; }
 
   /* ---------- Tambah bukti ---------- */
-  .grid-bukti { display:grid; grid-template-columns:minmax(0,1fr) 410px; gap:24px; align-items:start; max-width:1260px; }
+  .grid-bukti { display:grid; grid-template-columns:minmax(0,1fr) 410px; gap:24px; align-items:start; max-width:var(--pw); }
   .toolbar { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px; }
   .toolbar .search { flex:1 1 170px; min-width:0; }
   .pills { display:flex; background:var(--subtle); border:1px solid var(--line); border-radius:999px; padding:3px; }
@@ -272,9 +274,9 @@
   .kt-mini:first-child { border-top:0; }
   .jl-who div { font-weight:600; } .jl-who small { display:block; font-size:12px; margin-top:2px; }
   .jl-appr { margin-top:12px; padding:10px 12px; background:var(--subtle); border-radius:10px; }
-  .rp-top { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:14px; max-width:1360px; }
+  .rp-top { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:14px; max-width:var(--pw); }
   .rp-top select { width:auto; padding:10px 14px; font-weight:700; }
-  .rp-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:12px; max-width:1360px; }
+  .rp-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:12px; max-width:var(--pw); }
   .rp-sec { padding:16px 18px; }
   .rp-sec h3 { margin:0 0 2px; font-size:16px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
   .rp-sec .muted { font-size:12.5px; } .rp-sec .rp-lbl { margin-top:10px; }
@@ -282,14 +284,14 @@
   .rp-kv { display:grid; grid-template-columns:1fr auto; gap:4px 10px; font-size:13px; border-top:1px solid var(--line-2); padding-top:8px; }
   .rp-kv span { color:var(--muted); } .rp-kv b { font-weight:500; text-align:right; color:var(--muted); }
   .rp-kv .rp-out { grid-column:1 / -1; font-size:11px; text-transform:uppercase; letter-spacing:.06em; }
-  .rp-warn { max-width:1360px; margin:14px 0; padding:14px 18px; }
+  .rp-warn { max-width:var(--pw); margin:14px 0; padding:14px 18px; }
   .rp-warn .msg { display:flex; gap:10px; align-items:center; margin-top:8px; }
   .rp-warn .msg .btn { width:auto; margin:0 0 0 auto; padding:7px 12px; font-size:13px; flex:none; }
-  .rp-foot { display:flex; gap:10px; align-items:center; max-width:1360px; margin-top:16px; flex-wrap:wrap; }
+  .rp-foot { display:flex; gap:10px; align-items:center; max-width:var(--pw); margin-top:16px; flex-wrap:wrap; }
   .rp-foot .btn { width:auto; margin:0; padding:12px 20px; }
-  .rp-list { max-width:1360px; margin-top:12px; } .rp-list td.b { font-weight:700; }
+  .rp-list { max-width:var(--pw); margin-top:12px; } .rp-list td.b { font-weight:700; }
   tr.rp-unk td { color:var(--err); } tr.rp-jam td { background:var(--subtle); }
-  .unk-bar { max-width:1360px; margin:0 0 14px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; } .unk-bar .link { color:inherit; font-weight:700; text-decoration:underline; }
+  .unk-bar { max-width:var(--pw); margin:0 0 14px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; } .unk-bar .link { color:inherit; font-weight:700; text-decoration:underline; }
   .pay.unk .t-name { color:var(--err); }
   .lz-more { padding:14px; text-align:center; color:var(--muted); font-size:13px; }
   /* moving dots on anything that is waiting: "Menyimpan .", "Menyimpan . .", "Menyimpan . . ." */
@@ -358,7 +360,7 @@
   .mini-btn.dark { background:var(--btn); color:var(--btn-ink); border-color:var(--btn); }
 
   /* ---------- dashboard ---------- */
-  .dash { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.3fr); gap:20px; max-width:1360px; }
+  .dash { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.3fr); gap:20px; max-width:var(--pw); }
   #sewaBox > .row:first-child { margin-top:14px; }
   .sub-unit, .sub-harga { display:none; color:var(--muted); font-size:12px; }
   @media (max-width:1499px) { #alarmBox .c-unit { display:none; } .sub-unit { display:block; } }
@@ -394,7 +396,7 @@
   .head-right { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
 
   /* ---------- kalender ---------- */
-  .cal-wrap { display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:20px; max-width:1320px; align-items:start; }
+  .cal-wrap { display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:20px; max-width:var(--pw); align-items:start; }
   .cal-top { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
   .cal-top h2 { margin:0; font-size:20px; font-weight:800; letter-spacing:-.02em; min-width:170px; }
   .cal-nav { display:flex; gap:6px; align-items:center; }
@@ -447,11 +449,11 @@
   .modal-card.wide { max-width:560px; max-height:calc(100vh - 32px); overflow:auto; }
 
   /* ---------- pengaturan ---------- */
-  .set-tabs { display:flex; gap:4px; flex-wrap:wrap; border-bottom:1px solid var(--line); margin-bottom:18px; max-width:1320px; }
+  .set-tabs { display:flex; gap:4px; flex-wrap:wrap; border-bottom:1px solid var(--line); margin-bottom:18px; max-width:var(--pw); }
   .set-tab { border:0; background:none; padding:10px 14px; border-bottom:2px solid transparent; cursor:pointer; color:var(--muted); font-weight:600; display:inline-flex; gap:8px; align-items:center; margin-bottom:-1px; }
   .set-tab.on { color:var(--ink); border-bottom-color:var(--accent); }
   .set-tab .soon { color:var(--muted); }
-  .set-pane { max-width:1320px; }
+  .set-pane { max-width:var(--pw); }
   .lv { font-size:11.5px; font-weight:700; border-radius:6px; padding:2px 8px; white-space:nowrap; }
   .lv.Tinggi, .lv.Sistem { background:var(--err-bg); color:var(--err); } .lv.Sedang, .lv.Validasi { background:var(--warn-bg); color:var(--warn); } .lv.Info { background:var(--subtle); color:var(--muted); }
   .sum-row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
@@ -460,7 +462,7 @@
   .soon-page .card p { color:var(--muted); margin:10px 0 0; }
 
   /* ---------- penyewa ---------- */
-  .health { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; max-width:1360px; margin-bottom:14px; }
+  .health { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; max-width:var(--pw); margin-bottom:14px; }
   .hc { text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px 16px; cursor:pointer; color:var(--ink); position:relative; overflow:hidden; }
   .hc::before { content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--line); }
   .hc.ok::before { background:#22a06b; } .hc.error::before { background:#ef4444; } .hc.kurang::before { background:#f59e0b; } .hc.cek::before { background:#a1a1aa; }
@@ -470,7 +472,7 @@
   .hc small { color:var(--muted); font-size:12px; }
   .hc:hover { border-color:color-mix(in srgb, var(--ink) 30%, var(--line)); }
   .hc.on { border-color:var(--accent); box-shadow:0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent); }
-  .grid-bukti.tn-split { grid-template-columns:minmax(0,1fr) minmax(380px, 520px); max-width:1360px; }
+  .grid-bukti.tn-split { grid-template-columns:minmax(0,1fr) minmax(380px, 520px); max-width:var(--pw); }
   .tn-tags { display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; }
   .tag.cek { background:var(--subtle); color:var(--muted); border:1px solid var(--line); }
   .pay.ended .t-name { color:var(--muted); }
@@ -535,7 +537,7 @@
   .gab-foot { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:4px; }
   .gab-add { width:auto; max-width:70%; padding:6px 8px; font-size:13px; }
   /* perjalanan kantor */
-  .jl-week { max-width:1360px; margin-bottom:16px; padding:16px; }
+  .jl-week { max-width:var(--pw); margin-bottom:16px; padding:16px; }
   .jl-week-head { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
   .jl-week-head h2 { margin:0; font-size:16px; } .jl-week-nav { display:flex; gap:6px; }
   .jl-week-scroll { overflow-x:auto; }
@@ -577,7 +579,7 @@
   .chips-sel { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
   .chips-sel span { background:var(--tint, #ede7fd); color:var(--tint-ink, #5b21b6); border-radius:999px; padding:3px 6px 3px 10px; font-size:12.5px; font-weight:600; display:inline-flex; gap:4px; align-items:center; }
   .chips-sel button { border:0; background:none; cursor:pointer; color:inherit; font-size:14px; line-height:1; }
-  .pb-areahead { display:flex; align-items:center; gap:14px; flex-wrap:wrap; max-width:1360px; margin-bottom:12px; }
+  .pb-areahead { display:flex; align-items:center; gap:14px; flex-wrap:wrap; max-width:var(--pw); margin-bottom:12px; }
   .pb-paybar { display:flex; align-items:center; gap:10px; background:var(--tint, #ede7fd); border-radius:12px; padding:8px 12px; margin-bottom:8px; font-weight:600; font-size:13.5px; flex-wrap:wrap; }
   .pb-item { display:grid; grid-template-columns:22px minmax(0,1fr) auto; gap:10px; align-items:center; }
   .pb-item input[type=checkbox] { width:17px; height:17px; }
@@ -590,14 +592,14 @@
   .prog { height:7px; background:var(--subtle); border-radius:9px; overflow:hidden; margin-top:4px; min-width:70px; } .prog i { display:block; height:100%; background:#22c55e; }
   .jl-veh-chips { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; }
 
-  .ks-cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:14px; max-width:1360px; margin-bottom:16px; }
+  .ks-cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:14px; max-width:var(--pw); margin-bottom:16px; }
   .ks-card { display:flex; flex-direction:column; justify-content:flex-start; text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:16px 18px; cursor:pointer; color:var(--ink); font:inherit; }
   .ks-card:hover { border-color:color-mix(in srgb, var(--ink) 30%, var(--line)); }
   .ks-card.on { border-color:var(--accent); box-shadow:0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent); }
   .ks-card h3 { margin:0; font-size:18px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
   .ks-card .big { font-size:28px; font-weight:800; letter-spacing:-.02em; margin-top:8px; } .ks-card .big small { font-size:14px; color:var(--muted); font-weight:600; }
   .ks-card .row4 { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin-top:10px; font-size:12.5px; color:var(--muted); } .ks-card .row4 b { display:block; color:var(--ink); font-size:15px; }
-  .ks-tools { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; max-width:1360px; }
+  .ks-tools { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; max-width:var(--pw); }
   .ks-legend { display:flex; flex-wrap:wrap; gap:12px; font-size:12.5px; color:var(--muted); } .ks-legend i { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:5px; vertical-align:-1px; }
   .ks-floor { margin:0 0 14px; } .ks-floor h4 { margin:0 0 6px; font-size:13px; color:var(--muted); font-weight:700; }
   .ks-tiles { display:grid; grid-template-columns:repeat(auto-fill, minmax(118px, 1fr)); gap:8px; }
@@ -638,12 +640,12 @@
   .jl-older summary { cursor:pointer; color:var(--accent); font-size:13px; margin-top:4px; }
   .photo-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 12px; } .photo-grid .drop { padding:10px 8px; } .photo-grid .fld label { margin-top:8px; }
   @media (max-width:600px) { .photo-grid { grid-template-columns:1fr; } }
-  .backup-card { max-width:1320px; } .backup-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+  .backup-card { max-width:var(--pw); } .backup-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
   .backup-btns { display:flex; gap:8px; } .backup-btns a { text-decoration:none; display:inline-flex; align-items:center; }
   .jl-avail { font-size:13px; border-radius:10px; padding:8px 10px; margin-top:8px; } .jl-avail:empty { display:none; }
   .jl-avail.ok { background:var(--ok-bg); color:var(--ok); } .jl-avail.bad { background:var(--err-bg); color:var(--err); }
   .btn.ok-solid { background:#16a34a; border-color:#16a34a; color:#fff; }
-  .jl-vehs { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(600px, 100%), 1fr)); gap:16px; max-width:1360px; align-items:start; }
+  .jl-vehs { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(600px, 100%), 1fr)); gap:16px; max-width:var(--pw); align-items:start; }
   .jl-veh { min-width:0; } .jl-veh .tbl { width:100%; } .jl-veh .tbl td, .jl-veh .tbl th { white-space:normal; }
   .jl-veh.off { opacity:.7; } .jl-veh-head { display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:12px; align-items:center; }
   .jl-veh-acts { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; } .jl-veh-acts .btn { width:auto; margin:0; padding:8px 14px; white-space:nowrap; }
@@ -913,7 +915,7 @@
     </div>
     <!-- ================= DASHBOARD ================= -->
     <section id="view-dash">
-      <div class="page-head" style="max-width:1320px">
+      <div class="page-head" style="max-width:var(--pw)">
         <div><h1>Dashboard</h1><p id="dashSub">Ringkasan pemasukan, tagihan, dan jatuh tempo.</p></div>
         <div class="head-right">
           <button class="alert-chip" id="backupChip" type="button" hidden></button>
@@ -968,7 +970,7 @@
 
     <!-- ================= KALENDER ================= -->
     <section id="view-kal" hidden>
-      <div class="page-head" style="max-width:1320px">
+      <div class="page-head" style="max-width:var(--pw)">
         <div><h1>Kalender</h1><p id="kalSub">Jatuh tempo sewa, akhir kontrak, dan akhir HGB.</p></div>
         <div class="mode-switch"><span id="kmLeft" class="on-lbl">Jatuh tempo</span><button class="sw" id="kalMode" type="button" role="switch" aria-checked="false" aria-label="Tampilkan tugas"></button><span id="kmRight" class="off-lbl">Tugas</span></div>
       </div>
@@ -1016,7 +1018,7 @@
 
     <!-- ================= PENGATURAN ================= -->
     <section id="view-set" hidden>
-      <div class="page-head" style="max-width:1320px">
+      <div class="page-head" style="max-width:var(--pw)">
         <div><h1>Pengaturan</h1><p>Catatan aktivitas, pemeriksaan data, error, dan siapa boleh membuka apa.</p></div>
       </div>
       <div class="set-tabs" role="tablist">
@@ -1085,11 +1087,11 @@
 
     <!-- ================= PERJALANAN KANTOR ================= -->
     <section id="view-jalan" hidden>
-      <div class="page-head" style="max-width:1360px">
+      <div class="page-head" style="max-width:var(--pw)">
         <div><h1>Perjalanan Kantor</h1><p>Pinjam mobil atau motor kantor, catat biaya perjalanan dengan foto struk, lalu ajukan reimburse.</p></div>
         <button class="btn" id="jlNew" type="button" style="width:auto;margin:0;padding:11px 18px" hidden>+ Pinjam kendaraan</button>
       </div>
-      <div class="set-tabs" role="tablist" style="max-width:1360px">
+      <div class="set-tabs" role="tablist" style="max-width:var(--pw)">
         <button class="set-tab on" data-jt="trips" type="button">Perjalanan</button>
         <button class="set-tab" data-jt="klaim" type="button">Klaim <span class="badge" id="jlClaimBadge" hidden></span></button>
         <button class="set-tab" data-jt="veh" type="button">Kendaraan</button>
@@ -1150,7 +1152,7 @@
 
     <!-- ================= KOS & APARTEMEN ================= -->
     <section id="view-kos" hidden>
-      <div class="page-head" style="max-width:1360px">
+      <div class="page-head" style="max-width:var(--pw)">
         <div><h1>Kos &amp; Apartemen</h1><p>Kamar dan unit sewa di gedung kos dan apartemen. Kamarnya dari Unit Sewa, penyewanya dari Penyewa. Kamar tanpa kontrak Aktif otomatis Kosong.</p></div>
         <button class="btn sec" id="ksManage" type="button" style="width:auto;margin:0;padding:11px 18px" hidden>Atur properti</button>
       </div>
@@ -1185,7 +1187,7 @@
 
     <!-- ================= KONTAK ================= -->
     <section id="view-kontak" hidden>
-      <div class="page-head" style="max-width:1360px">
+      <div class="page-head" style="max-width:var(--pw)">
         <div><h1>Kontak</h1><p>Nomor penting per lokasi: security, babinsa, bhabinkamtibmas, kontraktor, RT/RW, notaris, dll.</p></div>
         <button class="btn" id="ktNew" type="button" style="width:auto;margin:0;padding:11px 18px" hidden>+ Tambah kontak</button>
       </div>
@@ -1219,7 +1221,7 @@
 
     <!-- ================= PENGECEKAN TANAH ================= -->
     <section id="view-cek" hidden>
-      <div class="page-head" style="max-width:1360px">
+      <div class="page-head" style="max-width:var(--pw)">
         <div><h1>Pengecekan tanah</h1><p>Jadwal kunjungan ke lahan. Lahan rawan dikunjungi lebih sering. Tugasnya muncul otomatis di menu Tugas.</p></div>
         <button class="btn" id="ckNew" type="button" style="width:auto;margin:0;padding:11px 18px" hidden>+ Jadwal cek</button>
       </div>
@@ -1266,11 +1268,11 @@
 
     <!-- ================= PBB ================= -->
     <section id="view-pbb" hidden>
-      <div class="page-head" style="max-width:1360px">
+      <div class="page-head" style="max-width:var(--pw)">
         <div><h1 id="pbTitle">PBB</h1><p id="pbSubtitle">Pajak bumi dan bangunan per NOP, dibayar tiap tahun.</p></div>
         <div class="head-btns"><div class="segs" id="pbYears"></div><button class="btn sec" id="pbStart" type="button" style="width:auto;margin:0;padding:11px 18px" hidden></button><button class="btn" id="pbNewNop" type="button" style="width:auto;margin:0;padding:11px 18px" hidden>+ NOP</button></div>
       </div>
-      <div class="msg warn" id="pbEmptyMsg" hidden style="max-width:1360px;margin:0 0 12px"></div>
+      <div class="msg warn" id="pbEmptyMsg" hidden style="max-width:var(--pw);margin:0 0 12px"></div>
       <div class="health five" id="pbHealth">
         <button type="button" class="hc" data-pbh=""><span>Tagihan</span><b>–</b><small></small></button>
         <button type="button" class="hc ok" data-pbh="Lunas"><span>Sudah dibayar</span><b>–</b><small></small></button>
@@ -1316,7 +1318,7 @@
 
     <!-- ================= PENYEWA ================= -->
     <section id="view-unit" hidden>
-      <div class="page-head" style="max-width:1360px">
+      <div class="page-head" style="max-width:var(--pw)">
         <div><h1>Unit sewa</h1><p>Semua plot dan unit yang bisa disewakan. Disewa / Kosong dihitung otomatis dari kontrak, tidak perlu diketik.</p></div>
         <div class="head-btns"><button class="btn" id="unNew" type="button" style="width:auto;margin:0;padding:11px 18px" hidden>+ Unit</button></div>
       </div>
@@ -1347,7 +1349,7 @@
       </div>
     </section>
     <section id="view-penyewa" hidden>
-      <div class="page-head" style="max-width:1360px">
+      <div class="page-head" style="max-width:var(--pw)">
         <div><h1>Penyewa</h1><p>Semua kontrak sewa. Perbaiki data yang kurang atau salah di sini, bukan langsung di spreadsheet. Kontrak tidak pernah dihapus.</p></div>
         <div class="head-btns"><button class="btn sec" id="tnVacNew" type="button" style="width:auto;margin:0;padding:11px 18px" hidden>+ Unit kosong</button><button class="btn" id="tnNew" type="button" style="width:auto;margin:0;padding:11px 18px" hidden>+ Tambah penyewa</button></div>
       </div>
@@ -1433,11 +1435,11 @@
 
     <!-- ================= DATA TANAH ================= -->
     <section id="view-tanah" hidden>
-      <div class="page-head" style="max-width:1360px">
+      <div class="page-head" style="max-width:var(--pw)">
         <div><h1>Data tanah</h1><p>Master data semua tanah dan properti. Perbaiki dan tambah data di sini, bukan langsung di spreadsheet. Data tidak pernah dihapus.</p></div>
         <button class="btn" id="tdNew" type="button" style="width:auto;margin:0;padding:11px 18px" hidden>+ Tambah tanah</button>
       </div>
-      <div class="msg warn" id="tdMissing" hidden style="max-width:1360px;margin:0 0 12px"></div>
+      <div class="msg warn" id="tdMissing" hidden style="max-width:var(--pw);margin:0 0 12px"></div>
       <div class="health six" id="tdHealth">
         <button type="button" class="hc ok" data-th="ok"><span>Lengkap</span><b>–</b><small>tidak ada masalah</small></button>
         <button type="button" class="hc error" data-th="error"><span>Error</span><b>–</b><small>data jelas salah</small></button>
@@ -1638,7 +1640,7 @@
 
     <!-- ================= LAPORAN PEMASUKAN ================= -->
     <section id="view-laporan" hidden>
-      <div class="page-head" style="max-width:1360px">
+      <div class="page-head" style="max-width:var(--pw)">
         <div><h1>Laporan pemasukan</h1><p>Hanya uang yang masuk di bulan itu (menurut Tanggal Bayar). Periksa dulu, lalu unduh PDF.</p></div>
         <div class="head-btns"><button class="btn sec" id="repReload" type="button" style="width:auto;margin:0;padding:11px 18px">Muat ulang</button><button class="btn sec" id="repBack" type="button" style="width:auto;margin:0;padding:11px 18px">← Riwayat pembayaran</button></div>
       </div>
