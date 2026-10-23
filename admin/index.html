@@ -54,6 +54,30 @@
   [hidden] { display:none !important; }
   :root { --pw:1360px; }
   @media (min-width:1600px) { :root { --pw:100%; } .grid-bukti.tn-split { grid-template-columns:minmax(0,1fr) minmax(440px, 640px); } .grid-bukti { grid-template-columns:minmax(0,1fr) 480px; } }
+  .ed-wrap { max-width:900px; display:flex; flex-direction:column; min-height:calc(100vh - 230px); }
+  .ed-ro { display:flex; gap:10px; align-items:center; margin:0 0 18px; }
+  .ed-ro svg { flex:none; }
+  .ed-chat { display:flex; flex-direction:column; gap:16px; flex:1; }
+  .ed-q { align-self:flex-end; max-width:75%; background:var(--accent); color:var(--accent-ink); border-radius:18px 18px 4px 18px; padding:10px 15px; font-weight:600; font-size:14.5px; white-space:pre-wrap; overflow-wrap:anywhere; }
+  .ed-a { align-self:flex-start; display:grid; grid-template-columns:34px minmax(0,1fr); gap:10px; max-width:92%; }
+  .ed-a .ed-av { width:34px; height:34px; border-radius:10px; background:var(--tint); display:grid; place-items:center; }
+  .ed-a .card { padding:14px 16px; border-radius:4px 18px 18px 18px; font-size:14.5px; line-height:1.55; overflow-wrap:anywhere; min-width:0; }
+  .ed-a .card p { margin:0 0 8px; } .ed-a .card p:last-child { margin-bottom:0; }
+  .ed-a .card ul, .ed-a .card ol { margin:4px 0 8px; padding-left:20px; }
+  .ed-a .tbl-wrap { margin:10px 0; }
+  .ed-a .card h4 { margin:10px 0 6px; font-size:14.5px; }
+  .ed-src { color:var(--muted); font-size:12px; margin-top:8px; }
+  .ed-a.err .card { border-color:var(--err); color:var(--err); }
+  .ed-in { position:sticky; bottom:16px; margin-top:22px; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:6px 6px 6px 16px; display:flex; gap:8px; align-items:flex-end; box-shadow:0 10px 30px -18px rgba(0,0,0,.5); }
+  .ed-in textarea { border:0; background:transparent; flex:1; padding:10px 0; font:inherit; color:var(--ink); outline:none; resize:none; max-height:140px; min-height:22px; }
+  .ed-in .btn { width:auto; margin:0; padding:10px 18px; }
+  .ed-sug { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .ed-sug button { border:1px solid var(--line); background:var(--surface); color:var(--muted); border-radius:999px; padding:6px 12px; font:inherit; font-size:12.5px; cursor:pointer; }
+  .ed-sug button:hover { color:var(--ink); border-color:var(--tint-line); }
+  .ed-dots { display:inline-flex; gap:4px; } .ed-dots i { width:6px; height:6px; border-radius:50%; background:var(--muted); animation:edb 1s infinite; } .ed-dots i:nth-child(2) { animation-delay:.15s; } .ed-dots i:nth-child(3) { animation-delay:.3s; }
+  @keyframes edb { 0%,80%,100% { opacity:.25; } 40% { opacity:1; } }
+  .ed-tools { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:8px; color:var(--muted); font-size:12px; }
+  @media (max-width:899px) { .ed-wrap { min-height:0; } .ed-q { max-width:88%; } .ed-a { max-width:100%; grid-template-columns:28px minmax(0,1fr); } .ed-a .ed-av { width:28px; height:28px; } .ed-in { bottom:84px; } }
   .ptabs { display:flex; border-bottom:1px solid var(--line); margin:-12px 0 22px; max-width:var(--pw); }
   .ptabs > div { display:flex; gap:2px; overflow-x:auto; scrollbar-width:none; }
   .ptabs button { background:none; border:0; padding:10px 16px; font:inherit; font-weight:600; font-size:14.5px; color:var(--muted); border-bottom:2.5px solid transparent; margin-bottom:-1px; cursor:pointer; display:flex; gap:7px; align-items:center; white-space:nowrap; }
@@ -849,9 +873,9 @@
       <button class="nav on" data-view="dash" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
         Dashboard</button>
-      <button class="nav" data-view="soon-edai" type="button">
+      <button class="nav" data-view="edai" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3l1.8 4.6L18 9.5l-4.2 1.9L12 16l-1.8-4.6L6 9.5l4.2-1.9z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>
-        Ask EDAI <span class="soon">Coming soon</span></button>
+        Ask EDAI <span class="soon" id="edaiSoon" hidden>Belum dipasang</span></button>
       <button class="nav" data-group="agenda" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
         Agenda <span class="badge" data-gbadge="agenda" hidden></span></button>
@@ -1523,6 +1547,17 @@
     </section>
 
     <!-- ================= COMING SOON PAGES ================= -->
+    <section id="view-edai" hidden>
+      <div class="page-head" style="max-width:900px"><div><h1>Ask EDAI</h1><p>Tanya apa saja tentang data perusahaan dalam bahasa sehari-hari.</p></div>
+        <div class="head-btns"><button class="btn sec" id="edNew" type="button" style="width:auto;margin:0;padding:11px 18px" hidden>Percakapan baru</button></div></div>
+      <div class="ed-wrap">
+        <div class="msg okmsg ed-ro"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span><b>EDAI hanya membaca.</b> Tidak bisa mengubah, menghapus, atau menyimpan apa pun. Jawaban hanya dari halaman yang boleh Anda lihat. Periksa lagi angka penting sebelum dipakai.</span></div>
+        <div class="msg warn" id="edNotReady" hidden><b>EDAI belum dipasang.</b> Pemilik perlu mengisi kunci API (ANTHROPIC_API_KEY) di Apps Script → Project Settings → Script Properties.</div>
+        <div class="ed-chat" id="edChat"></div>
+        <form class="ed-in" id="edForm"><textarea id="edQ" rows="1" maxlength="1000" placeholder="Tanya EDAI… misalnya: lahan mana yang HGB-nya habis tahun depan?" aria-label="Pertanyaan untuk EDAI"></textarea><button class="btn" id="edSend" type="submit">Tanya</button></form>
+        <div class="ed-sug" id="edSug"></div>
+      </div>
+    </section>
     <section id="view-soon" hidden>
       <div class="page-head"><div><h1 id="soonTitle"></h1><p id="soonSub"></p></div></div>
       <div class="soon-page"><div class="card"><span class="soon-big">Coming soon</span><p id="soonText"></p></div></div>
@@ -1966,7 +2001,7 @@ function cacheWrite(fn, d) {
   try { localStorage.setItem(ckey(fn), JSON.stringify(d)); }
   catch (e) { try { localStorage.removeItem(ckey('getLand')); localStorage.setItem(ckey(fn), JSON.stringify(d)); } catch (e2) {} }
 }
-function cacheClear() { try { Object.keys(localStorage).filter(function (k) { return k.indexOf('elc:') === 0; }).forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {} }
+function cacheClear() { try { Object.keys(localStorage).filter(function (k) { return k.indexOf('elc:') === 0 || k.indexOf('edai:') === 0; }).forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {} }
 var syncN = 0;
 var syncPend = {};
 var SYNC_NAMES = { getFormData: 'data awal', getDashboard: 'dashboard', getTasks: 'tugas', getPayments: 'riwayat pembayaran', getTenants: 'penyewa', getLand: 'data tanah',
@@ -2014,7 +2049,7 @@ $$('[data-theme-switch]').forEach(function (s) {
 applyTheme(document.documentElement.getAttribute('data-theme') || 'light');
 
 /* ---------- navigation ---------- */
-var VIEWS = ['dash', 'kal', 'tugas', 'set', 'soon', 'catat', 'bukti', 'jalan', 'pbb', 'penyewa', 'unit', 'kos', 'tanah', 'cek', 'kontak', 'laporan'];
+var VIEWS = ['dash', 'edai', 'kal', 'tugas', 'set', 'soon', 'catat', 'bukti', 'jalan', 'pbb', 'penyewa', 'unit', 'kos', 'tanah', 'cek', 'kontak', 'laporan'];
 /* Menu groups: one menu item, its pages as tabs at the top of the page. */
 var GROUPS = { agenda: ['kal', 'tugas'], bayar: ['catat', 'bukti', 'laporan'], tanah: ['tanah', 'cek'], sewa: ['penyewa', 'unit', 'kos'] };
 var PERM_OF = { unit: 'penyewa', laporan: 'bukti' };  // pages that use the access of another page
@@ -2103,6 +2138,7 @@ function show(view) {
   if (view === 'pbb') loadPbb();
   if (view === 'kos') loadKos();
   if (view === 'unit') loadUnits();
+  if (view === 'edai') openEdai();
   if (view === 'kontak') loadContacts();
   if (view === 'laporan') loadReport();
   if (view === 'set') openSetTab(setTab);
@@ -6320,6 +6356,88 @@ $('repBack').onclick = function () { show('bukti'); };
 $('repReload').onclick = function () { loadReport(true); };
 $('repOpen').onclick = openReport;
 
+/* ====================== ASK EDAI (read-only AI) ====================== */
+var edHist = [], edBusy = false, edReady = null;
+var ED_LOGO = '<svg width="20" height="20" viewBox="0 0 42 42" aria-hidden="true"><path d="M4 26l12-6 12 6-12 6z" fill="#6d28d9"/><path d="M14 20l12-6 12 6-12 6z" fill="#a78bfa"/><path d="M9 14l12-6 12 6-12 6z" fill="#ddd6fe"/></svg>';
+var ED_SUG = [['Siapa yang telat bayar sekarang?', 'penyewa'], ['Berapa pemasukan bulan ini per area?', 'bukti'], ['Kamar kos yang kosong?', 'penyewa'], ['Kontrak yang habis 60 hari ke depan?', 'penyewa'],
+  ['PBB tahun ini yang belum dibayar?', 'pbb'], ['Lahan yang telat dicek?', 'cek'], ['Tanah yang HGB-nya habis 2 tahun ke depan?', 'tanah']];
+function edKey() { return 'edai:' + String(tokEmail()).toLowerCase(); }
+function edLoad() { try { edHist = JSON.parse(localStorage.getItem(edKey()) || '[]') || []; } catch (e) { edHist = []; } }
+function edSave() { try { localStorage.setItem(edKey(), JSON.stringify(edHist.slice(-30))); } catch (e) {} }
+function edEsc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function edInline(t) { return edEsc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<i>$2</i>').replace(/`([^`]+)`/g, '<code>$1</code>'); }
+/** Small markdown: paragraphs, **bold**, lists, headings, simple tables. Everything is escaped first. */
+function edMd(md) {
+  var lines = String(md || '').replace(/\r/g, '').split('\n'), out = [], i = 0;
+  while (i < lines.length) {
+    var l = lines[i];
+    if (/^\s*\|/.test(l)) {
+      var rows = []; while (i < lines.length && /^\s*\|/.test(lines[i])) { rows.push(lines[i]); i++; }
+      var cells = rows.filter(function (r) { return !/^\s*\|?\s*:?-{2,}/.test(r.replace(/\|/g, '|').replace(/^\s*\|/, '')); })
+        .map(function (r) { return r.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(function (c) { return c.trim(); }); });
+      if (cells.length) {
+        var h = '<div class="tbl-wrap"><table class="tbl"><tr>' + cells[0].map(function (c) { return '<th>' + edInline(c) + '</th>'; }).join('') + '</tr>';
+        cells.slice(1).forEach(function (r) { h += '<tr>' + r.map(function (c) { return '<td' + (/^(Rp\s?)?[\d.,]+$/.test(c) ? ' class="r num"' : '') + '>' + edInline(c) + '</td>'; }).join('') + '</tr>'; });
+        out.push(h + '</table></div>');
+      }
+      continue;
+    }
+    if (/^\s*([-*•]|\d+[.)])\s+/.test(l)) {
+      var ol = /^\s*\d/.test(l), items = [];
+      while (i < lines.length && /^\s*([-*•]|\d+[.)])\s+/.test(lines[i])) { items.push('<li>' + edInline(lines[i].replace(/^\s*([-*•]|\d+[.)])\s+/, '')) + '</li>'); i++; }
+      out.push((ol ? '<ol>' : '<ul>') + items.join('') + (ol ? '</ol>' : '</ul>'));
+      continue;
+    }
+    if (/^#{1,4}\s/.test(l)) { out.push('<h4>' + edInline(l.replace(/^#+\s/, '')) + '</h4>'); i++; continue; }
+    if (!l.trim()) { i++; continue; }
+    var para = []; while (i < lines.length && lines[i].trim() && !/^\s*\|/.test(lines[i]) && !/^\s*([-*•]|\d+[.)])\s+/.test(lines[i]) && !/^#{1,4}\s/.test(lines[i])) { para.push(edInline(lines[i])); i++; }
+    out.push('<p>' + para.join('<br>') + '</p>');
+  }
+  return out.join('');
+}
+function edBubbleQ(q) { var d = el('div', 'ed-q', q); $('edChat').appendChild(d); return d; }
+function edBubbleA(html, src, err) {
+  var w = el('div', 'ed-a' + (err ? ' err' : '')), av = el('div', 'ed-av'); av.innerHTML = ED_LOGO; w.appendChild(av);
+  var c = el('div', 'card'); c.innerHTML = html; if (src) c.appendChild(el('div', 'ed-src', src)); w.appendChild(c);
+  $('edChat').appendChild(w); return w;
+}
+function edRender() {
+  var ch = $('edChat'); ch.innerHTML = '';
+  edHist.forEach(function (h) { edBubbleQ(h.q); edBubbleA(edMd(h.a), (h.src && h.src.length ? 'Dari: ' + h.src.join(' + ') + ' · ' : '') + (h.at || '')); });
+  $('edNew').hidden = !edHist.length;
+  var sg = $('edSug'); sg.innerHTML = '';
+  ED_SUG.filter(function (x) { return lv(x[1]) !== '-'; }).slice(0, edHist.length ? 3 : 6).forEach(function (x) { var b = el('button', '', x[0]); b.type = 'button'; b.onclick = function () { $('edQ').value = x[0]; edAsk(); }; sg.appendChild(b); });
+}
+function openEdai() {
+  edLoad(); edRender();
+  if (edReady === null) call('edaiStatus').then(function (d) { edReady = !!d.ready; $('edNotReady').hidden = edReady; $('edaiSoon').hidden = edReady; }).catch(function () {});
+  else $('edNotReady').hidden = edReady;
+  setTimeout(function () { $('edQ').focus(); }, 50);
+}
+function edAsk() {
+  var q = $('edQ').value.trim();
+  if (!q || edBusy) return;
+  edBusy = true; $('edSend').disabled = true; $('edQ').value = ''; $('edQ').style.height = '';
+  edBubbleQ(q);
+  var wait = edBubbleA('<span class="ed-dots"><i></i><i></i><i></i></span> <span class="muted">EDAI sedang mencari di data…</span>');
+  wait.scrollIntoView({ block: 'end', behavior: 'smooth' });
+  var history = edHist.slice(-4).map(function (h) { return { q: h.q, a: h.a }; });
+  call('askEdai', { q: q, history: history }).then(function (r) {
+    edHist.push({ q: q, a: r.answer, src: r.sources || [], at: r.at }); edSave();
+    wait.remove();
+    var a = edBubbleA(edMd(r.answer), (r.sources && r.sources.length ? 'Dari: ' + r.sources.join(' + ') + ' · ' : '') + r.at + (r.sisa !== null && r.sisa !== undefined && r.sisa <= 5 ? ' · sisa ' + r.sisa + ' pertanyaan hari ini' : ''));
+    a.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    $('edNew').hidden = false;
+  }).catch(function (e) {
+    wait.remove(); edBubbleA(edEsc(errText(e)), '', true);
+    if (/belum dipasang/i.test(errText(e))) { edReady = false; $('edNotReady').hidden = false; $('edaiSoon').hidden = false; }
+  }).then(function () { edBusy = false; $('edSend').disabled = false; $('edQ').focus(); });
+}
+$('edForm').onsubmit = function (e) { e.preventDefault(); edAsk(); };
+$('edQ').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); edAsk(); } });
+$('edQ').addEventListener('input', function () { this.style.height = ''; this.style.height = Math.min(this.scrollHeight, 140) + 'px'; });
+$('edNew').onclick = function () { edHist = []; edSave(); edRender(); $('edQ').focus(); };
+
 /* Speed: a few seconds after opening the website, quietly fetch the other main pages one by one and keep them in this
  * browser, so the first click on Penyewa, Unit, Kos, Riwayat ... shows data at once (it still refreshes itself after). */
 var PRELOAD = [['getDashboard', 'dash'], ['getPayments', 'bukti'], ['getTenants', 'penyewa'], ['getUnits', 'penyewa'], ['getKos', 'kos'], ['getTrips', 'jalan'], ['getChecks', 'cek'], ['getPbb', 'pbb']];
@@ -6772,7 +6890,7 @@ function boot() {
     var w = readWhere(), want = (location.hash || '').slice(1) || w.v;
     if (w.jt) jlTab = w.jt;
     if (w.st) setTab = w.st;
-    if (want && (SOON[want] || (PAGE_NAME[permOf(want)] && tabOk(want)))) first = want;
+    if (want && (SOON[want] || want === 'edai' || (PAGE_NAME[permOf(want)] && tabOk(want)))) first = want;
     show(first);
     setTimeout(preloadPages, 4000);
   }).catch(function (e) {
