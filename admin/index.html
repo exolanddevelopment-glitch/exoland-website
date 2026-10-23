@@ -6377,8 +6377,10 @@ function edMd(md) {
       var cells = rows.filter(function (r) { return !/^\s*\|?\s*:?-{2,}/.test(r.replace(/\|/g, '|').replace(/^\s*\|/, '')); })
         .map(function (r) { return r.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(function (c) { return c.trim(); }); });
       if (cells.length) {
-        var h = '<div class="tbl-wrap"><table class="tbl"><tr>' + cells[0].map(function (c) { return '<th>' + edInline(c) + '</th>'; }).join('') + '</tr>';
-        cells.slice(1).forEach(function (r) { h += '<tr>' + r.map(function (c) { return '<td' + (/^(Rp\s?)?[\d.,]+$/.test(c) ? ' class="r num"' : '') + '>' + edInline(c) + '</td>'; }).join('') + '</tr>'; });
+        var isNum = function (c) { return /^(Rp\s?)?-?[\d.,]+%?$/.test(String(c).replace(/\*\*/g, '').trim()); };
+        var numCol = cells[0].map(function (_, j) { var body = cells.slice(1).map(function (r) { return r[j]; }).filter(function (c) { return c !== undefined && String(c).trim() !== '' && c !== '-'; }); return body.length > 0 && body.every(isNum); });
+        var h = '<div class="tbl-wrap"><table class="tbl"><tr>' + cells[0].map(function (c, j) { return '<th' + (numCol[j] ? ' class="r"' : '') + '>' + edInline(c) + '</th>'; }).join('') + '</tr>';
+        cells.slice(1).forEach(function (r) { h += '<tr>' + r.map(function (c, j) { return '<td' + (numCol[j] ? ' class="r num"' : '') + '>' + edInline(c) + '</td>'; }).join('') + '</tr>'; });
         out.push(h + '</table></div>');
       }
       continue;
