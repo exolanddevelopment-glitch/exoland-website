@@ -2585,16 +2585,17 @@ function resetForm() {
 
 function renderList() {
   var q = $('q').value.toLowerCase().trim();
-  var groups = {}; tenants.forEach(function (t) { if (t.person) (groups[t.person] = groups[t.person] || []).push(t); });
+  var groups = {}; tenants.forEach(function (t) { if (t.person && !t.ended) (groups[t.person] = groups[t.person] || []).push(t); });
   var hits = tenants.filter(function (t) {
-    var g = t.person && groups[t.person].length > 1 ? groups[t.person] : [t];
+    if (t.ended) return !!q && (t.nama + ' ' + t.inv + ' ' + t.unit + ' ' + (t.plots || []).join(' ')).elHas(q);   // former tenants only when searched
+    var g = t.person && groups[t.person] && groups[t.person].length > 1 ? groups[t.person] : [t];
     return !q || g.some(function (x) { return (x.nama + ' ' + x.inv + ' ' + x.unit + ' ' + (x.plots || []).join(' ')).elHas(q); });
   });
   $('list').innerHTML = '';
   if (!hits.length) { $('list').innerHTML = '<div class="item empty-row">Tidak ada penyewa yang cocok.</div>'; return; }
   var shown = {};
   hits.forEach(function (t) {
-    var grp = t.person && groups[t.person].length > 1 ? groups[t.person] : null;
+    var grp = !t.ended && t.person && groups[t.person] && groups[t.person].length > 1 ? groups[t.person] : null;
     if (grp) {  // one line for a person with several units
       if (shown[t.person]) return; shown[t.person] = true;
       var gb = document.createElement('button'); gb.type = 'button'; gb.className = 'item';
@@ -2611,7 +2612,7 @@ function renderList() {
     var b = document.createElement('button'); b.type = 'button'; b.className = 'item';
     var mid = document.createElement('div'); mid.style.minWidth = '0';
     var nm = document.createElement('div'); nm.className = 't-name'; nm.textContent = t.nama;
-    mid.appendChild(nm); mid.appendChild(metaEl(plotMeta(t)));
+    mid.appendChild(nm); mid.appendChild(metaEl(t.ended ? [plotMeta(t)[0], 'Kontrak selesai' + (t.selesaiIso ? ' ' + dmy(parseIso(t.selesaiIso)) : '')] : plotMeta(t)));
     var pr = document.createElement('div'); pr.className = 't-price num';
     pr.innerHTML = '<b></b><span></span>'; pr.firstChild.textContent = rp(t.harga); pr.lastChild.textContent = 'per ' + cycleWord(t);
     b.appendChild(avatarEl(t.nama, t.inv)); b.appendChild(mid); b.appendChild(pr);
@@ -2624,6 +2625,9 @@ function plotTxt(t) { return t.plots && t.plots.length ? t.plots.join(' + ') : t
 function plotMeta(t) { return t.plots && t.plots.length > 1 ? [t.plots.length + ' plot', t.plots.join(' + ')] : [t.inv, t.unit ? 'Unit ' + t.unit : '']; }
 function choose(t) {
   chosen = t; gab = null;
+  if (t.ended && curJenis() === 'Uang sewa') { $('jenis').value = 'Lain-lain'; $('jenis').dispatchEvent(new Event('change')); }   // former tenant: usually admin / denda; leftover rent bills still show under "Uang sewa"
+  var eh = $('endedHint'); if (!eh) { eh = el('div', 'msg warn'); eh.id = 'endedHint'; $('chosenBox').appendChild(eh); }
+  eh.hidden = !t.ended; eh.textContent = t.ended ? 'Kontrak sudah selesai' + (t.selesaiIso ? ' (' + dmy(parseIso(t.selesaiIso)) + ')' : '') + '. Pilih jenis pembayaran selain "Uang sewa" (misalnya Lain-lain: biaya admin), atau "Uang sewa" kalau masih ada sisa tagihan.' : '';
   $('cNama').textContent = t.nama;
   var pm = plotMeta(t); fillMeta($('cInfo'), [pm[0], (pm[1] ? pm[1] + ', ' : '') + rp(t.harga) + ' per ' + cycleWord(t)]);
   setAvatar($('cAvatar'), t.nama, t.inv);
