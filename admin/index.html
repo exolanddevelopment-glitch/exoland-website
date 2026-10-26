@@ -3433,7 +3433,7 @@ function openTask(k) {
 function afterTaskChange() { setTaskBadge(); renderTasks(); if (dashData) { dashData.tasks = tasks; renderAlarm(); } renderCal(); }
 $('taskNew').onclick = function () { openTask(null); };
 $('taskClose').onclick = function () { $('taskModal').hidden = true; };
-$('taskModal').addEventListener('click', function (e) { if (e.target === this) this.hidden = true; });
+// taskModal: no close on outside click, so a half-written task is not lost
 $('taskSave').onclick = function () {
   var btn = this, p = { id: editTask ? editTask.id : '', judul: $('tJudul').value, isi: $('tIsi').value, ke: $('tKe').value, deadline: $('tDeadline').value, prioritas: $('tPrio').value, status: $('tStatus').value };
   if (p.judul.trim().length < 3) { $('taskErr').textContent = 'Judul tugas minimal 3 huruf.'; $('taskErr').hidden = false; return; }
@@ -4101,7 +4101,7 @@ $('tnEnd').onclick = function () { openTnModal('end'); };
 $('tnChange').onclick = function () { if (tnDirty) { toast('Simpan atau batalkan perubahan dulu.'); return; } openTnModal('change'); };
 $('tnArchive').onclick = function () { openTnModal('archive'); };
 $('tnmClose').onclick = function () { $('tnModal').hidden = true; };
-$('tnModal').addEventListener('click', function (e) { if (e.target === this) this.hidden = true; });
+// tnModal: no close on outside click
 $('tnmOk').onclick = function () {
   if (tnAction === 'land') return landArchiveSubmit();
   var t = tnSel, btn = this, g = function (id) { var e = $('f_' + id); return e ? e.value : ''; }, req, msg;
@@ -4772,18 +4772,37 @@ function tripForm(t) {
   setTimeout(function () { (isNew ? $('f_j_tuj') : $('f_j_k')).focus(); }, 30);
 }
 /* generic modal */
-var jlmAction = null;
+var jlmAction = null, jlmKey = '', jlmDrafts = {};
+/* A form in a pop-up keeps what was typed if the pop-up is closed by accident: open it again and the fields are filled back in.
+ * Only after a successful save is the draft forgotten. */
+function jlmFields() { return Array.prototype.slice.call($('jlmBody').querySelectorAll('input[id], select[id], textarea[id]')).filter(function (i) { return i.type !== 'file'; }); }
+function jlmSaveDraft() {
+  if (!jlmKey || $('jlModal').hidden) return;
+  var d = {}, any = false;
+  jlmFields().forEach(function (i) { d[i.id] = i.type === 'checkbox' ? i.checked : i.value; if (i.type === 'checkbox' ? i.checked : String(i.value).trim()) any = true; });
+  if (any) jlmDrafts[jlmKey] = d; else delete jlmDrafts[jlmKey];
+}
 function jlModal(title, text, build, okText, onOk, okCls) {
+  jlmSaveDraft();
   $('jlmTitle').textContent = title; $('jlmText').textContent = text || ''; $('jlmText').hidden = !text;
   var b = $('jlmBody'); b.innerHTML = ''; build(b);
+  jlmKey = title + '|' + (text || '');
+  var dr = jlmDrafts[jlmKey];
+  if (dr) {
+    jlmFields().forEach(function (i) { if (!(i.id in dr)) return; if (i.type === 'checkbox') i.checked = dr[i.id]; else if (String(dr[i.id]) !== '') i.value = dr[i.id]; });
+    var note = el('div', 'msg ok'); note.style.marginBottom = '10px'; note.appendChild(document.createTextNode('Isian sebelumnya dipulihkan. '));
+    var clr = el('a', '', 'Kosongkan'); clr.href = '#'; clr.onclick = function (e) { e.preventDefault(); delete jlmDrafts[jlmKey]; if (title === 'Jadwal cek baru') ckNewSel.length = 0; jlmKey = ''; jlModal(title, text, build, okText, onOk, okCls); };
+    note.appendChild(clr); b.insertBefore(note, b.firstChild);
+  }
   $('jlmErr').hidden = true; $('jlmOk').disabled = false; $('jlmOk').textContent = okText; $('jlmOk').className = 'btn ' + (okCls || '');
   jlmAction = onOk; $('jlModal').hidden = false;
 }
-$('jlmClose').onclick = function () { $('jlModal').hidden = true; };
-$('jlModal').addEventListener('click', function (e) { if (e.target === this) this.hidden = true; });
+function jlmHide() { jlmSaveDraft(); $('jlModal').hidden = true; }
+$('jlmClose').onclick = jlmHide;
+// clicking the dark area around the pop-up no longer closes it (too easy to lose what was typed); use × or Batal
 $('jlmOk').onclick = function () {
   var btn = this; btn.disabled = true; $('jlmErr').hidden = true;
-  Promise.resolve().then(jlmAction).then(function (r) { if (r === false) { btn.disabled = false; return; } $('jlModal').hidden = true; })
+  Promise.resolve().then(jlmAction).then(function (r) { if (r === false) { btn.disabled = false; return; } delete jlmDrafts[jlmKey]; jlmKey = ''; $('jlModal').hidden = true; })
     .catch(function (e) { btn.disabled = false; $('jlmErr').textContent = errText(e); $('jlmErr').hidden = false; });
 };
 function cancelTripModal(t) {
@@ -5639,8 +5658,9 @@ function checkForm(o) {
   });
 }
 function distM(a, b, c, d) { var R = 6371000, t = Math.PI / 180, x = Math.sin((c - a) * t / 2), y = Math.sin((d - b) * t / 2); var h = x * x + Math.cos(a * t) * Math.cos(c * t) * y * y; return Math.round(2 * R * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h))); }
+var ckNewSel = [];
 function scheduleModal(o) {
-  var sel = o ? o.invs.slice() : [];
+  var sel = o ? o.invs.slice() : ckNewSel;   // a new schedule keeps its chosen lands if the pop-up is closed by accident
   jlModal(o ? 'Ubah jadwal cek' : 'Jadwal cek baru', 'Satu jadwal bisa untuk satu lahan atau beberapa lahan yang berdekatan (misalnya semua Cogrek).', function (b) {
     var li = inp('text', '', { list: 'ckLandList', placeholder: 'Ketik kode inventaris, lalu Enter', autocomplete: 'off' });
     var dl = document.createElement('datalist'); dl.id = 'ckLandList';
@@ -5666,7 +5686,7 @@ function scheduleModal(o) {
     if (!sel.length && $('f_m_ck_land').value.trim()) { var v = $('f_m_ck_land').value.trim(), hit = (ckData.land || []).filter(function (l) { return l.inv.toLowerCase() === v.toLowerCase(); })[0]; if (hit) sel.push(hit.inv); }
     return call('saveCheckSchedule', { id: o ? o.id : '', invs: sel, nama: $('f_m_ck_nama').value, tingkat: $('f_m_ck_tingkat').value, tiap: Number($('f_m_ck_tiap').value) || 0,
       petugas: $('f_m_ck_pet').value, awal: $('f_m_ck_awal').value, alasan: $('f_m_ck_alasan').value, aktif: $('f_m_ck_aktif') ? $('f_m_ck_aktif').value === 'Ya' : true })
-      .then(function (d) { toast(o ? 'Jadwal diubah.' : 'Jadwal dibuat.'); var nid = o ? o.id : d.sched[d.sched.length - 1].id; applyChecks(d, nid); });
+      .then(function (d) { if (!o) ckNewSel = []; toast(o ? 'Jadwal diubah.' : 'Jadwal dibuat.'); var nid = o ? o.id : d.sched[d.sched.length - 1].id; applyChecks(d, nid); });
   });
 }
 $('ckNew').onclick = function () { scheduleModal(null); };
@@ -7809,7 +7829,7 @@ function openSign() {
 $$('[data-sign-open]').forEach(function (b) { b.onclick = openSign; });
 $('signClose').onclick = function () { $('signModal').hidden = true; };
 $('signModal').addEventListener('click', function (e) { if (e.target === this) this.hidden = true; });
-document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { $('viewer').hidden = true; $('jlModal').hidden = true; $('signModal').hidden = true; $('userMenu').hidden = true; $('taskModal').hidden = true; $('tnModal').hidden = true; } });
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { $('viewer').hidden = true; if (!$('jlModal').hidden) jlmHide(); $('signModal').hidden = true; $('userMenu').hidden = true; $('taskModal').hidden = true; $('tnModal').hidden = true; } });
 $('signFile').onchange = function () {
   var f = this.files[0]; $('signSave').disabled = !f;
   if (!f) return;
