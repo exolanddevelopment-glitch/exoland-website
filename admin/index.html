@@ -2088,11 +2088,38 @@ function call(fn, arg) {
     return r.json();
   }, function () { throw new Error('Tidak ada koneksi ke server. Cek internet lalu coba lagi.'); })
     .then(function (j) {
-      if (j.ok) return j.data;
+      if (j.ok) { if (!READ_FN.test(fn)) afterWrite(); return j.data; }
       if (j.code === 'AUTH' || j.code === 'DENIED') signOut(j.code === 'AUTH' && String(idToken).indexOf('S.') === 0 ? 'Sesi login berakhir (12 jam tidak dipakai, atau sudah 7 hari). Silakan masuk lagi.' : j.error);
       throw new Error(j.error || 'Terjadi kesalahan.');
     });
 }
+/* ---------- auto refresh: after every save, the page that is open reloads its data (no Ctrl+Shift+R needed),
+ * and lists kept in memory for other pages are dropped so they load fresh when opened. Also when you come back to the tab. */
+var READ_FN = /^(get|peek|check|edai|ask|startSession|endSession|tenantFolder|landFolder|backupNow)/;
+var lastRefresh = Date.now();
+function afterWrite() { clearTimeout(afterWrite.t); afterWrite.t = setTimeout(function () { refreshView(true); }, 700); }
+function refreshView(wrote) {
+  lastRefresh = Date.now();
+  if (!me) return;
+  obData = null; unData = null; dashData = null; ksData = null;
+  if (wrote) call('getFormData').then(function (f) { tenants = f.tenants || []; me.tenants = tenants; cacheWrite('getFormData', me); try { if (!chosen) renderList(); } catch (e) {} }).catch(function () {});
+  var v = curView;
+  try {
+    if (v === 'pny' || v === 'kon' || v === 'kebun') loadSewa();
+    else if (v === 'unit') loadUnits();
+    else if (v === 'kos') loadKos();
+    else if (v === 'bukti') loadPayments();
+    else if (v === 'dash' || v === 'kal') loadDash(true);
+    else if (v === 'tugas') loadTasks();
+    else if (v === 'tanah') loadLand();
+    else if (v === 'jalan') loadTrips();
+    else if (v === 'cek') loadChecks();
+    else if (v === 'kontak') loadContacts();
+    else if (v === 'penyewa') loadTenantsPage();
+    else if (v === 'catat' && chosen && me.v2 && !$('chosenBox').hidden) renderBills();
+  } catch (e) {}
+}
+document.addEventListener('visibilitychange', function () { if (!document.hidden && Date.now() - lastRefresh > 60000) refreshView(false); });
 function errText(e) { return (e && e.message) ? e.message : String(e); }
 /* ---------- speed: every page first shows the data it had last time (kept in this browser), then refreshes it.
  * The engine still checks access on every call; the copy is only for showing the page faster. Cleared on Keluar. */
