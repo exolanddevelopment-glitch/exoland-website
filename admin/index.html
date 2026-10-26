@@ -1404,6 +1404,7 @@
               <button type="button" data-ps="aktif">Aktif</button>
               <button type="button" data-ps="telat">Ada tunggakan</button>
               <button type="button" data-ps="tanpa">Tanpa kontrak</button>
+              <button type="button" data-ps="arsip">Arsip</button>
             </div>
           </div>
           <div class="pay-list" id="pyList"><div class="empty">Memuat penyewa…</div></div>
@@ -6660,7 +6661,7 @@ function pyAgg(p) {
 }
 function renderPyCards() {
   var box = $('pyCards'); box.innerHTML = '';
-  var all = syData.penyewa, akt = 0, kurang = 0, telat = 0;
+  var all = syData.penyewa.filter(function (p) { return !p.arsip; }), akt = 0, kurang = 0, telat = 0;
   all.forEach(function (p) { var g = pyAgg(p); if (g.akt.length) akt++; if (!p.wa) kurang++; if (g.telat.length) telat++; });
   cardBtn(box, 'cek', 'Penyewa', all.length, 'orang / perusahaan', function () { pyFilter = 'semua'; renderPyList(); });
   cardBtn(box, 'ok', 'Punya kontrak aktif', akt, 'sedang menyewa', function () { pyFilter = 'aktif'; renderPyList(); });
@@ -6673,6 +6674,7 @@ function renderPyList() {
   var q = $('pyq').value.trim().toLowerCase();
   var list = syData.penyewa.filter(function (p) {
     var g = pyAgg(p);
+    if (!q && (pyFilter === 'arsip') !== !!p.arsip) return false;
     if (pyFilter === 'aktif' && !g.akt.length) return false;
     if (pyFilter === 'telat' && !g.telat.length) return false;
     if (pyFilter === 'tanpa' && g.akt.length) return false;
@@ -6694,7 +6696,7 @@ function renderPyList() {
     var right = el('div', 'pay-right'), tags = el('div', 'tn-tags');
     if (g.telat.length) tags.appendChild(el('span', 'tag void', 'Tunggakan ' + rp(g.tunggakan)));
     if (!p.wa) tags.appendChild(el('span', 'tag no', 'WA kosong'));
-    tags.appendChild(el('span', 'tag ' + (g.akt.length ? 'sewa' : 'cek'), g.akt.length ? 'Aktif' : 'Tanpa kontrak'));
+    tags.appendChild(el('span', 'tag ' + (g.akt.length ? 'sewa' : 'cek'), p.arsip ? 'Arsip' : g.akt.length ? 'Aktif' : 'Tanpa kontrak'));
     right.appendChild(tags);
     b.appendChild(mid); b.appendChild(right);
     b.onclick = function () { openPy(p); };
@@ -6704,6 +6706,14 @@ function renderPyList() {
 }
 $('pyq').addEventListener('input', function () { pyShow = 200; clearTimeout(renderPyList.t); renderPyList.t = setTimeout(renderPyList, 120); });
 $$('#pySegs [data-ps]').forEach(function (b) { b.onclick = function () { pyFilter = b.getAttribute('data-ps'); pyShow = 200; renderPyList(); }; });
+function pyArchive(p, on, g) {
+  if (on && g.akt.length) { toast(p.nama + ' masih punya kontrak aktif (' + g.akt.map(function (k) { return k.id; }).join(', ') + '). Akhiri kontraknya dulu.'); return; }
+  jlModal(on ? 'Arsipkan penyewa' : 'Pulihkan dari arsip', p.nama + ' · ' + p.id, function (b) {
+    b.appendChild(el('p', 'hint', on ? 'Penyewa ini disembunyikan dari daftar dan dari pilihan saat membuat kontrak baru. Data, kontrak lama, dan riwayat pembayarannya tetap tersimpan. Bisa dipulihkan kapan saja dari "Arsip".' : 'Penyewa ini muncul lagi di daftar dan bisa dipilih untuk kontrak baru.'));
+  }, on ? 'Arsipkan' : 'Pulihkan', function () {
+    return call('archivePenyewa', { id: p.id, arsip: on }).then(function () { toast(on ? p.nama + ' diarsipkan.' : p.nama + ' dipulihkan.'); pyPendingId = on ? null : p.id; if (on) closePy(); return refreshSewa(); });
+  });
+}
 function closePy() { pySel = null; pyMode = 'view'; $('pyEmpty').hidden = false; $('pyBody').hidden = true; $('pySplit').classList.remove('show-detail'); $('view-pny').classList.remove('detail-open'); renderPyList(); }
 function openPy(p) {
   var isNew = !p; pyMode = isNew ? 'new' : 'view'; pySel = p;
@@ -6716,7 +6726,7 @@ function openPy(p) {
   hm.appendChild(el('h2', '', isNew ? 'Penyewa baru' : p.nama));
   hm.appendChild(el('div', 'muted', isNew ? 'ID penyewa dibuat otomatis saat disimpan.' : p.id + ' · ' + g.akt.length + ' kontrak aktif' + (g.ks.length > g.akt.length ? ', ' + (g.ks.length - g.akt.length) + ' selesai' : '')));
   head.appendChild(hm);
-  if (!isNew) head.appendChild(g.telat.length ? el('span', 'st red', 'Tunggakan ' + rp(g.tunggakan)) : el('span', 'st ' + (g.akt.length ? 'white' : 'grey'), g.akt.length ? 'Aktif' : 'Tanpa kontrak'));
+  if (!isNew) head.appendChild(g.telat.length ? el('span', 'st red', 'Tunggakan ' + rp(g.tunggakan)) : el('span', 'st ' + (g.akt.length ? 'white' : 'grey'), p.arsip ? 'Arsip' : g.akt.length ? 'Aktif' : 'Tanpa kontrak'));
   body.appendChild(head);
   body.appendChild(el('h3', 'tn-h3', 'Data penyewa'));
   var f = el('div', '');
@@ -6737,7 +6747,8 @@ function openPy(p) {
         .catch(function (e) { sv.disabled = false; sv.textContent = isNew ? 'Simpan penyewa baru' : 'Simpan'; err.textContent = errText(e); err.hidden = false; });
     });
     acts.appendChild(sv);
-    if (!isNew) acts.appendChild(btnEl('+ Kontrak baru untuk orang ini', 'sec', function () { show('kon'); openKn(null, { pny: p.id }); }));
+    if (!isNew && !p.arsip) acts.appendChild(btnEl('+ Kontrak baru untuk orang ini', 'sec', function () { show('kon'); openKn(null, { pny: p.id }); }));
+    if (!isNew) acts.appendChild(btnEl(p.arsip ? 'Pulihkan dari arsip' : 'Arsipkan', 'sec', function () { pyArchive(p, !p.arsip, g); }));
     else acts.appendChild(btnEl('Batal', 'sec', closePy));
     body.appendChild(acts);
   }
@@ -7045,7 +7056,7 @@ function knEdit(k, preset) {
   // penyewa
   var pIn = inp('text', d.pny && syPen(d.pny) ? syPen(d.pny).nama + ' — ' + d.pny : '', { list: 'knPnyList', autocomplete: 'off', placeholder: 'Ketik nama penyewa' });
   var dl = document.createElement('datalist'); dl.id = 'knPnyList';
-  syData.penyewa.slice().sort(function (a, b) { return a.nama.localeCompare(b.nama, 'id'); }).forEach(function (p) { var o = document.createElement('option'); o.value = p.nama + ' — ' + p.id; o.label = p.wa || ''; dl.appendChild(o); });
+  syData.penyewa.filter(function (p) { return !p.arsip || p.id === d.pny; }).sort(function (a, b) { return a.nama.localeCompare(b.nama, 'id'); }).forEach(function (p) { var o = document.createElement('option'); o.value = p.nama + ' — ' + p.id; o.label = p.wa || ''; dl.appendChild(o); });
   var pf = field('kn_pny', 'Penyewa', pIn); pf.appendChild(dl);
   var np = el('a', '', '+ Penyewa baru'); np.href = '#'; np.onclick = function (e) { e.preventDefault(); show('pny'); openPy(null); };
   var ph = el('p', 'hint'); ph.appendChild(document.createTextNode('Pilih dari daftar Penyewa. Orang baru? ')); ph.appendChild(np); pf.appendChild(ph);
