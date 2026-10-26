@@ -273,6 +273,11 @@
   .pay:last-child { border-bottom:0; }
   .pay:hover { background:var(--subtle); }
   .pay.on { background:var(--tint); box-shadow:inset 3px 0 0 var(--accent); }
+  .pay.pick { grid-template-columns:auto auto minmax(0,1fr) auto; }
+  .pay .kb-cb { width:20px; height:20px; accent-color:var(--accent); cursor:pointer; margin:0; }
+  .kb-bar { position:sticky; top:0; z-index:3; display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; padding:12px 18px; background:var(--tint); border-bottom:1px solid var(--line-2); }
+  .kb-bar label { display:flex; gap:8px; align-items:center; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .kb-bar .btn { width:auto; margin:0; padding:10px 16px; }
   .pay .t-name { font-weight:600; }
   .pay-right { text-align:right; display:grid; gap:4px; justify-items:end; }
   .pay-right b { font-weight:600; font-variant-numeric:tabular-nums; }
@@ -934,6 +939,9 @@
       <button class="nav" data-group="sewa" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>
         Sewa <span class="badge" data-gbadge="sewa" hidden></span></button>
+      <button class="nav" data-view="kebun" type="button" data-v2 hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 21V11"/><path d="M12 11c0-4 3-7 7-7 0 4-3 7-7 7z"/><path d="M12 14c0-3-2.5-5.5-6-5.5 0 3 2.5 5.5 6 5.5z"/><path d="M4 21h16"/></svg>
+        Kebun / Sawah <span class="badge" data-kb-badge hidden></span></button>
       <button class="nav" data-view="kontak" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>
         Kontak</button>
@@ -2012,7 +2020,7 @@ function dmy(d) { return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + 
 function parseIso(v) { var p = String(v || '').split('-'); return p.length === 3 ? new Date(+p[0], +p[1] - 1, +p[2]) : null; }
 function parseDmy(v) { var p = String(v || '').split('/'); return p.length === 3 ? new Date(+p[2], +p[1] - 1, +p[0]) : null; }
 /* Siklus bayar = how often a tenant pays: Bulanan, Tahunan, "N Bulan", "N Tahun", or "Sekali bayar" (whole contract at once). */
-function isOnce(s) { return /sekali/i.test(String(s || '')); }
+function isOnce(s) { return /sekali|garap/i.test(String(s || '')); }
 function isGratis(s) { return /gratis/i.test(String(s || '')); }
 function isIrr(s) { return /tidak\s*tetap/i.test(String(s || '')); }  // money comes in now and then: never late  // employee lives there for free: never late, not income
 function months(siklus, bulan) {
@@ -2150,9 +2158,10 @@ applyTheme(document.documentElement.getAttribute('data-theme') || 'light');
 
 /* ---------- navigation ---------- */
 var VIEWS = ['dash', 'edai', 'kal', 'tugas', 'set', 'soon', 'catat', 'bukti', 'jalan', 'pbb', 'penyewa', 'pny', 'kon', 'unit', 'kos', 'tanah', 'cek', 'kontak', 'laporan'];
+var knKind = 'kontrak';   // the Kontrak page shows normal contracts; "kebun" = the Kebun / Sawah page (same page, garapan contracts)
 /* Menu groups: one menu item, its pages as tabs at the top of the page. */
 var GROUPS = { agenda: ['kal', 'tugas'], bayar: ['catat', 'bukti', 'laporan'], tanah: ['tanah', 'cek'], sewa: ['penyewa', 'unit', 'kos'] };
-var PERM_OF = { unit: 'penyewa', laporan: 'bukti', pny: 'penyewa', kon: 'penyewa' };  // pages that use the access of another page
+var PERM_OF = { unit: 'penyewa', laporan: 'bukti', pny: 'penyewa', kon: 'penyewa', kebun: 'penyewa' };  // pages that use the access of another page
 var lastTab = {};
 function permOf(v) { return PERM_OF[v] || v; }
 function groupOf(v) { for (var g in GROUPS) if (GROUPS[g].indexOf(v) >= 0) return g; return ''; }
@@ -2218,13 +2227,14 @@ function show(view) {
   }
   if (SOON[view]) { $('soonTitle').textContent = SOON[view][0]; $('soonSub').textContent = SOON[view][1]; $('soonText').textContent = SOON[view][2]; }
   var sec = SOON[view] ? 'soon' : view;
+  if (view === 'kebun' || view === 'kon') { var kind = view === 'kebun' ? 'kebun' : 'kontrak'; if (kind !== knKind) { knKind = kind; knSel = null; knMode = 'view'; knDraft = null; knPick = {}; knFilter = kind === 'kebun' ? 'garap' : 'aktif'; $('knq').value = ''; } sec = 'kon'; knKindUi(); }
   var pg = permOf(view), denied = PAGE_NAME[pg] && lv(pg) === '-';
   if (denied) { $('deniedPage').textContent = PAGE_NAME[pg]; $('deniedOwner').textContent = me && me.ownerName ? me.ownerName : 'Pemilik'; sec = 'denied'; }
   curView = view; saveWhere();
   VIEWS.concat(['denied']).forEach(function (v) { $('view-' + v).hidden = v !== sec; });
   $$('.viewonly').forEach(function (x) { x.remove(); });
   if (!denied && PAGE_NAME[pg] && lv(pg) === 'L') {
-    var head = $('view-' + view).querySelector('.page-head');
+    var head = $('view-' + sec).querySelector('.page-head');
     if (head) { var vb = el('span', 'viewonly', '👁 Hanya lihat'); vb.title = 'Anda bisa membuka halaman ini, tetapi tidak bisa mengubah apa pun.'; (head.querySelector('h1') || head).appendChild(vb); }
   }
   $$('[data-view]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-view') === view); });
@@ -2244,7 +2254,7 @@ function show(view) {
   if (view === 'pbb') loadPbb();
   if (view === 'kos') loadKos();
   if (view === 'unit') loadUnits();
-  if (view === 'pny' || view === 'kon') loadSewa();
+  if (view === 'pny' || view === 'kon' || view === 'kebun') loadSewa();
   if (view === 'edai') openEdai();
   if (view === 'kontak') loadContacts();
   if (view === 'laporan') loadReport();
@@ -6567,11 +6577,12 @@ function preloadPages() {
 /* ====================== SEWA (baru): Penyewa · Kontrak · Tagihan ====================== */
 function backLink(fn) { var b = el('button', 'link back', '← Kembali ke daftar'); b.type = 'button'; b.onclick = fn; return b; }
 var syData = null, pySel = null, pyMode = 'view', pyFilter = 'semua', pyShow = 200, pyPendingId = null;
+var knPick = {};
 var knSel = null, knMode = 'view', knFilter = 'aktif', knShow = 200, knPendingId = null, knPendingNew = null, knBills = {}, knDraft = null;
 function applyV2() {
   var on = !!(me && me.v2);
   GROUPS.sewa = on ? ['pny', 'kon', 'unit', 'kos'] : ['penyewa', 'unit', 'kos'];
-  $$('#ptabs [data-v2]').forEach(function (b) { b.hidden = !on; });
+  $$('#ptabs [data-v2], .nav[data-v2]').forEach(function (b) { b.hidden = !on; });
   $$('#ptabs [data-v1]').forEach(function (b) { b.hidden = on; });
 }
 function loadSewa() {
@@ -6580,14 +6591,16 @@ function loadSewa() {
 }
 function refreshSewa() { return call('getSewa').then(function (d) { cacheWrite('getSewa', d); applySewa(d); dashData = null; ksData = null; return d; }); }
 function applySewa(d) {
-  syData = d;
+  syData = d; kbIndex();
   var can = lv('penyewa') === 'U' && d.on;
   $('pyNew').hidden = !can; $('knNew').hidden = !can;
   if (!d.on) { emptyBox($('pyList'), 'Tab Penyewa / Kontrak / Tagihan belum aktif.'); emptyBox($('knList'), 'Tab Penyewa / Kontrak / Tagihan belum aktif.'); return; }
   syIndex();
   renderPyCards(); renderPyList(); renderKnCards(); renderKnList();
-  var nT = d.kontrak.filter(function (k) { return k.status === 'Aktif' && k.nTelat; }).length;
+  var nT = d.kontrak.filter(function (k) { return !k.kebun && k.status === 'Aktif' && k.nTelat; }).length;
   $$('[data-kn-badge]').forEach(function (b) { b.textContent = nT; b.hidden = !nT; });
+  var nK = d.kontrak.filter(function (k) { return k.kebun && kbReady(k); }).length;
+  $$('[data-kb-badge]').forEach(function (b) { b.textContent = nK; b.hidden = !nK; });
   // reopen what was open (or what another page asked for)
   if (pyPendingId) { var p0 = syPen(pyPendingId); pyPendingId = null; if (p0) { show('pny'); openPy(p0); } }
   else if (pySel && pyMode === 'view') { var p1 = syPen(pySel.id); if (p1) openPy(p1); }
@@ -6615,11 +6628,13 @@ function unitsTxt(k) {
 function knNama(k) { return (k.nama || '?') + (k.usaha ? ' / ' + k.usaha : ''); }
 function knState(k, today) {
   today = today || today0();
+  if (k.kebun && kbReady(k)) return k.tunggakan ? { cls: 'red', txt: 'Siap garap · belum bayar ' + rp(k.tunggakan) } : { cls: 'orange', txt: 'Siap garap lagi' };
   if (k.status !== 'Aktif') return { cls: 'grey', txt: k.arsip ? 'Arsip' : k.status || '-' };
   if (isGratis(k.siklus)) return { cls: 'blue', txt: 'Gratis' };
   if (k.nTelat) return { cls: 'red', txt: (k.telat ? 'Telat ' + k.telat + ' hari' : 'Jatuh tempo hari ini') + (k.nTelat > 1 ? ' · ' + k.nTelat + ' tagihan' : '') };
   if (isIrr(k.siklus)) return { cls: 'grey', txt: 'Tidak tetap' };
   var end = parseIso(k.selesai);
+  if (isGarap(k.siklus)) { var s0 = parseIso(k.mulai); if (s0 && s0 > today) return { cls: 'blue', txt: 'Mulai ' + dmy(s0) }; return k.next ? { cls: end && dayDiff(today, end) <= 14 ? 'orange' : 'white', txt: 'Panen ' + (end ? dmy(end) : '?') } : { cls: 'white', txt: 'Lunas' }; }
   if (end && dayDiff(today, end) <= 60 && dayDiff(today, end) >= 0) return { cls: 'orange', txt: 'Habis ' + dmy(end) };
   if (!k.nBills) return { cls: 'orange', txt: 'Tanpa jadwal' };
   var st0 = parseIso(k.mulai); if (st0 && st0 > today) return { cls: 'blue', txt: 'Mulai ' + dmy(st0) };
@@ -6763,10 +6778,41 @@ function pyDocs(body, p, can) {
 $('pyNew').onclick = function () { openPy(null); };
 
 /* ---------- KONTRAK ---------- */
+/* Kebun / Sawah: a contract is "siap garap lagi" when its garapan has ended and no newer garapan continues it. */
+var kbNext = {};
+function kbIndex() { kbNext = {}; (syData ? syData.kontrak : []).forEach(function (k) { if (k.dari) kbNext[k.dari] = k.id; }); }
+function kbReady(k) { if (!syData) return false; var e = parseIso(k.selesai); return !kbNext[k.id] && !k.arsip && !!e && e < today0() && (k.status === 'Aktif' || /panen|kontrak habis/i.test(k.alasan || '')); }
+function knKindUi() {
+  var kb = knKind === 'kebun';
+  var h = $('view-kon').querySelector('.page-head h1'), p = $('view-kon').querySelector('.page-head p');
+  h.firstChild.nodeValue = kb ? 'Kebun / Sawah' : 'Kontrak';
+  p.textContent = kb ? 'Garapan kebun dan sawah. Bayar sesudah panen; telat kalau lewat 1 minggu dari tanggal panen.' : 'Perjanjian sewa: siapa, unit mana, berapa lama, dan jadwal tagihannya.';
+  $('knNew').textContent = kb ? '+ Garapan baru' : '+ Kontrak baru';
+  $('knSegs').innerHTML = '';
+  (kb ? [['garap', 'Sedang garap'], ['siap', 'Siap garap lagi'], ['telat', 'Ada tunggakan'], ['selesai', 'Selesai']] : [['aktif', 'Aktif'], ['telat', 'Ada tunggakan'], ['habis', 'Akan habis'], ['selesai', 'Selesai']]).forEach(function (x) {
+    var b = el('button', x[0] === knFilter ? 'on' : '', x[1]); b.type = 'button'; b.setAttribute('data-ks', x[0]);
+    b.onclick = function () { knFilter = x[0]; knShow = 200; renderKnList(); }; $('knSegs').appendChild(b);
+  });
+}
 function renderKnCards() {
   var box = $('knCards'); box.innerHTML = '';
+  if (knKind === 'kebun') {
+    var g = 0, sp = 0, tl = 0, sl = 0, t1 = today0();
+    syData.kontrak.forEach(function (k) {
+      if (!k.kebun) return;
+      if (kbReady(k)) sp++;
+      else if (k.status === 'Aktif') g++; else sl++;
+      if (k.status === 'Aktif' && k.nTelat || k.status !== 'Aktif' && k.tunggakan) tl++;
+    });
+    cardBtn(box, 'ok', 'Sedang garap', g, 'garapan berjalan', function () { knFilter = 'garap'; renderKnList(); });
+    cardBtn(box, 'kurang', 'Siap garap lagi', sp, 'sudah panen, tekan "Mulai garap"', function () { knFilter = 'siap'; renderKnList(); });
+    cardBtn(box, 'error', 'Ada tunggakan', tl, 'lewat 1 minggu dari panen', function () { knFilter = 'telat'; renderKnList(); });
+    cardBtn(box, 'cek', 'Selesai', sl, 'garapan lama', function () { knFilter = 'selesai'; renderKnList(); });
+    return;
+  }
   var t0 = today0(), akt = 0, telat = 0, habis = 0, sel = 0;
   syData.kontrak.forEach(function (k) {
+    if (k.kebun) return;
     if (k.status !== 'Aktif') { sel++; return; }
     akt++; if (k.nTelat) telat++;
     var e = parseIso(k.selesai); if (e && dayDiff(t0, e) >= 0 && dayDiff(t0, e) <= 60) habis++;
@@ -6779,9 +6825,17 @@ function renderKnCards() {
 function renderKnList() {
   if (!syData || !syData.on) return;
   $$('#knSegs [data-ks]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-ks') === knFilter); });
-  var q = $('knq').value.trim().toLowerCase(), t0 = today0();
+  var q = $('knq').value.trim().toLowerCase(), t0 = today0(), kb = knKind === 'kebun';
   var list = syData.kontrak.filter(function (k) {
     var akt = k.status === 'Aktif', e = parseIso(k.selesai);
+    if (!!k.kebun !== kb) return false;
+    if (kb && !q) {
+      var rd = kbReady(k);
+      if (knFilter === 'garap') return akt && !rd;
+      if (knFilter === 'siap') return rd;
+      if (knFilter === 'telat') return !!(akt && k.nTelat || !akt && k.tunggakan);
+      if (knFilter === 'selesai') return !akt && !rd;
+    }
     if (!q) {
       if (knFilter === 'aktif' && !akt) return false;
       if (knFilter === 'telat' && !(akt && k.nTelat)) return false;
@@ -6791,20 +6845,38 @@ function renderKnList() {
     return !q || [k.id, k.nama, k.usaha, k.wa, k.pny, unitsTxt(k), k.units.map(function (u) { return u.id; }).join(' ')].join(' ').toLowerCase().indexOf(q) >= 0;
   }).sort(function (a, b) {
     if (knFilter === 'telat') return (b.telat || 0) - (a.telat || 0);
-    if (knFilter === 'habis') return String(a.selesai).localeCompare(String(b.selesai));
+    if (knFilter === 'habis' || kb && knFilter === 'garap') return String(a.selesai).localeCompare(String(b.selesai));
     return knNama(a).localeCompare(knNama(b), 'id');
   });
   var box = $('knList'); box.innerHTML = '';
-  if (!list.length) { emptyBox(box, q ? 'Tidak ada kontrak yang cocok.' : 'Tidak ada kontrak di sini.'); return; }
+  if (!list.length) { emptyBox(box, q ? 'Tidak ada kontrak yang cocok.' : kb && knFilter === 'siap' ? 'Belum ada garapan yang selesai panen.' : 'Tidak ada kontrak di sini.'); return; }
+  var picking = kb && lv('penyewa') === 'U' && list.some(kbReady);
+  Object.keys(knPick).forEach(function (id) { if (!list.some(function (k) { return k.id === id && kbReady(k); })) delete knPick[id]; });
+  if (picking) {
+    var ready = list.filter(kbReady), nSel = Object.keys(knPick).length;
+    var bar = el('div', 'kb-bar'), lab = el('label', ''), all = document.createElement('input'); all.type = 'checkbox'; all.className = 'kb-cb';
+    all.checked = nSel > 0 && nSel === ready.length; all.indeterminate = nSel > 0 && nSel < ready.length;
+    all.onchange = function () { knPick = {}; if (all.checked) ready.forEach(function (k) { knPick[k.id] = true; }); renderKnList(); };
+    lab.appendChild(all); lab.appendChild(document.createTextNode(nSel ? nSel + ' dipilih' : 'Pilih semua (' + ready.length + ')'));
+    bar.appendChild(lab);
+    var go = btnEl('Mulai garap' + (nSel ? ' (' + nSel + ')' : ''), '', function () { kbStartModal(Object.keys(knPick)); }); go.disabled = !nSel; bar.appendChild(go);
+    box.appendChild(bar);
+  }
   list.slice(0, knShow).forEach(function (k) {
-    var b = el('button', 'pay' + (knSel && knSel.id === k.id ? ' on' : '')); b.type = 'button';
+    var b = el('button', 'pay' + (knSel && knSel.id === k.id ? ' on' : '') + (picking ? ' pick' : '')); b.type = 'button';
+    if (picking) {
+      var cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'kb-cb'; cb.setAttribute('aria-label', 'Pilih ' + knNama(k));
+      if (kbReady(k)) { cb.checked = !!knPick[k.id]; cb.onclick = function (e) { e.stopPropagation(); if (cb.checked) knPick[k.id] = true; else delete knPick[k.id]; renderKnList(); }; }
+      else { cb.disabled = true; cb.style.visibility = 'hidden'; }
+      b.appendChild(cb);
+    }
     var av = el('div', 'avatar un-av', k.id.replace(/^KTR-0*/, '').slice(-4)); var c = tint(k.pny); av.style.background = c[0]; av.style.color = c[1];
     b.appendChild(av);
     var mid = el('div', ''); mid.style.minWidth = '0';
     mid.appendChild(el('div', 't-name', knNama(k)));
     var meta = el('div', 't-meta'); meta.appendChild(el('span', 'chip', k.id)); meta.appendChild(document.createTextNode(unitsTxt(k)));
     mid.appendChild(meta);
-    mid.appendChild(el('div', 'muted kn-sub', k.siklus + (k.harga ? ' · ' + rp(k.harga) : '') + (k.selesai ? ' · s/d ' + dmy(parseIso(k.selesai)) : '')));
+    mid.appendChild(el('div', 'muted kn-sub', (isGarap(k.siklus) ? 'Garapan' : k.siklus) + (k.harga ? ' · ' + rp(k.harga) : '') + (k.selesai ? (isGarap(k.siklus) ? ' · panen ' : ' · s/d ') + dmy(parseIso(k.selesai)) : '')));
     var right = el('div', 'pay-right'); right.appendChild(stEl(knState(k, t0)));
     b.appendChild(mid); b.appendChild(right);
     b.onclick = function () { openKn(k); };
@@ -6842,9 +6914,11 @@ function openKn(k, preset) {
   body.appendChild(kvList([
     ['Penyewa', pl], k.usaha ? ['Usaha / keterangan', k.usaha] : null,
     ['Unit', k.units.map(function (u) { return u.inv + (u.unit ? ' · ' + u.unit : ''); }).join(', ')],
-    ['Siklus & harga', k.siklus + (k.harga ? ' · ' + rp(k.harga) : '') + (k.tgl ? ' · tiap tanggal ' + k.tgl : '')],
+    ['Siklus & harga', (isGarap(k.siklus) ? 'Garapan (bayar sesudah panen)' : k.siklus) + (k.harga ? ' · ' + rp(k.harga) : '') + (k.tgl ? ' · tiap tanggal ' + k.tgl : '')],
+    isGarap(k.siklus) && k.selesai ? ['Perkiraan panen', dmy(parseIso(k.selesai)) + ' · telat kalau belum bayar sampai ' + dmy(addDays(parseIso(k.selesai), 7))] : null,
+    k.dari ? ['Lanjutan dari', k.dari] : null,
     k.dep ? ['Deposit', rp(k.dep)] : null,
-    ['Lunas s/d', k.lunas ? dmy(parseIso(k.lunas)) : '-'],
+    isGarap(k.siklus) ? ['Pembayaran', k.tunggakan ? 'Belum bayar ' + rp(k.tunggakan) : k.next ? 'Belum (bayar sesudah panen)' : 'Lunas'] : ['Lunas s/d', k.lunas ? dmy(parseIso(k.lunas)) : '-'],
     k.tunggakan ? ['Tunggakan', rp(k.tunggakan) + ' (' + k.nTelat + ' tagihan)'] : null,
     k.cat ? ['Catatan', k.cat] : null,
     k.status !== 'Aktif' ? ['Selesai', (k.selesai ? dmy(parseIso(k.selesai)) : '') + (k.alasan ? ' · ' + k.alasan : '')] : null
@@ -6852,6 +6926,7 @@ function openKn(k, preset) {
   var acts = el('div', 'tn-actions');
   if (canPay() && k.status === 'Aktif' && !isGratis(k.siklus)) acts.appendChild(btnEl('Catat pembayaran', '', function () { payFor(k.id); }));
   if (can) acts.appendChild(btnEl('Ubah kontrak & jadwal', 'sec', function () { knEdit(k); }));
+  if (can && k.kebun && kbReady(k)) acts.appendChild(btnEl('Mulai garap', '', function () { kbStartModal([k.id]); }));
   if (can && k.status === 'Aktif') acts.appendChild(btnEl('Akhiri kontrak', 'sec', function () { knEndModal(k); }));
   if (acts.children.length) body.appendChild(acts);
   body.appendChild(el('h3', 'tn-h3', 'Tagihan'));
@@ -6865,6 +6940,25 @@ function openKn(k, preset) {
   }).catch(function (e) { emptyBox(tb, 'Gagal memuat tagihan: ' + errText(e)); });
   $('knSplit').classList.add('show-detail'); $('view-kon').classList.add('detail-open');
   renderKnList();
+}
+function isGarap(s) { return /garap/i.test(String(s || '')); }
+function kbStartModal(ids) {
+  if (!ids.length) return;
+  var ks = ids.map(syKon).filter(Boolean), t = today0();
+  jlModal('Mulai garap', ks.length === 1 ? ks[0].id + ' · ' + knNama(ks[0]) : ks.length + ' penyewa dipilih', function (b) {
+    var r = el('div', 'row');
+    r.appendChild(fieldBox('kg_mulai', 'Mulai garap', inp('date', iso(t))));
+    r.appendChild(fieldBox('kg_panen', 'Perkiraan panen', inp('date', ''), 'Bisa diubah nanti kalau panen maju / mundur.'));
+    b.appendChild(r);
+    b.appendChild(el('p', 'hint', 'Tiap penyewa dapat garapan baru dengan plot dan harga yang sama seperti sebelumnya. Tagihannya dibayar sesudah panen (telat kalau lewat 1 minggu).'));
+    if (ks.length > 1) { var ul = el('div', 'muted small'); ul.style.maxHeight = '160px'; ul.style.overflow = 'auto'; ks.forEach(function (k) { ul.appendChild(el('div', '', '• ' + knNama(k) + ' · ' + unitsTxt(k) + ' · ' + rp(k.harga))); }); b.appendChild(ul); }
+  }, 'Mulai garap' + (ks.length > 1 ? ' (' + ks.length + ')' : ''), function () {
+    var m = $('f_kg_mulai').value, pn = $('f_kg_panen').value;
+    if (!m || !pn) throw new Error('Isi tanggal mulai dan perkiraan panen.');
+    return call('mulaiGarap', { ids: ids, mulai: m, selesai: pn }).then(function (r) {
+      toast(r.made.length + ' garapan baru dimulai.'); knPick = {}; knSel = null; knFilter = 'garap'; return refreshSewa();
+    });
+  });
 }
 function knLoadBills(id) { return call('getTagihan', { ktr: id }).then(function (d) { knBills[id] = d; return d; }); }
 function billTag(b) { var t = b.tampil; return el('span', 'st ' + (t === 'Lunas' ? 'white' : /telat|Telat/.test(t) ? 'red' : t === 'Sebagian' ? 'orange' : 'grey'), t + (b.telat > 0 && /elat/.test(t) ? ' ' + b.telat + ' hari' : '')); }
@@ -6915,7 +7009,7 @@ function knEdit(k, preset) {
   preset = preset || {};
   var body = $('knBody'); body.innerHTML = ''; $('knEmpty').hidden = true; body.hidden = false;
   knHead(body, k, isNew);
-  var d = knDraft = isNew ? { id: '', pny: preset.pny || '', usaha: '', units: preset.unitId ? [preset.unitId] : [], mulai: iso(today0()), selesai: '', siklus: preset.siklus && /bulan|tahun/i.test(preset.siklus) ? preset.siklus : 'Bulanan',
+  var d = knDraft = isNew ? { id: '', pny: preset.pny || '', usaha: '', units: preset.unitId ? [preset.unitId] : [], mulai: iso(today0()), selesai: '', siklus: knKind === 'kebun' ? 'Garapan' : preset.siklus && /bulan|tahun/i.test(preset.siklus) ? preset.siklus : 'Bulanan',
       harga: num(preset.harga) || 0, dep: 0, tgl: '', cat: '', rows: [] }
     : { id: k.id, pny: k.pny, usaha: k.usaha, units: k.units.map(function (u) { return u.id; }), mulai: k.mulai, selesai: k.selesai, siklus: k.siklus, harga: k.harga, dep: k.dep, tgl: k.tgl, cat: k.cat, rows: null };
   var form = el('div', ''); body.appendChild(form);
@@ -6963,7 +7057,7 @@ function knEdit(k, preset) {
   var mIn = inp('date', d.mulai), sIn = inp('date', d.selesai);
   r1.appendChild(field('kn_mulai', 'Mulai', mIn)); r1.appendChild(field('kn_selesai', 'Selesai', sIn, 'Bulanan boleh kosong (berjalan terus).')); form.appendChild(r1);
   var r2 = el('div', 'row');
-  var sk = document.createElement('select'); (syData.siklus || ['Bulanan', '3 Bulan', '6 Bulan', 'Tahunan', 'Sekali bayar', 'Tidak tetap', 'Gratis']).forEach(function (x) { var o = el('option', '', x); o.value = x; sk.appendChild(o); });
+  var sk = document.createElement('select'); (syData.siklus || ['Bulanan', '3 Bulan', '6 Bulan', 'Tahunan', 'Sekali bayar', 'Tidak tetap', 'Gratis']).forEach(function (x) { var o = el('option', '', x === 'Garapan' ? 'Garapan (bayar sesudah panen)' : x); o.value = x; sk.appendChild(o); });
   if (d.siklus && !Array.prototype.some.call(sk.options, function (o) { return o.value === d.siklus; })) { var o2 = el('option', '', d.siklus); o2.value = d.siklus; sk.appendChild(o2); }
   sk.value = d.siklus;
   var hIn = inp('text', d.harga ? Number(d.harga).toLocaleString('id-ID') : '', { inputmode: 'numeric', class: 'num', placeholder: '0' });
@@ -7178,7 +7272,7 @@ function renderBills() {
       var cb = inp('checkbox', ''); cb.checked = pk.on; cb.setAttribute('aria-label', 'Bayar tagihan ini');
       var mid = el('div', 'ob-mid');
       mid.appendChild(el('b', '', dmy(parseIso(b.a)) + ' – ' + dmy(parseIso(b.b))));
-      mid.appendChild(el('div', 'muted small', 'Jatuh tempo ' + dmy(parseIso(b.a)) + (b.telat > 0 ? ' · telat ' + b.telat + ' hari' : b.tampil === 'Akan datang' ? ' · boleh dibayar lebih awal' : '') + (b.bayar ? ' · sudah dibayar ' + rp(b.bayar) : '')));
+      mid.appendChild(el('div', 'muted small', (b.akhir ? 'Bayar sesudah panen · jatuh tempo ' + dmy(parseIso(b.due)) : 'Jatuh tempo ' + dmy(parseIso(b.a))) + (b.telat > 0 ? ' · telat ' + b.telat + ' hari' : b.tampil === 'Akan datang' ? ' · boleh dibayar lebih awal' : '') + (b.bayar ? ' · sudah dibayar ' + rp(b.bayar) : '')));
       var amt = el('div', 'ob-amt num'); amt.appendChild(el('b', '', rp(b.sisa))); if (b.bayar) amt.appendChild(el('div', 'muted small', 'sisa dari ' + rp(b.jml)));
       row.appendChild(cb); row.appendChild(mid); row.appendChild(amt);
       if (pk.on) {
@@ -7368,13 +7462,16 @@ function openUnit(x) {
     var info = x.st === 'sewa' ? 'Disewa ' + x.ten.nama + ' (' + (x.ten.id || '-') + ')' + (x.ten.ikut ? ', ikut kontrak ' + x.ten.ikut : x.ten.harga ? ' · ' + rp(x.ten.harga) + ' / ' + cycleWord(x.ten.siklus) : '') + (x.ten.selesaiIso ? ' · s/d ' + dmy(parseIso(x.ten.selesaiIso)) : '')
       : x.st === 'kosong' ? (x.sejakIso ? 'Kosong sejak ' + dmy(parseIso(x.sejakIso)) : 'Kosong') + (x.harga ? ' · Harga standar ' + rp(x.harga) + (x.siklus ? ' / ' + cycleWord(x.siklus) : '') : '')
       : 'Tidak disewakan lagi.';
-    body.appendChild(el('p', 'muted', info)).style.margin = '10px 0 0';
+    body.appendChild(el('p', 'muted', info + (x.kebun ? ' · Kebun / sawah' : ''))).style.margin = '10px 0 0';
     if (x.unreg) body.appendChild(el('div', 'msg warn', 'Unit ini ada di kontrak tetapi belum tercatat di Unit Sewa. Tekan "Simpan unit" untuk mendaftarkannya.'));
     var acts = el('div', 'tn-actions'); acts.style.marginTop = '14px';
     if (x.st === 'kosong' && x.id && lv('penyewa') === 'U') acts.appendChild(btnEl('Sewakan unit ini', '', function () { goRent(x); }));
     if (x.st === 'sewa' && x.ten) acts.appendChild(btnEl('Buka kontrak', x.st === 'sewa' ? '' : 'sec', function () { tnPendingKey = x.ten.key; show('penyewa'); }));
     if (can && x.id && x.st === 'kosong') acts.appendChild(btnEl('Tidak disewakan lagi', 'sec', function () { unOffOpen = !unOffOpen; offBox.hidden = !unOffOpen; if (unOffOpen) offIn.focus(); }));
     if (can && x.id && x.st === 'off') acts.appendChild(btnEl('Disewakan lagi', 'sec', function () { unSetAktif(x, true, ''); }));
+    if (can && x.id && me && me.v2) acts.appendChild(btnEl(x.kebun ? 'Bukan kebun / sawah' : 'Jadikan kebun / sawah', 'sec', function () {
+      call('setUnitKebun', { ids: [x.id], kebun: !x.kebun }).then(function (d) { cacheWrite('getUnits', d); unPendingId = d.id; toast(x.kebun ? 'Plot ini sekarang ada di halaman Kontrak.' : 'Plot ini sekarang ada di halaman Kebun / Sawah.'); syData = null; applyUnits(d); }).catch(function (e) { toast(errText(e)); });
+    }));
     if (acts.children.length) body.appendChild(acts);
     if (x.st === 'kosong' && x.id) body.appendChild(el('p', 'hint', '"Sewakan unit ini" membuka form Tambah penyewa dengan unit dan harga sudah terisi.'));
     var offBox = el('div', 'un-off'); offBox.hidden = true;
