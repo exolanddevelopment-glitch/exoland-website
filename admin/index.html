@@ -1680,6 +1680,7 @@
           <div class="section">
             <h2 class="sec-title"><span class="step-no">1</span>Pilih penyewa</h2>
             <label class="check" style="margin:0 0 10px"><input id="unk" type="checkbox"> Pengirim tidak teridentifikasi <span class="muted">(belum tahu uang ini dari siapa)</span></label>
+            <label class="check" style="margin:0 0 10px" id="oldLbl"><input id="oldTen" type="checkbox"> Penyewa lama <span class="muted">(kontrak sudah selesai, misalnya bayar admin / denda yang tertinggal)</span></label>
             <div id="unkBox" hidden>
               <label for="sender" style="margin-top:0">Nama pengirim (seperti di mutasi bank)</label>
               <input id="sender" type="text" maxlength="120" placeholder="Misalnya: YUDI ISKANDAR - BRI LINK" autocomplete="off">
@@ -2579,7 +2580,7 @@ function resetForm() {
   $('mulai').value = iso(d); $('jenis').value = 'Uang sewa'; $('ket').value = ''; $('ketBox').hidden = true; $('sewaBox').hidden = false;
   $('periode').value = 1; $('jumlah').value = ''; jumlahTouched = false; $('catatan').value = ''; $('foto').value = ''; $('fotoList').innerHTML = '';
   $('confirm').checked = false; chosen = null; pastPays = []; gab = null; $('gabBox').hidden = true; obPick = {}; $('billBox').hidden = true; $('jumlah').readOnly = false;
-  $('unk').checked = false; $('sender').value = ''; $('unkBox').hidden = true; $('jenis').hidden = false; $('jenisLbl').hidden = false; $('sSign').closest('.r-sign').hidden = false;
+  $('unk').checked = false; $('oldTen').checked = false; $('oldLbl').hidden = false; $('sender').value = ''; $('unkBox').hidden = true; $('jenis').hidden = false; $('jenisLbl').hidden = false; $('sSign').closest('.r-sign').hidden = false;
   $('chosenBox').hidden = true; $('pickBox').hidden = false; $('q').value = ''; renderList(); check(); peekNumber();
 }
 
@@ -2587,12 +2588,12 @@ function renderList() {
   var q = $('q').value.toLowerCase().trim();
   var groups = {}; tenants.forEach(function (t) { if (t.person && !t.ended) (groups[t.person] = groups[t.person] || []).push(t); });
   var hits = tenants.filter(function (t) {
-    if (t.ended) return !!q && (t.nama + ' ' + t.inv + ' ' + t.unit + ' ' + (t.plots || []).join(' ')).elHas(q);   // former tenants only when searched
+    if (!!t.ended !== $('oldTen').checked) return false;   // "Penyewa lama" ticked: only former tenants; otherwise only current ones
     var g = t.person && groups[t.person] && groups[t.person].length > 1 ? groups[t.person] : [t];
     return !q || g.some(function (x) { return (x.nama + ' ' + x.inv + ' ' + x.unit + ' ' + (x.plots || []).join(' ')).elHas(q); });
   });
   $('list').innerHTML = '';
-  if (!hits.length) { $('list').innerHTML = '<div class="item empty-row">Tidak ada penyewa yang cocok.</div>'; return; }
+  if (!hits.length) { $('list').innerHTML = '<div class="item empty-row">' + ($('oldTen').checked ? 'Tidak ada penyewa lama yang cocok.' : 'Tidak ada penyewa yang cocok.') + '</div>'; return; }
   var shown = {};
   hits.forEach(function (t) {
     var grp = !t.ended && t.person && groups[t.person] && groups[t.person].length > 1 ? groups[t.person] : null;
@@ -2664,7 +2665,7 @@ function unkOn() { return $('unk').checked; }
 function setUnkMode() {
   var on = unkOn();
   try { renderBills(); } catch (e) {}
-  $('unkBox').hidden = !on; $('pickBox').hidden = on || !!chosen; $('chosenBox').hidden = on || !chosen;
+  $('unkBox').hidden = !on; $('oldLbl').hidden = on; $('pickBox').hidden = on || !!chosen; $('chosenBox').hidden = on || !chosen;
   $('gabBox').hidden = on || !gabOn(); $('jenis').hidden = on; $('jenisLbl').hidden = on;
   $('sSign').closest('.r-sign').hidden = on; if (on) $('sSigBlock').hidden = true;
   if (on) { $('jumlah').readOnly = false; if (!jumlahTouched) $('jumlah').value = ''; jumlahTouched = true; setTimeout(function () { $('sender').focus(); }, 0); }
@@ -2861,6 +2862,7 @@ $('jumlah').addEventListener('input', function () { jumlahTouched = true; });
 $('jumlah').addEventListener('blur', function () { var n = num(this.value); this.value = n ? n.toLocaleString('id-ID') : ''; check(); });
 $('save').onclick = save;
 $('unk').addEventListener('change', setUnkMode);
+$('oldTen').addEventListener('change', function () { $('q').value = ''; renderList(); setTimeout(function () { $('q').focus(); }, 0); });
 $('sender').addEventListener('input', check);
 $('tanggal').addEventListener('change', peekNumber);
 $('change').addEventListener('click', peekNumber);
