@@ -2542,7 +2542,7 @@ function renderList() {
   var groups = {}; tenants.forEach(function (t) { if (t.person) (groups[t.person] = groups[t.person] || []).push(t); });
   var hits = tenants.filter(function (t) {
     var g = t.person && groups[t.person].length > 1 ? groups[t.person] : [t];
-    return !q || g.some(function (x) { return (x.nama + ' ' + x.inv + ' ' + x.unit).toLowerCase().indexOf(q) >= 0; });
+    return !q || g.some(function (x) { return (x.nama + ' ' + x.inv + ' ' + x.unit + ' ' + (x.plots || []).join(' ')).toLowerCase().indexOf(q) >= 0; });
   });
   $('list').innerHTML = '';
   if (!hits.length) { $('list').innerHTML = '<div class="item empty-row">Tidak ada penyewa yang cocok.</div>'; return; }
@@ -2554,7 +2554,7 @@ function renderList() {
       var gb = document.createElement('button'); gb.type = 'button'; gb.className = 'item';
       var gm = document.createElement('div'); gm.style.minWidth = '0';
       var gn = document.createElement('div'); gn.className = 't-name'; gn.textContent = t.nama.split('/')[0].trim();
-      gm.appendChild(gn); gm.appendChild(metaEl([grp.length + ' unit', grp.map(function (x) { return x.inv + ' ' + x.unit; }).join(', ')]));
+      gm.appendChild(gn); gm.appendChild(metaEl([grp.reduce(function (a, x) { return a + (x.plots && x.plots.length || 1); }, 0) + ' plot', grp.map(plotTxt).join(', ')]));
       var gp = document.createElement('div'); gp.className = 't-price num';
       gp.innerHTML = '<b></b><span></span>'; gp.firstChild.textContent = rp(grp.reduce(function (a, x) { return a + (x.harga || 0); }, 0)); gp.lastChild.textContent = 'total per periode';
       gb.appendChild(avatarEl(t.nama, t.inv)); gb.appendChild(gm); gb.appendChild(gp);
@@ -2565,7 +2565,7 @@ function renderList() {
     var b = document.createElement('button'); b.type = 'button'; b.className = 'item';
     var mid = document.createElement('div'); mid.style.minWidth = '0';
     var nm = document.createElement('div'); nm.className = 't-name'; nm.textContent = t.nama;
-    mid.appendChild(nm); mid.appendChild(metaEl([t.inv, 'Unit ' + t.unit]));
+    mid.appendChild(nm); mid.appendChild(metaEl(plotMeta(t)));
     var pr = document.createElement('div'); pr.className = 't-price num';
     pr.innerHTML = '<b></b><span></span>'; pr.firstChild.textContent = rp(t.harga); pr.lastChild.textContent = 'per ' + cycleWord(t);
     b.appendChild(avatarEl(t.nama, t.inv)); b.appendChild(mid); b.appendChild(pr);
@@ -2574,10 +2574,12 @@ function renderList() {
   });
 }
 
+function plotTxt(t) { return t.plots && t.plots.length ? t.plots.join(' + ') : t.inv + (t.unit ? ' ' + t.unit : ''); }   // every plot of the contract (one contract can hold several plots)
+function plotMeta(t) { return t.plots && t.plots.length > 1 ? [t.plots.length + ' plot', t.plots.join(' + ')] : [t.inv, t.unit ? 'Unit ' + t.unit : '']; }
 function choose(t) {
   chosen = t; gab = null;
   $('cNama').textContent = t.nama;
-  fillMeta($('cInfo'), [t.inv, 'Unit ' + t.unit + ', ' + rp(t.harga) + ' per ' + cycleWord(t)]);
+  var pm = plotMeta(t); fillMeta($('cInfo'), [pm[0], (pm[1] ? pm[1] + ', ' : '') + rp(t.harga) + ' per ' + cycleWord(t)]);
   setAvatar($('cAvatar'), t.nama, t.inv);
   setTimeout(peekNumber, 0);
   $('pickBox').hidden = true; $('chosenBox').hidden = false;
