@@ -1784,7 +1784,7 @@
     <section id="view-laporan" hidden>
       <div class="page-head" style="max-width:var(--pw)">
         <div><h1>Laporan pemasukan</h1><p>Hanya uang yang masuk di bulan itu (menurut Tanggal Bayar). Periksa dulu, lalu unduh PDF.</p></div>
-        <div class="head-btns"><button class="btn sec" id="repReload" type="button" style="width:auto;margin:0;padding:11px 18px">Muat ulang</button><button class="btn sec" id="repBack" type="button" style="width:auto;margin:0;padding:11px 18px">← Riwayat pembayaran</button></div>
+        <div class="head-btns"><button class="btn" id="repBon" type="button" style="width:auto;margin:0;padding:11px 18px">Cetak bon putih</button><button class="btn sec" id="repReload" type="button" style="width:auto;margin:0;padding:11px 18px">Muat ulang</button><button class="btn sec" id="repBack" type="button" style="width:auto;margin:0;padding:11px 18px">← Riwayat pembayaran</button></div>
       </div>
       <div class="rp-top">
         <div class="segs" id="repMode"><button type="button" data-rm="m" class="on">Bulanan</button><button type="button" data-rm="y">Rekap tahunan</button></div>
@@ -1854,6 +1854,7 @@
 <div class="r-sign"><label for="dSign">Tanda tangan</label><select id="dSign" data-sign-select></select></div>
             <div class="r-sigblock" id="dSigBlock" hidden><span class="num" id="dSigDate"></span><img id="dSigImg" alt=""><i></i><b id="dSigName"></b></div>
               <button class="btn" id="dDownload" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Unduh kwitansi</button>
+              <button class="btn sec" id="dBon" type="button" style="margin-top:8px">Cetak bon putih</button>
 
               <hr class="sep">
               <label>Bukti tersimpan</label>
@@ -2987,6 +2988,86 @@ function kwOf(p) {
   return Object.assign({}, p, { jumlah: rows.reduce(function (a, x) { return a + x.jumlah; }, 0),
     items: rows.map(function (x) { return { inv: x.inv, unit: x.unit, plots: x.plots, mulai: x.mulai, sd: x.sd, jumlah: x.jumlah }; }) });
 }
+/* ====================== BON PUTIH: Bukti Penerimaan, 2 per A4, filled from the payment, proof photo beside it ====================== */
+function bonEsc(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function bonRp(n) { return Math.round(n || 0).toLocaleString('id-ID'); }
+function bonProofId(p) { var l = (p.bukti || [])[0] || ''; var m = l.match(/\/d\/([-\w]{20,})/) || l.match(/[?&]id=([-\w]{20,})/); return m ? m[1] : ''; }
+function bonLines(p) {   // one row per item of the payment (a "bayar gabungan" has one per contract)
+  var k = kwOf(p), unk = isUnk(p);
+  function place(x) { return x.plots && x.plots.length > 1 ? x.plots.join(' + ') : (x.inv || '') + (x.unit ? ' ' + x.unit : ''); }
+  if (unk) return [{ ket: 'Uang masuk, pengirim belum diketahui' + (p.ket ? ' · ' + p.ket : '') + (p.catatan ? ' · ' + p.catatan : ''), jml: k.jumlah }];
+  if (k.items && k.items.length) return k.items.map(function (it) { return { ket: place(it) + ' · Sewa ' + it.mulai + ' – ' + it.sd, jml: it.jumlah }; });
+  return [{ ket: place(k) + ' · ' + jenisText(k) + (isSewa(k) && k.mulai && k.mulai !== '-' ? ' ' + k.mulai + ' – ' + k.sd : ''), jml: k.jumlah }];
+}
+function bonHalf(p, img) {
+  var k = kwOf(p), lines = bonLines(p), rows = '', unk = isUnk(p), cash = /cash|tunai|kas/i.test(p.metode || '');
+  for (var i = 0; i < Math.max(3, lines.length); i++) {
+    var L = lines[i];
+    rows += '<tr><td class="c">' + (L ? i + 1 : '&nbsp;') + '</td><td>' + (L ? bonEsc(L.ket) : '&nbsp;') + '</td><td class="r">' + (L ? bonRp(L.jml) : '') + '</td></tr>';
+  }
+  var proof = img && /^data:/.test(img) ? '<img src="' + img + '" alt="Bukti transfer">'
+    : '<div class="ph">' + (img === 'pdf' ? '<b>BUKTI PDF</b><span>Bukti berupa PDF, lampirkan cetakannya.</span>' : img === 'err' ? '<b>BUKTI ADA</b><span>Tersimpan di Riwayat, tapi gagal dimuat. Coba cetak ulang.</span>'
+      : cash ? '<b>TUNAI</b><span>Dibayar cash, tanpa bukti transfer.</span>' : '<b>BUKTI MENYUSUL</b><span>Cetak ulang setelah bukti ditambahkan di Riwayat.</span>') + '</div>';
+  return '<section class="half"><div class="form">' +
+    '<div class="top"><div><div class="co">EXOTIC LAND DEVELOPMENT</div><div class="dari">Diterima dari: <b>' + bonEsc(unk ? (p.nama || 'Belum diketahui') + ' (belum teridentifikasi)' : k.nama) + '</b></div></div>' +
+    '<div class="meta"><span>No. BPN</span><b>' + bonEsc(k.kwitansi || '-') + '</b><span>Jakarta,</span><b>' + bonEsc(k.tgl) + '</b><span>No. Kwt</span><b>' + bonEsc(k.kwitansi || '-') + '</b></div></div>' +
+    '<h2>BUKTI PENERIMAAN</h2>' +
+    '<table><thead><tr><th style="width:30px">NO.</th><th>KETERANGAN</th><th style="width:110px">JUMLAH (RP.)</th></tr></thead><tbody>' + rows + '</tbody>' +
+    '<tfoot><tr><td colspan="2" class="r">TOTAL</td><td class="r">' + bonRp(k.jumlah) + '</td></tr></tfoot></table>' +
+    '<div class="terb"><u><b>TERBILANG</b></u> : <i>' + bonEsc(cap(terbilang(k.jumlah))) + '</i></div>' +
+    '<div class="sign"><div><span>DITERIMA OLEH :</span><i>(nama &amp; paraf)</i></div><div><span>DISETUJUI OLEH :</span><i>(nama &amp; paraf)</i></div></div>' +
+    '<div class="bot"><table class="ak"><tr><th colspan="3">UNTUK BAGIAN AKUNTANSI</th></tr><tr><td>No. Perk.</td><td>Dr.</td><td>Cr.</td></tr><tr class="e"><td></td><td></td><td></td></tr></table>' +
+    '<div class="dg"><b><u>DITERIMA DENGAN :</u></b><span>KAS</span><em>' + (cash ? '✓' : '&nbsp;') + '</em><span>BANK / TRANSFER</span><em>' + (cash ? '&nbsp;' : '✓') + '</em><span>TANGGAL J/T</span><em>' + bonEsc(k.tgl) + '</em><span>SEBESAR</span><em>Rp ' + bonRp(k.jumlah) + '</em></div></div>' +
+    (p.status === 'BATAL' ? '<div class="batal">BATAL</div>' : '') +
+    '</div><div class="proof"><div class="pl">BUKTI TRANSFER</div>' + proof + '</div></section>';
+}
+var BON_CSS = '@page{size:A4;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#111;background:#fff}' +
+  '.page{width:210mm;height:297mm;display:flex;flex-direction:column;page-break-after:always;overflow:hidden}.page:last-child{page-break-after:auto}' +
+  '.half{height:148.5mm;padding:9mm 10mm 7mm;display:flex;gap:5mm;position:relative}' +
+  '.cut{height:0;border-top:1.5px dashed #888;margin:0 6mm;position:relative}.cut span{position:absolute;left:0;top:-9px;background:#fff;padding-right:6px;font-size:11px;color:#666}' +
+  '.form{flex:1;min-width:0;display:flex;flex-direction:column;gap:2.2mm;position:relative}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:4mm}' +
+  '.co{font-size:12px;font-weight:700}.dari{font-size:11.5px;margin-top:1mm}.meta{display:grid;grid-template-columns:auto auto;column-gap:6px;row-gap:1px;font-size:11px;white-space:nowrap}.meta span{color:#444}' +
+  'h2{margin:0;text-align:center;font-family:Georgia,serif;font-size:16px;letter-spacing:.06em;text-decoration:underline;text-underline-offset:3px}' +
+  'table{border-collapse:collapse;width:100%;font-size:11.5px}table th,table td{border:1px solid #111;padding:3px 6px;vertical-align:top}table thead th{font-size:10px;letter-spacing:.08em;border-bottom:1.5px solid #111}' +
+  'tbody td{border-top:1px solid #bbb;border-bottom:1px solid #bbb}tfoot td{font-weight:700;border-top:1.5px solid #111}.c{text-align:center}.r{text-align:right;white-space:nowrap}' +
+  '.terb{font-size:11.5px;border-bottom:1px solid #111;padding-bottom:1.5mm}.sign{display:flex;justify-content:space-between;font-size:11px}.sign div{display:flex;flex-direction:column;align-items:center;gap:9mm;width:42mm}.sign i{border-top:1px solid #111;width:40mm;text-align:center;font-style:normal;color:#555;font-size:10px;padding-top:1px}' +
+  '.bot{display:flex;gap:4mm;align-items:flex-start;margin-top:auto}.ak{width:56mm;font-size:10px}.ak th{font-size:10px;padding:2px}.ak td{text-align:center;padding:2px;border-top:1px solid #111}.ak tr.e td{height:9mm}' +
+  '.dg{flex:1;display:grid;grid-template-columns:auto 1fr;column-gap:6px;row-gap:2px;font-size:11px}.dg b{grid-column:1/-1}.dg em{font-style:normal;border-bottom:1px solid #888}' +
+  '.proof{width:50mm;flex:0 0 50mm;display:flex;flex-direction:column;gap:1.5mm}.pl{font-size:10px;font-weight:700;letter-spacing:.06em;color:#444}' +
+  '.proof img{width:100%;flex:1;min-height:0;object-fit:contain;border:1px solid #bbb;border-radius:4px}.ph{flex:1;border:2px dashed #999;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2mm;text-align:center;padding:4mm}.ph b{font-size:13px;letter-spacing:.06em}.ph span{font-size:10px;color:#555}' +
+  '.batal{position:absolute;top:40%;left:15%;transform:rotate(-12deg);border:4px solid #b42318;color:#b42318;font-size:44px;font-weight:800;padding:0 16px;opacity:.85}' +
+  '.bar{position:sticky;top:0;background:#f1f1f1;padding:10px 14px;font-size:14px;display:flex;gap:10px;align-items:center;border-bottom:1px solid #ccc}.bar button{font-size:14px;padding:8px 14px;cursor:pointer}' +
+  '@media screen{body{background:#ddd}.page{margin:10px auto;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.2)}}@media print{.bar{display:none}}';
+function bonPrint(list, title, w0) {
+  list = list.filter(function (p) { return p.status !== 'BATAL'; });
+  // a "bayar gabungan" is ONE bon (all its contracts as lines)
+  var seen = {}; list = list.filter(function (p) { if (!p.grp) return true; if (seen[p.grp]) return false; seen[p.grp] = 1; return true; });
+  if (!list.length) { if (w0) w0.close(); toast('Tidak ada pembayaran untuk dicetak.'); return; }
+  var w = w0 || window.open('', '_blank');
+  if (!w) { toast('Jendela cetak diblokir browser. Izinkan pop-up untuk situs ini.'); return; }
+  w.document.open(); w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>' + bonEsc(title) + '</title><style>' + BON_CSS + '</style></head><body><div class="bar" id="st">Menyiapkan ' + list.length + ' bon putih… memuat bukti transfer 0/' + list.length + '</div></body></html>');
+  w.document.close();
+  var imgs = {}, done = 0, queue = list.slice(), running = 0;
+  return new Promise(function (resolve) {
+    function next() {
+      if (!queue.length) { if (!running) resolve(); return; }
+      var p = queue.shift(), id = bonProofId(p); running++;
+      var job = id ? call('getFile', { id: id, ctx: 'bukti' }).then(function (f) { imgs[p.id] = /^image\//.test(f.mime) ? 'data:' + f.mime + ';base64,' + f.data : 'pdf'; }).catch(function () { imgs[p.id] = 'err'; }) : Promise.resolve();
+      job.then(function () { running--; done++; try { w.document.getElementById('st').textContent = 'Menyiapkan ' + list.length + ' bon putih… memuat bukti transfer ' + done + '/' + list.length; } catch (e) {} next(); });
+    }
+    for (var i = 0; i < 4; i++) next();
+  }).then(function () {
+    var html = '<div class="bar"><b>' + bonEsc(title) + '</b> · ' + list.length + ' bon, ' + Math.ceil(list.length / 2) + ' lembar A4<button onclick="window.print()">Cetak / simpan PDF</button></div>';
+    for (var i = 0; i < list.length; i += 2) {
+      html += '<div class="page">' + bonHalf(list[i], imgs[list[i].id]) + (list[i + 1] ? '<div class="cut"><span>✂ potong di sini</span></div>' + bonHalf(list[i + 1], imgs[list[i + 1].id]) : '') + '</div>';
+    }
+    try { w.document.body.innerHTML = html; setTimeout(function () { try { w.focus(); w.print(); } catch (e) {} }, 600); } catch (e) { toast('Jendela cetak ditutup.'); }
+  });
+}
+function bonMonthList(y, m) {   // payments whose Tanggal Bayar is in that month, oldest first
+  return payments.filter(function (p) { var d = parseDmy(p.tgl); return d && d.getFullYear() === y && d.getMonth() === m; })
+    .sort(function (a, b) { var da = parseDmy(a.tgl), db = parseDmy(b.tgl); return da - db || String(a.kwitansi).localeCompare(String(b.kwitansi)); });
+}
 function mergeUpd(upd) { var g = upd.group || [upd]; payments = payments.map(function (x) { var n = g.filter(function (y) { return y.id === x.id; })[0]; return n || x; }); }
 
 function checkB() { $('bsave').disabled = !selId || !($('bfile').files || []).length; }
@@ -3025,6 +3106,13 @@ $('cancelYes').onclick = function () {
 };
 ['s', 'dn', 'd'].forEach(function (k) { $(k + 'Sign').addEventListener('change', function () { showSig(k); }); });
 $('dDownload').onclick = function () { var p = current(); if (p) downloadKwitansi(kwOf(p), $('dSign'), this); };
+$('dBon').onclick = function () { var p = current(); if (p) bonPrint([p], 'Bon putih ' + (p.kwitansi || p.id)); };
+$('repBon').onclick = function () {
+  var v = String($('repMonth').value || '').split('-'), y = +v[0], m = +v[1]; if (!v[0]) return;
+  var w = window.open('', '_blank'), go = function () { bonPrint(bonMonthList(y, m), 'Bon putih ' + repLabelBulan(y, m), w); };
+  if (w) { w.document.write('<p style="font-family:Arial;padding:16px">Menyiapkan bon putih…</p>'); }
+  if (payments.length) go(); else call('getPayments').then(function (l) { payments = l || []; go(); }).catch(function (e) { if (w) w.close(); toast(errText(e)); });
+};
 
 $('bq').oninput = debounce(renderPays);
 $('bsort').onchange = function () { sortBy = this.value; renderPays(); };
@@ -6266,7 +6354,7 @@ function openReport() { show('laporan'); }
 function loadReport(force) {
   repFillPickers();
   $$('#repMode [data-rm]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-rm') === repMode); });
-  $('repMonth').hidden = repMode !== 'm'; $('repYear').hidden = repMode !== 'y';
+  $('repMonth').hidden = repMode !== 'm'; $('repYear').hidden = repMode !== 'y'; $('repBon').hidden = repMode !== 'm';
   if (lv('bukti') !== 'U') { emptyBox($('repBody'), 'Laporan hanya untuk yang punya akses "Ubah" di Riwayat pembayaran.'); return; }
   var arg = repMode === 'm' ? { y: +$('repMonth').value.split('-')[0], m: +$('repMonth').value.split('-')[1] } : { y: +$('repYear').value, m: -1 };
   var key = arg.y + '_' + arg.m, seq = ++repSeq;
