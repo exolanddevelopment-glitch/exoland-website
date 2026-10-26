@@ -6588,7 +6588,11 @@ function loadSewa() {
   if (!syData) { emptyBox($('pyList'), 'Memuat penyewa…'); emptyBox($('knList'), 'Memuat kontrak…'); }
   return swr('getSewa', null, applySewa).catch(function (e) { emptyBox($('pyList'), 'Gagal memuat: ' + errText(e)); emptyBox($('knList'), 'Gagal memuat: ' + errText(e)); });
 }
-function refreshSewa() { return call('getSewa').then(function (d) { cacheWrite('getSewa', d); applySewa(d); dashData = null; ksData = null; return d; }); }
+function refreshSewa() {
+  // Catat pembayaran's tenant list follows contract changes (new / split / garapan contracts)
+  call('getFormData').then(function (f) { tenants = f.tenants || []; if (me) { me.tenants = tenants; cacheWrite('getFormData', me); } try { if (!chosen) renderList(); } catch (e) {} }).catch(function () {});
+  return call('getSewa').then(function (d) { cacheWrite('getSewa', d); applySewa(d); dashData = null; ksData = null; return d; });
+}
 function applySewa(d) {
   syData = d; kbIndex();
   var can = lv('penyewa') === 'U' && d.on;
@@ -6926,6 +6930,7 @@ function openKn(k, preset) {
   if (canPay() && k.status === 'Aktif' && !isGratis(k.siklus)) acts.appendChild(btnEl('Catat pembayaran', '', function () { payFor(k.id); }));
   if (can) acts.appendChild(btnEl('Ubah kontrak & jadwal', 'sec', function () { knEdit(k); }));
   if (can && k.kebun && kbReady(k)) acts.appendChild(btnEl('Mulai garap', '', function () { kbStartModal([k.id]); }));
+  if (can && k.units.length > 1) acts.appendChild(btnEl('Pisah per plot', 'sec', function () { knSplitModal(k); }));
   if (can && k.status === 'Aktif') acts.appendChild(btnEl('Akhiri kontrak', 'sec', function () { knEndModal(k); }));
   if (acts.children.length) body.appendChild(acts);
   body.appendChild(el('h3', 'tn-h3', 'Tagihan'));
@@ -6939,6 +6944,28 @@ function openKn(k, preset) {
   }).catch(function (e) { emptyBox(tb, 'Gagal memuat tagihan: ' + errText(e)); });
   $('knSplit').classList.add('show-detail'); $('view-kon').classList.add('detail-open');
   renderKnList();
+}
+function knSplitModal(k) {
+  var n = k.units.length, share = Math.floor((k.harga || 0) / n);
+  jlModal('Pisah per plot', k.id + ' · ' + knNama(k), function (b) {
+    b.appendChild(el('p', 'hint', 'Setiap plot jadi kontrak sendiri (penyewa, tanggal dan siklus sama), jadi bisa dibayar sendiri-sendiri. Di Catat pembayaran semua plotnya tetap muncul bersama, tinggal centang yang dibayar. Isi harga tiap plot (' + (isGarap(k.siklus) ? 'per garapan' : 'per ' + cycleWord(k.siklus)) + ').'));
+    var sum = el('p', 'hint');
+    k.units.forEach(function (u, i) {
+      var v = i === n - 1 ? (k.harga || 0) - share * (n - 1) : share;
+      var f = inp('text', v ? v.toLocaleString('id-ID') : '', { inputmode: 'numeric', class: 'num', placeholder: 'Rp' }); f.id = 'f_ks_' + i;
+      f.addEventListener('input', drawSum); f.addEventListener('blur', function () { var x = num(f.value); f.value = x ? x.toLocaleString('id-ID') : ''; });
+      var fb = fieldBox('ks_' + i, u.inv + (u.unit ? ' · ' + u.unit : '') + (i === 0 ? ' (tetap ' + k.id + ')' : ' (kontrak baru)'), f); b.appendChild(fb);
+    });
+    b.appendChild(sum);
+    function drawSum() { var t = 0; for (var i = 0; i < n; i++) t += num($('f_ks_' + i).value) || 0; sum.textContent = 'Total ' + rp(t) + (k.harga ? (t === k.harga ? ' · sama dengan harga sekarang' : ' · harga sekarang ' + rp(k.harga)) : ''); sum.className = 'hint' + (k.harga && t !== k.harga ? ' warn' : ''); }
+    setTimeout(drawSum, 0);
+    b.appendChild(el('p', 'hint', 'Tagihan yang sudah lunas tetap lunas untuk semua plot. Tagihan yang belum dibayar dibagi sesuai harga di atas.'));
+  }, 'Pisah jadi ' + n + ' kontrak', function () {
+    var h = {}; k.units.forEach(function (u, i) { h[u.id] = num($('f_ks_' + i).value) || 0; });
+    return call('splitKontrak', { id: k.id, harga: h }).then(function (r) {
+      toast(k.id + ' dipisah: ' + r.made.map(function (m) { return m.id; }).join(', ') + ' dibuat.'); knPendingId = k.id; obData = null; return refreshSewa();
+    });
+  });
 }
 function isGarap(s) { return /garap/i.test(String(s || '')); }
 function kbStartModal(ids) {
