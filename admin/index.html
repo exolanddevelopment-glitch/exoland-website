@@ -1739,7 +1739,7 @@
         <div class="stack sticky">
           <div class="receipt" aria-label="Kwitansi">
             <div class="r-head">
-              <div><div class="r-title">Kwitansi</div><div class="r-co">Exotic Land Development</div></div>
+              <div><div class="r-title">Kwitansi</div></div>
               <div class="r-no">No.<b class="num pending" id="sNo">pilih penyewa dulu</b><small id="sNoNote" hidden>perkiraan, final saat disimpan</small></div>
             </div>
             <dl style="margin:0" id="sLines"></dl>
@@ -1761,7 +1761,7 @@
       <div id="doneView" hidden class="done-card">
         <div class="receipt">
           <div class="r-head">
-            <div><div class="r-title">Kwitansi</div><div class="r-co">Exotic Land Development</div></div>
+            <div><div class="r-title">Kwitansi</div></div>
             <div class="r-no">No.<b class="num" id="dnNo"></b></div>
           </div>
           <dl style="margin:0" id="dnLines"></dl>
@@ -1827,7 +1827,7 @@
             <div id="detailBody" hidden>
               <button class="link back" id="back" type="button">← Kembali ke daftar</button>
               <div class="r-head">
-                <div><div class="r-title">Kwitansi</div><div class="r-co">Exotic Land Development</div></div>
+                <div><div class="r-title">Kwitansi</div></div>
                 <div class="r-no">No.<b class="num" id="dId"></b></div>
               </div>
               <h2 id="dNama"></h2>
@@ -2382,7 +2382,7 @@ function drawKwitansi(k, sigImg, sigName) {
   for (var zx = 0; zx < W; zx += 24) { x.beginPath(); x.arc(zx + 12, 12, 12, Math.PI, 0); x.fill(); x.beginPath(); x.arc(zx + 12, H - 12, 12, 0, Math.PI); x.fill(); }
   x.textBaseline = 'alphabetic';
   x.fillStyle = '#18181b'; x.font = '600 56px ' + serif; x.fillText('Kwitansi', P, 112);
-  x.fillStyle = '#6b6b73'; x.font = '400 24px ' + sans; x.fillText('Exotic Land Development', P, 150);
+  x.fillStyle = '#6b6b73'; x.font = '400 24px ' + sans;
   x.textAlign = 'right'; x.fillText('No.', W - P, 92);
   x.fillStyle = '#18181b'; x.font = '700 28px ' + sans; x.fillText(k.kwitansi || '-', W - P, 132);
   x.textAlign = 'left';
@@ -2455,11 +2455,11 @@ function jenisText(k) { var j = k.jenis || 'Uang sewa'; return j === 'Lain-lain'
 function kRows(k) {
   if (k.items && k.items.length) {  // bayar gabungan: one kwitansi, one line per unit
     var g = [['Tanggal', k.tgl], ['Diterima dari', k.nama], ['Untuk', 'Uang sewa · ' + k.items.length + ' unit']];
-    k.items.forEach(function (it, i) { g.push(['Unit ' + (i + 1), it.inv + ' ' + it.unit + ' · ' + it.mulai + ' – ' + it.sd + ' · ' + rp(it.jumlah)]); });
+    k.items.forEach(function (it, i) { g.push(['Unit ' + (i + 1), (it.plots && it.plots.length > 1 ? it.plots.join(' + ') : it.inv + (it.unit ? ' ' + it.unit : '')) + ' · ' + it.mulai + ' – ' + it.sd + ' · ' + rp(it.jumlah)]); });
     g.push(['Metode', k.metode]);
     return g;
   }
-  var r = [['Tanggal', k.tgl], ['Diterima dari', k.nama], ['Untuk', jenisText(k)], ['Unit', k.inv + ', unit ' + k.unit]];
+  var r = [['Tanggal', k.tgl], ['Diterima dari', k.nama], ['Untuk', jenisText(k)], ['Unit', k.plots && k.plots.length > 1 ? k.plots.join(' + ') : k.unit && k.unit !== '-' ? k.inv + ', unit ' + k.unit : k.inv]];
   if (isSewa(k)) r.push(['Periode', k.mulai + ' – ' + k.sd]);
   r.push(['Metode', k.metode]);
   return r;
@@ -2933,7 +2933,7 @@ function kwOf(p) {
   if (!p || !p.grp) return p;
   var rows = payments.filter(function (x) { return x.grp === p.grp; });
   return Object.assign({}, p, { jumlah: rows.reduce(function (a, x) { return a + x.jumlah; }, 0),
-    items: rows.map(function (x) { return { inv: x.inv, unit: x.unit, mulai: x.mulai, sd: x.sd, jumlah: x.jumlah }; }) });
+    items: rows.map(function (x) { return { inv: x.inv, unit: x.unit, plots: x.plots, mulai: x.mulai, sd: x.sd, jumlah: x.jumlah }; }) });
 }
 function mergeUpd(upd) { var g = upd.group || [upd]; payments = payments.map(function (x) { var n = g.filter(function (y) { return y.id === x.id; })[0]; return n || x; }); }
 
@@ -7320,7 +7320,7 @@ function checkBills(k, w) {
   pick.forEach(function (x) {
     total += x.pk.bayar || 0;
     if (!(x.pk.bayar > 0) || x.pk.bayar > x.b.sisa) ok = false;
-    var it = items[x.g.k.id] = items[x.g.k.id] || { inv: x.g.k.units[0] ? x.g.k.units[0].inv : '', unit: x.g.k.units.map(function (u) { return u.unit; }).filter(String).join(', '), per: [], jumlah: 0, mulai: '', sd: '' };
+    var it = items[x.g.k.id] = items[x.g.k.id] || { inv: x.g.k.units[0] ? x.g.k.units[0].inv : '', unit: x.g.k.units[0] ? x.g.k.units[0].unit : '', plots: x.g.k.units.map(function (u) { return u.inv + (u.unit ? ' ' + u.unit : ''); }), per: [], jumlah: 0, mulai: '', sd: '' };
     it.per.push(x.b); it.jumlah += x.pk.bayar || 0;
     // an older open bill of the same contract that is not ticked
     var older = x.g.bills.filter(function (o) { return o.a < x.b.a && !(obPick[o.id] && obPick[o.id].on); })[0];
@@ -7329,8 +7329,8 @@ function checkBills(k, w) {
   if (!pick.length) ok = false;
   var list = Object.keys(items).map(function (id) { var it = items[id]; it.per.sort(function (a, b) { return a.a < b.a ? -1 : 1; }); it.mulai = dmy(parseIso(it.per[0].a)); it.sd = dmy(parseIso(it.per[it.per.length - 1].b)); return it; });
   k.nama = chosen.nama;
-  if (list.length > 1) k.items = list.map(function (it) { return { inv: it.inv, unit: it.unit, mulai: it.mulai, sd: it.sd, jumlah: it.jumlah }; });
-  else if (list.length) { k.inv = list[0].inv; k.unit = list[0].unit; k.mulai = list[0].mulai; k.sd = list[0].sd; }
+  if (list.length > 1) k.items = list.map(function (it) { return { inv: it.inv, unit: it.unit, plots: it.plots, mulai: it.mulai, sd: it.sd, jumlah: it.jumlah }; });
+  else if (list.length) { k.inv = list[0].inv; k.unit = list[0].unit; k.plots = list[0].plots; k.mulai = list[0].mulai; k.sd = list[0].sd; }
   $('jumlah').value = total ? total.toLocaleString('id-ID') : '';
   $('sJumlah').textContent = total ? total.toLocaleString('id-ID') : '0'; $('sTerbilang').textContent = terbilang(total);
   if (list.length > 1) $('sNo').textContent = $('sNo').textContent.replace(/\/KWT\/[^/]+\//, '/KWT/GAB/');
@@ -7351,8 +7351,8 @@ function saveBills() {
   }).then(function (r) {
     $('save').textContent = 'Simpan pembayaran';
     var draft = { nama: chosen.nama, tgl: dmy(tg), jenis: 'Uang sewa', metode: metode, status: '', kwitansi: r.kwitansi, jumlah: r.total, grp: r.grp, id: r.items[0] && r.items[0].id };
-    if (r.items.length > 1) draft.items = r.items.map(function (it) { return { inv: it.inv, unit: it.unit, mulai: it.mulai, sd: it.sd, jumlah: it.jumlah }; });
-    else { draft.inv = r.items[0].inv; draft.unit = r.items[0].unit; draft.mulai = r.items[0].mulai; draft.sd = r.items[0].sd; }
+    if (r.items.length > 1) draft.items = r.items.map(function (it) { return { inv: it.inv, unit: it.unit, plots: it.plots, mulai: it.mulai, sd: it.sd, jumlah: it.jumlah }; });
+    else { draft.inv = r.items[0].inv; draft.unit = r.items[0].unit; draft.plots = r.items[0].plots; draft.mulai = r.items[0].mulai; draft.sd = r.items[0].sd; }
     obData = null; obPick = {}; syData = null;
     showDone(draft, !!r.bukti);
     refreshBadge(); dashData = null;
