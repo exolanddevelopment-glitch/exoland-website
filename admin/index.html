@@ -6589,6 +6589,7 @@ function loadSewa() {
   return swr('getSewa', null, applySewa).catch(function (e) { emptyBox($('pyList'), 'Gagal memuat: ' + errText(e)); emptyBox($('knList'), 'Gagal memuat: ' + errText(e)); });
 }
 function refreshSewa() {
+  unData = null;   // units become Kosong / Disewa when contracts end, start or split: read them again
   // Catat pembayaran's tenant list follows contract changes (new / split / garapan contracts)
   call('getFormData').then(function (f) { tenants = f.tenants || []; if (me) { me.tenants = tenants; cacheWrite('getFormData', me); } try { if (!chosen) renderList(); } catch (e) {} }).catch(function () {});
   return call('getSewa').then(function (d) { cacheWrite('getSewa', d); applySewa(d); dashData = null; ksData = null; return d; });
