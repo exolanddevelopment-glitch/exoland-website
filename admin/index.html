@@ -7388,13 +7388,15 @@ function knEdit(k, preset) {
     var lIn = inp('date', lr && lr.B ? iso(lr.B) : '', { 'aria-label': 'Sudah lunas sampai tanggal' });
     lIn.onchange = function () { setLunas(lIn.value); };
     lbar.appendChild(lIn);
+    if (lr && lr.A && lr.B) lbar.appendChild(el('span', 'st white', dmy(lr.A) + ' – ' + dmy(lr.B) + ' · Lunas'));
     if (lr) lbar.appendChild(btnEl('Reset', 'sec', function () { setLunas(''); }));
     lbar.appendChild(el('span', 'muted', lr ? 'Bulan sampai tanggal ini dianggap sudah dibayar (sebelum website). Reset kalau mau mencatat pembayaran lamanya satu per satu.' : 'Kosong: semua bulan ditagih dari tanggal mulai. Isi tanggal kalau bulan-bulan awal sudah dibayar sebelum website.'));
     sched.appendChild(lbar);
-    var box = el('div', 'js-box');
+    var box = el('div', 'js-box'), shownNo = 0;
     d.rows.forEach(function (r, i) {
+      if (r.lunas) { r._dt = null; return; }   // the "Sudah lunas" period is shown and edited in the bar above, not as a row
       var row = el('div', 'js-row' + (r.locked ? ' locked' : ''));
-      row.appendChild(el('span', 'js-no', String(i + 1)));
+      row.appendChild(el('span', 'js-no', String(++shownNo)));
       var f = el('div', 'js-f');
       if (r.locked) {
         f.appendChild(el('b', 'num', r.jml === null ? 'Sudah lunas' : rp(r.jml)));
@@ -7419,7 +7421,7 @@ function knEdit(k, preset) {
       var dt = el('div', 'js-dates muted'); row.appendChild(dt); r._dt = dt;
       box.appendChild(row);
     });
-    if (!d.rows.length) box.appendChild(el('div', 'muted', 'Belum ada tagihan. Pakai "Isi cepat" atau "+ Tambah tagihan".'));
+    if (!shownNo) box.appendChild(el('div', 'muted', 'Belum ada tagihan. Pakai "Isi cepat" atau "+ Tambah tagihan".'));
     var tools = el('div', 'js-tools');
     tools.appendChild(btnEl('+ Tambah tagihan', 'sec', function () {
       d.touched = true;
@@ -7448,7 +7450,7 @@ function knEdit(k, preset) {
     var s = d._sum; if (!s) return; s.innerHTML = '';
     var tot = d.rows.reduce(function (a, r) { return a + (r.jml || 0); }, 0), first = d.rows[0], last = d.rows[d.rows.length - 1];
     if (!d.rows.length) return;
-    s.appendChild(el('b', '', d.rows.length + ' tagihan · ' + rp(tot)));
+    s.appendChild(el('b', '', d.rows.filter(function (r) { return !r.lunas; }).length + ' tagihan · ' + rp(tot)));
     s.appendChild(document.createTextNode(first && first.A && last.B ? ' · menutup ' + dmy(first.A) + ' – ' + dmy(last.B) : ''));
     var w = knWarn(d); s.appendChild(el('div', w.length ? 'js-warn' : 'js-ok', w.length ? w.join(' ') : '✓ Pas dengan tanggal kontrak'));
   }
