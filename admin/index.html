@@ -3006,7 +3006,7 @@ function bonHalf(p, img) {
     rows += '<tr><td class="c">' + (L ? i + 1 : '&nbsp;') + '</td><td>' + (L ? bonEsc(L.ket) : '&nbsp;') + '</td><td class="r">' + (L ? bonRp(L.jml) : '') + '</td></tr>';
   }
   var proof = img && /^data:/.test(img) ? '<div class="pbox"><img src="' + img + '" alt="Bukti transfer"><div class="tools"><button data-a="l" title="Putar kiri">⟲</button><button data-a="r" title="Putar kanan">⟳</button><button data-a="o" title="Perkecil">−</button><button data-a="i" title="Perbesar">+</button><button data-a="0" title="Kembalikan">↺</button></div></div>'
-    : '<div class="ph">' + (img === 'pdf' ? '<b>BUKTI PDF</b><span>Bukti berupa PDF, lampirkan cetakannya.</span>' : img === 'err' ? '<b>BUKTI ADA</b><span>Tersimpan di Riwayat, tapi gagal dimuat. Coba cetak ulang.</span>'
+    : '<div class="ph">' + (img === 'pdf' ? '<b>BUKTI PDF</b><span>Bukti berupa PDF, lampirkan cetakannya.</span>' : img === 'err' ? '<b>BUKTI ADA</b><span>Tersimpan di Riwayat, tapi foto terlalu lama dimuat. Cetak bon ini sendiri dari Riwayat.</span>'
       : cash ? '<b>TUNAI</b><span>Dibayar cash, tanpa bukti transfer.</span>' : '<b>BUKTI MENYUSUL</b><span>Cetak ulang setelah bukti ditambahkan di Riwayat.</span>') + '</div>';
   return '<section class="half"><div class="form">' +
     '<div class="top"><div><div class="co">EXOTIC LAND DEVELOPMENT</div><div class="dari">Diterima dari: <b>' + bonEsc(unk ? (p.nama || 'Belum diketahui') + ' (belum teridentifikasi)' : k.nama) + '</b></div></div>' +
@@ -3053,7 +3053,8 @@ function bonPrint(list, title, w0) {
     function next() {
       if (!queue.length) { if (!running) resolve(); return; }
       var p = queue.shift(), id = bonProofId(p); running++;
-      var job = id ? call('getFile', { id: id, ctx: 'bukti' }).then(function (f) { imgs[p.id] = /^image\//.test(f.mime) ? 'data:' + f.mime + ';base64,' + f.data : 'pdf'; }).catch(function () { imgs[p.id] = 'err'; }) : Promise.resolve();
+      var tmo = new Promise(function (res, rej) { setTimeout(function () { rej(new Error('lambat')); }, 40000); });   // one slow photo must never block the rest
+      var job = id ? Promise.race([call('getFile', { id: id, ctx: 'bukti' }), tmo]).then(function (f) { imgs[p.id] = /^image\//.test(f.mime) ? 'data:' + f.mime + ';base64,' + f.data : 'pdf'; }).catch(function () { imgs[p.id] = 'err'; }) : Promise.resolve();
       job.then(function () { running--; done++; try { w.document.getElementById('st').textContent = 'Menyiapkan ' + list.length + ' bon putih… memuat bukti transfer ' + done + '/' + list.length; } catch (e) {} next(); });
     }
     for (var i = 0; i < 4; i++) next();
