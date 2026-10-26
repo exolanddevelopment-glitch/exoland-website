@@ -2120,6 +2120,24 @@ function refreshView(wrote) {
   } catch (e) {}
 }
 document.addEventListener('visibilitychange', function () { if (!document.hidden && Date.now() - lastRefresh > 60000) refreshView(false); });
+/* ---------- search: forgiving. Word order, dots, dashes, "No." and leading zeros do not matter, so "457 SHM", "SHM.457",
+ * "shm no 457" and "SHM 0457" all find "SHM No. 457". A short number must match a whole number (457 does not find 1457);
+ * a long number (6+ digits, e.g. a phone) may be any part. Words match from their start (sukan finds Sukanagalih). */
+function qNorm(t) {
+  return ' ' + String(t || '').toLowerCase().replace(/([a-z])(\d)/g, '$1 $2').replace(/(\d)([a-z])/g, '$1 $2').replace(/[^a-z0-9@]+/g, ' ')
+    .replace(/\b0+(\d)/g, '$1').trim() + ' ';
+}
+var Q_SKIP = { no: 1, nomor: 1, nomer: 1, nr: 1 };
+String.prototype.elHas = function (q) {
+  var raw = String(this).toLowerCase().replace(/\D+/g, function (m) { return m; }), t = qNorm(this);
+  var words = qNorm(q).trim().split(' ').filter(function (w) { return w && !Q_SKIP[w]; });
+  if (!words.length) return true;
+  var digits = String(this).replace(/\D+/g, ' ');
+  return words.every(function (w) {
+    if (/^\d+$/.test(w)) return w.length >= 6 ? digits.indexOf(w) >= 0 || t.indexOf(w) >= 0 : t.indexOf(' ' + w + ' ') >= 0;
+    return t.indexOf(' ' + w) >= 0;
+  });
+};
 function errText(e) { return (e && e.message) ? e.message : String(e); }
 /* ---------- speed: every page first shows the data it had last time (kept in this browser), then refreshes it.
  * The engine still checks access on every call; the copy is only for showing the page faster. Cleared on Keluar. */
@@ -2570,7 +2588,7 @@ function renderList() {
   var groups = {}; tenants.forEach(function (t) { if (t.person) (groups[t.person] = groups[t.person] || []).push(t); });
   var hits = tenants.filter(function (t) {
     var g = t.person && groups[t.person].length > 1 ? groups[t.person] : [t];
-    return !q || g.some(function (x) { return (x.nama + ' ' + x.inv + ' ' + x.unit + ' ' + (x.plots || []).join(' ')).toLowerCase().indexOf(q) >= 0; });
+    return !q || g.some(function (x) { return (x.nama + ' ' + x.inv + ' ' + x.unit + ' ' + (x.plots || []).join(' ')).elHas(q); });
   });
   $('list').innerHTML = '';
   if (!hits.length) { $('list').innerHTML = '<div class="item empty-row">Tidak ada penyewa yang cocok.</div>'; return; }
@@ -2883,7 +2901,7 @@ function renderPays() {
   var rows = payments.filter(function (p) {
     if (filter === 'no' && (p.bukti.length || isVoid(p)) && p.id !== selId) return false;
     if (filter === 'unk' && (!isUnk(p) || isVoid(p)) && p.id !== selId) return false;
-    return !q || (p.nama + ' ' + p.inv + ' ' + p.unit + ' ' + p.id + ' ' + p.kwitansi + ' ' + (p.jenis || '')).toLowerCase().indexOf(q) >= 0;
+    return !q || (p.nama + ' ' + p.inv + ' ' + p.unit + ' ' + p.id + ' ' + p.kwitansi + ' ' + (p.jenis || '')).elHas(q);
   });
   if (sortBy === 'unit' || sortBy === 'nama') rows.sort(function (a, b) { return sortKey(a).localeCompare(sortKey(b), 'id', { numeric: true }); });
   else if (sortBy === 'tgl') rows.sort(function (a, b) { var x = parseDmy(a.tgl), y = parseDmy(b.tgl); return (y ? y.getTime() : 0) - (x ? x.getTime() : 0); });
@@ -3385,7 +3403,7 @@ function renderTasks() {
     if (taskView === 'telat' && !(open && lv.lv === 'red')) return false;
     if (taskView === 'datang' && !(open && lv.days >= 0)) return false;
     if (taskView === 'selesai' && open) return false;
-    return !q || (k.judul + ' ' + k.isi + ' ' + personName(k.ke)).toLowerCase().indexOf(q) >= 0;
+    return !q || (k.judul + ' ' + k.isi + ' ' + personName(k.ke)).elHas(q);
   });
   if (taskView === 'selesai') list.sort(function (a, b) { return a.selesai < b.selesai ? 1 : -1; });
   else list.sort(function (a, b) { return (a.deadline || '9') < (b.deadline || '9') ? -1 : 1; });
@@ -3499,7 +3517,7 @@ function renderSet(tab) {
   var d = setCache[tab] || [];
   if (tab === 'log') {
     var q = $('logQ').value.toLowerCase().trim();
-    var rows = d.filter(function (r) { return !q || (r.waktu + ' ' + r.email + ' ' + r.nama + ' ' + r.aksi + ' ' + r.bagian + ' ' + r.id + ' ' + r.detail).toLowerCase().indexOf(q) >= 0; });
+    var rows = d.filter(function (r) { return !q || (r.waktu + ' ' + r.email + ' ' + r.nama + ' ' + r.aksi + ' ' + r.bagian + ' ' + r.id + ' ' + r.detail).elHas(q); });
     var box = $('logBox'); box.innerHTML = '';
     if (!rows.length) return emptyBox(box, d.length ? 'Tidak ada yang cocok.' : 'Belum ada aktivitas tercatat.');
     box.appendChild(table(['Waktu', 'Siapa', 'Aksi', 'Bagian', 'ID / No.', 'Detail'], rows.map(function (r) {
@@ -3625,7 +3643,7 @@ function renderTnList() {
   var list = tnData.tenants.filter(function (t) {
     if (tnHealth) { if (!(t.aktif && !t.arsip)) return false; var k = kindsOf(t); if (tnHealth === 'ok' ? t.issues.length : !k[tnHealth]) return false; }
     else if (!tnInStatus(t)) return false;
-    return !q || ((t.kosong ? 'kosong ' : '') + t.nama + ' ' + t.inv + ' ' + t.unit + ' ' + t.id + ' ' + t.wa).toLowerCase().indexOf(q) >= 0;
+    return !q || ((t.kosong ? 'kosong ' : '') + t.nama + ' ' + t.inv + ' ' + t.unit + ' ' + t.id + ' ' + t.wa).elHas(q);
   });
   var rank = function (t) { var k = kindsOf(t); return k.error ? 0 : k.kurang ? 1 : k.cek ? 2 : 3; };
   list.sort(function (a, b) { return (tnHealth ? 0 : rank(a) - rank(b)) || a.nama.localeCompare(b.nama); });
@@ -4193,7 +4211,7 @@ function renderTdList() {
     if (tipe && p.f.tipe !== tipe) return false;
     if (area && (area === '(belum diisi)' ? p.f.area : p.f.area !== area)) return false;
     if (!q) return true;
-    var f = p.f; return [p.inv, f.alamat, f.kel, f.kec, f.kota, f.nama, f.namaajb, f.namalama, f.leg, f.legbaru, f.nib, f.pbb].join(' ').toLowerCase().indexOf(q) >= 0;
+    var f = p.f; return [p.inv, f.alamat, f.kel, f.kec, f.kota, f.nama, f.namaajb, f.namalama, f.leg, f.legbaru, f.nib, f.pbb].join(' ').elHas(q);
   });
   if (tdHealth === 'hgb') list.sort(function (a, b) { return (a.f.hgb || '') < (b.f.hgb || '') ? -1 : 1; });
   $('tdCount').textContent = list.length + ' hasil';
@@ -4531,7 +4549,7 @@ function renderTripList() {
     if (jlFilter === 'nanti' && st.k !== 'nanti' && st.k !== 'jalan') return false;
     if (jlFilter === 'klaim' && st.k !== 'klaim') return false;
     if (jlFilter === 'selesai' && st.k !== 'selesai') return false;
-    return !q || [t.nama, t.tujuan, t.keperluan, t.kendaraan, t.ikut, t.id].join(' ').toLowerCase().indexOf(q) >= 0;
+    return !q || [t.nama, t.tujuan, t.keperluan, t.kendaraan, t.ikut, t.id].join(' ').elHas(q);
   });
   var rank = { klaim: 0, jalan: 1, nanti: 2, selesai: 3 };
   list.sort(function (a, b) { var ra = rank[tripState(a).k], rb = rank[tripState(b).k]; return ra - rb || (ra === 2 ? (a.berangkat < b.berangkat ? -1 : 1) : (a.berangkat < b.berangkat ? 1 : -1)); });
@@ -5220,7 +5238,7 @@ function renderKtList() {
     if (kat && c.kat !== kat) return false;
     if (!q) return true;
     if (qd.length >= 3 && (c.hp + ' ' + c.hp2.replace(/\D/g, '')).indexOf(qd.replace(/^62/, '0')) >= 0) return true;
-    return [c.nama, c.kat, c.area, c.lahan.join(' '), c.catatan, c.hp2].join(' ').toLowerCase().indexOf(q) >= 0;
+    return [c.nama, c.kat, c.area, c.lahan.join(' '), c.catatan, c.hp2].join(' ').elHas(q);
   });
   list.sort(function (a, b) { return (a.area || '~').localeCompare(b.area || '~') || a.nama.localeCompare(b.nama); });
   $('ktCount').textContent = list.length + ' kontak';
@@ -5551,7 +5569,7 @@ function renderCkList() {
     if (ckHealth === 'minggu' && st.k !== 'minggu') return false;
     if (ckHealth === 'temuan' && !o.temuan) return false;
     if (ckHealth === 'bulan' && !ckData.checks.some(function (c) { return c.jid === o.id && c.waktu.slice(0, 7) === ym; })) return false;
-    return !q || [o.nama, o.invs.join(' '), ckPerson(o.petugas), o.alasan, o.id].join(' ').toLowerCase().indexOf(q) >= 0;
+    return !q || [o.nama, o.invs.join(' '), ckPerson(o.petugas), o.alasan, o.id].join(' ').elHas(q);
   });
   var rank = { telat: 0, minggu: 1, nanti: 2, off: 3 };
   list.sort(function (a, b) { var ra = rank[ckStatus(a).k], rb = rank[ckStatus(b).k]; return ra - rb || (a.due < b.due ? -1 : 1); });
@@ -5778,7 +5796,7 @@ function pbVisible() {
     if (pbFilter === 'cek' && st !== 'Bermasalah' && st !== 'Perkiraan') return false;
     if (pbFilter === 'none' && st !== 'none') return false;
     if (pbFilter === 'naik' && !n.naik) return false;
-    return !q || [n.inv, n.nop, n.key, n.nama, n.kel, n.kec, n.catatan, n.tanah].join(' ').toLowerCase().indexOf(q) >= 0;
+    return !q || [n.inv, n.nop, n.key, n.nama, n.kel, n.kec, n.catatan, n.tanah].join(' ').elHas(q);
   });
 }
 function renderPbList() {
@@ -6726,7 +6744,7 @@ function renderPyList() {
     if (pyFilter === 'telat' && !g.telat.length) return false;
     if (pyFilter === 'tanpa' && g.akt.length) return false;
     if (pyFilter === 'wa' && p.wa) return false;
-    return !q || [p.id, p.nama, p.wa, p.milik, p.idn, p.lama, g.ks.map(function (k) { return k.id + ' ' + unitsTxt(k) + ' ' + k.usaha; }).join(' ')].join(' ').toLowerCase().indexOf(q) >= 0;
+    return !q || [p.id, p.nama, p.wa, p.milik, p.idn, p.lama, g.ks.map(function (k) { return k.id + ' ' + unitsTxt(k) + ' ' + k.usaha; }).join(' ')].join(' ').elHas(q);
   }).sort(function (a, b) { return a.nama.localeCompare(b.nama, 'id'); });
   var box = $('pyList'); box.innerHTML = '';
   if (!list.length) { emptyBox(box, q ? 'Tidak ada penyewa yang cocok.' : 'Tidak ada penyewa di sini.'); return; }
@@ -6904,7 +6922,7 @@ function renderKnList() {
       if (knFilter === 'habis' && !(akt && e && dayDiff(t0, e) >= 0 && dayDiff(t0, e) <= 60)) return false;
       if (knFilter === 'selesai' && akt) return false;
     }
-    return !q || [k.id, k.nama, k.usaha, k.wa, k.pny, unitsTxt(k), k.units.map(function (u) { return u.id; }).join(' ')].join(' ').toLowerCase().indexOf(q) >= 0;
+    return !q || [k.id, k.nama, k.usaha, k.wa, k.pny, unitsTxt(k), k.units.map(function (u) { return u.id; }).join(' ')].join(' ').elHas(q);
   }).sort(function (a, b) {
     if (knFilter === 'telat') return (b.telat || 0) - (a.telat || 0);
     if (knFilter === 'habis' || kb && knFilter === 'garap') return String(a.selesai).localeCompare(String(b.selesai));
@@ -7494,7 +7512,7 @@ function renderUnList() {
   var q = $('unq').value.trim().toLowerCase();
   var list = unData.units.filter(function (x) {
     if (unStatus === 'semua' ? x.st === 'off' : x.st !== unStatus) return false;
-    return !q || [x.id, x.inv, x.unit, x.jenis, x.kos, x.ten ? x.ten.nama + ' ' + x.ten.id : ''].join(' ').toLowerCase().indexOf(q) >= 0;
+    return !q || [x.id, x.inv, x.unit, x.jenis, x.kos, x.ten ? x.ten.nama + ' ' + x.ten.id : ''].join(' ').elHas(q);
   }).sort(unSort);
   var box = $('unList'); box.innerHTML = '';
   if (!list.length) { emptyBox(box, q ? 'Tidak ada unit yang cocok.' : 'Tidak ada unit di sini.'); return; }
