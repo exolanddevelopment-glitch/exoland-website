@@ -6987,7 +6987,7 @@ function knEdit(k, preset) {
   hIn.addEventListener('change', function () {
     var old = d.harga, c = cycleOf(d.siklus); readTop();
     if (!d.touched && d.rows !== null) { quick(autoM()); return; }
-    (d.rows || []).forEach(function (r) { if (r.locked || !c) return; var lm = lenMonths(r); if (!r.jml || (lm && r.jml === Math.round(old * lm / c))) r.jml = lm ? Math.round(d.harga * lm / c) : d.harga; });
+    (d.rows || []).forEach(function (r) { if (r.locked || r.lunas || !c) return; var lm = lenMonths(r); if (!r.jml || (lm && r.jml === Math.round(old * lm / c))) r.jml = lm ? Math.round(d.harga * lm / c) : d.harga; });
     drawSched();
   });
   function cycleOf(s) { return isOnce(s) || isGratis(s) || isIrr(s) ? 0 : months(s); }
@@ -6998,12 +6998,12 @@ function knEdit(k, preset) {
     knChain(d);
     var base, a, add = [], tmpl = null;
     if (repeatLast) {
-      tmpl = d.rows.filter(function (r) { return !r.locked; }).slice(-1)[0];
+      tmpl = d.rows.filter(function (r) { return !r.locked && !r.lunas; }).slice(-1)[0];
       if (!tmpl || tmpl.u === 'tgl') { toast('Baris terakhir harus "bulan" atau "tahun".'); return; }
       base = d.rows.slice(); a = addDays(d.rows[d.rows.length - 1].B, 1); m = lenMonths(tmpl);
     } else {
-      base = d.rows.filter(function (r) { return r.locked; });
-      var lk = base[base.length - 1]; a = lk ? addDays(parseIso(lk.b), 1) : start;
+      base = d.rows.filter(function (r) { return r.locked || r.lunas; });   // paid rows stay; the rest is rebuilt after them
+      var lk = base[base.length - 1]; a = lk && lk.B ? addDays(lk.B, 1) : start;
     }
     if (m === -1) { if (end) add.push({ n: 1, u: 'tgl', end: iso(end), jml: d.harga }); else toast('Isi tanggal selesai untuk sekali bayar.'); }
     else if (m > 0) {
@@ -7024,7 +7024,7 @@ function knEdit(k, preset) {
     sched.appendChild(el('h3', 'tn-h3', 'Jadwal tagihan'));
     if (isGratis(d.siklus)) { sched.appendChild(el('p', 'muted', 'Gratis (karyawan): tidak ada tagihan.')); return; }
     if (isIrr(d.siklus)) { sched.appendChild(el('p', 'muted', 'Tidak tetap: tidak ada jadwal. Tagihan dibuat otomatis setiap kali uang masuk dicatat.')); return; }
-    sched.appendChild(el('p', 'hint', 'Susun sendiri: tiap baris = satu tagihan, berapa lama dan berapa rupiah. Tanggalnya menyambung otomatis. Tagihan yang sudah dibayar terkunci.'));
+    sched.appendChild(el('p', 'hint', 'Susun sendiri: tiap baris = satu tagihan, berapa lama dan berapa rupiah. Tanggalnya menyambung otomatis. "Sudah lunas s/d" boleh diubah tanggalnya atau dihapus (×). Tagihan yang sudah dicatat pembayarannya terkunci.'));
     knChain(d);
     var box = el('div', 'js-box');
     d.rows.forEach(function (r, i) {
@@ -7033,6 +7033,10 @@ function knEdit(k, preset) {
       var f = el('div', 'js-f');
       if (r.locked) {
         f.appendChild(el('b', 'num', r.jml === null ? 'Sudah lunas' : rp(r.jml)));
+      } else if (r.lunas) {
+        var lI = inp('date', r.end || '', { 'aria-label': 'Sudah lunas sampai tanggal' });
+        lI.onchange = function () { d.touched = true; r.end = lI.value; drawSched(); };
+        f.appendChild(el('b', '', 'Sudah lunas s/d')); f.appendChild(lI);
       } else {
         var nI = inp('number', r.n, { min: 1, max: 120, class: 'num', 'aria-label': 'Lama' }); nI.hidden = r.u === 'tgl';
         var uS = document.createElement('select'); [['bulan', 'bulan'], ['tahun', 'tahun'], ['tgl', 's/d tanggal']].forEach(function (x) { var o = el('option', '', x[1]); o.value = x[0]; uS.appendChild(o); }); uS.value = r.u;
@@ -7056,7 +7060,7 @@ function knEdit(k, preset) {
     var tools = el('div', 'js-tools');
     tools.appendChild(btnEl('+ Tambah tagihan', 'sec', function () {
       d.touched = true;
-      var last = d.rows.filter(function (r) { return !r.locked; }).slice(-1)[0], m = cycleOf(d.siklus) || 12;
+      var last = d.rows.filter(function (r) { return !r.locked && !r.lunas; }).slice(-1)[0], m = cycleOf(d.siklus) || 12;
       d.rows.push(last ? { n: last.n, u: last.u === 'tgl' ? 'bulan' : last.u, jml: last.jml } : (m % 12 === 0 ? { n: m / 12, u: 'tahun', jml: d.harga } : { n: m, u: 'bulan', jml: d.harga }));
       drawSched();
     }));
@@ -7072,8 +7076,8 @@ function knEdit(k, preset) {
     d.rows.forEach(function (r) {
       if (!r._dt) return;
       r._dt.innerHTML = '';
-      r._dt.appendChild(document.createTextNode(r.A && r.B ? dmy(r.A) + ' – ' + dmy(r.B) + ' · jatuh tempo ' + dmy(r.A) : 'isi tanggal mulai kontrak'));
-      if (r.locked) r._dt.appendChild(el('span', 'st white', r.tampil || 'Lunas'));
+      r._dt.appendChild(document.createTextNode(r.A && r.B ? dmy(r.A) + ' – ' + dmy(r.B) + (r.lunas || r.jml === null ? '' : ' · jatuh tempo ' + dmy(r.A)) : 'isi tanggal mulai kontrak'));
+      if (r.locked || r.lunas) r._dt.appendChild(el('span', 'st white', r.tampil || 'Lunas'));
     });
     drawSum();
   }
@@ -7095,6 +7099,7 @@ function knEdit(k, preset) {
       d.touched = true;
       d.rows = g.bills.map(function (b) {
         var A = parseIso(b.a), B = parseIso(b.b), du = durOf(A, B);
+        if (b.jml === null && !b.locked) return { id: b.id, lunas: true, a: b.a, b: b.b, jml: null, n: 1, u: 'tgl', end: b.b, tampil: 'Lunas' };   // "Sudah lunas" without a recorded payment: editable
         return { id: b.id, locked: b.locked, a: b.a, b: b.b, jml: b.jml, n: du.n, u: du.u, end: du.end, tampil: b.tampil };
       });
       render();
@@ -7138,7 +7143,7 @@ function knWarn(d) {
   var lb = rows.reduce(function (m, r) { return r.B && (!m || r.B > m) ? r.B : m; }, null);
   if (end && lb && lb < end) w.push('Tagihan berhenti ' + dmy(lb) + ', kontrak sampai ' + dmy(end) + '.');
   if (end && lb && lb > end) w.push('Tagihan terakhir lewat dari tanggal selesai (' + dmy(end) + ').');
-  if (rows.some(function (r) { return !r.locked && !(r.jml > 0); })) w.push('Ada tagihan tanpa jumlah.');
+  if (rows.some(function (r) { return !r.locked && !r.lunas && !(r.jml > 0); })) w.push('Ada tagihan tanpa jumlah.');
   return w;
 }
 $('knNew').onclick = function () { openKn(null, {}); };
