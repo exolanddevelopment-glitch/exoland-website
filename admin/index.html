@@ -3005,7 +3005,7 @@ function bonHalf(p, img) {
     var L = lines[i];
     rows += '<tr><td class="c">' + (L ? i + 1 : '&nbsp;') + '</td><td>' + (L ? bonEsc(L.ket) : '&nbsp;') + '</td><td class="r">' + (L ? bonRp(L.jml) : '') + '</td></tr>';
   }
-  var proof = img && /^data:/.test(img) ? '<img src="' + img + '" alt="Bukti transfer">'
+  var proof = img && /^data:/.test(img) ? '<div class="pbox"><img src="' + img + '" alt="Bukti transfer"><div class="tools"><button data-a="l" title="Putar kiri">⟲</button><button data-a="r" title="Putar kanan">⟳</button><button data-a="o" title="Perkecil">−</button><button data-a="i" title="Perbesar">+</button><button data-a="0" title="Kembalikan">↺</button></div></div>'
     : '<div class="ph">' + (img === 'pdf' ? '<b>BUKTI PDF</b><span>Bukti berupa PDF, lampirkan cetakannya.</span>' : img === 'err' ? '<b>BUKTI ADA</b><span>Tersimpan di Riwayat, tapi gagal dimuat. Coba cetak ulang.</span>'
       : cash ? '<b>TUNAI</b><span>Dibayar cash, tanpa bukti transfer.</span>' : '<b>BUKTI MENYUSUL</b><span>Cetak ulang setelah bukti ditambahkan di Riwayat.</span>') + '</div>';
   return '<section class="half"><div class="form">' +
@@ -3034,7 +3034,8 @@ var BON_CSS = '@page{size:A4;margin:0}*{box-sizing:border-box}body{margin:0;font
   '.bot{display:flex;gap:4mm;align-items:flex-start;margin-top:auto}.ak{width:56mm;font-size:10px}.ak th{font-size:10px;padding:2px}.ak td{text-align:center;padding:2px;border-top:1px solid #111}.ak tr.e td{height:9mm}' +
   '.dg{flex:1;display:grid;grid-template-columns:auto 1fr;column-gap:6px;row-gap:2px;font-size:11px}.dg b{grid-column:1/-1}.dg em{font-style:normal;border-bottom:1px solid #888}' +
   '.proof{width:50mm;flex:0 0 50mm;display:flex;flex-direction:column;gap:1.5mm}.pl{font-size:10px;font-weight:700;letter-spacing:.06em;color:#444}' +
-  '.proof img{width:100%;flex:1;min-height:0;object-fit:contain;border:1px solid #bbb;border-radius:4px}.ph{flex:1;border:2px dashed #999;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2mm;text-align:center;padding:4mm}.ph b{font-size:13px;letter-spacing:.06em}.ph span{font-size:10px;color:#555}' +
+  '.pbox{flex:1;min-height:0;position:relative;overflow:hidden;border:1px solid #bbb;border-radius:4px;cursor:grab}.pbox img{position:absolute;left:50%;top:50%;object-fit:contain;transform-origin:center;user-select:none;-webkit-user-drag:none;pointer-events:none}' +
+  '.tools{position:absolute;right:3px;bottom:3px;display:flex;gap:2px;opacity:0;transition:opacity .15s}.pbox:hover .tools{opacity:1}.tools button{width:26px;height:26px;border:1px solid #888;border-radius:4px;background:#fff;font-size:14px;cursor:pointer;padding:0}@media print{.tools{display:none}.pbox{border-color:#bbb}}.ph{flex:1;border:2px dashed #999;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2mm;text-align:center;padding:4mm}.ph b{font-size:13px;letter-spacing:.06em}.ph span{font-size:10px;color:#555}' +
   '.batal{position:absolute;top:40%;left:15%;transform:rotate(-12deg);border:4px solid #b42318;color:#b42318;font-size:44px;font-weight:800;padding:0 16px;opacity:.85}' +
   '.bar{position:sticky;top:0;background:#f1f1f1;padding:10px 14px;font-size:14px;display:flex;gap:10px;align-items:center;border-bottom:1px solid #ccc}.bar button{font-size:14px;padding:8px 14px;cursor:pointer}' +
   '@media screen{body{background:#ddd}.page{margin:10px auto;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.2)}}@media print{.bar{display:none}}';
@@ -3057,11 +3058,43 @@ function bonPrint(list, title, w0) {
     }
     for (var i = 0; i < 4; i++) next();
   }).then(function () {
-    var html = '<div class="bar"><b>' + bonEsc(title) + '</b> · ' + list.length + ' bon, ' + Math.ceil(list.length / 2) + ' lembar A4<button onclick="window.print()">Cetak / simpan PDF</button></div>';
+    var html = '<div class="bar"><b>' + bonEsc(title) + '</b> · ' + list.length + ' bon, ' + Math.ceil(list.length / 2) + ' lembar A4<button id="bonPrintBtn">Cetak / simpan PDF</button><button id="bonAutoRot" title="Foto yang melebar diputar supaya lebih besar">Putar otomatis foto lebar</button><span style="color:#555">Arahkan mouse ke foto: putar ⟲ ⟳, perbesar + −, geser dengan menarik.</span></div>';
     for (var i = 0; i < list.length; i += 2) {
       html += '<div class="page">' + bonHalf(list[i], imgs[list[i].id]) + (list[i + 1] ? '<div class="cut"><span>✂ potong di sini</span></div>' + bonHalf(list[i + 1], imgs[list[i + 1].id]) : '') + '</div>';
     }
-    try { w.document.body.innerHTML = html; setTimeout(function () { try { w.focus(); w.print(); } catch (e) {} }, 600); } catch (e) { toast('Jendela cetak ditutup.'); }
+    try { w.document.body.innerHTML = html; bonPhotoTools(w); setTimeout(function () { try { w.focus(); w.print(); } catch (e) {} }, 600); } catch (e) { toast('Jendela cetak ditutup.'); }
+  });
+}
+/* photo controls in the print tab: rotate, zoom, drag. Only on screen; the print uses what you set. */
+function bonPhotoTools(w) {
+  var d = w.document;
+  function apply(box) {
+    var st = box._st, img = box.querySelector('img'), W = box.clientWidth, H = box.clientHeight, side = st.r % 180 !== 0;
+    img.style.width = (side ? H : W) + 'px'; img.style.height = (side ? W : H) + 'px';
+    img.style.transform = 'translate(-50%,-50%) translate(' + st.x + 'px,' + st.y + 'px) rotate(' + st.r + 'deg) scale(' + st.s + ')';
+  }
+  var boxes = Array.prototype.slice.call(d.querySelectorAll('.pbox'));
+  boxes.forEach(function (box) {
+    box._st = { r: 0, s: 1, x: 0, y: 0 }; apply(box);
+    box.querySelectorAll('.tools button').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.stopPropagation(); var st = box._st, a = b.getAttribute('data-a');
+        if (a === 'l') st.r -= 90; if (a === 'r') st.r += 90; if (a === 'i') st.s = Math.min(5, st.s * 1.2); if (a === 'o') st.s = Math.max(0.3, st.s / 1.2);
+        if (a === '0') { st.r = 0; st.s = 1; st.x = 0; st.y = 0; }
+        apply(box);
+      });
+    });
+    var drag = null;
+    box.addEventListener('pointerdown', function (e) { if (e.target.tagName === 'BUTTON') return; drag = { x: e.clientX, y: e.clientY, sx: box._st.x, sy: box._st.y }; box.setPointerCapture(e.pointerId); box.style.cursor = 'grabbing'; });
+    box.addEventListener('pointermove', function (e) { if (!drag) return; box._st.x = drag.sx + e.clientX - drag.x; box._st.y = drag.sy + e.clientY - drag.y; apply(box); });
+    box.addEventListener('pointerup', function () { drag = null; box.style.cursor = 'grab'; });
+    box.addEventListener('wheel', function (e) { e.preventDefault(); var st = box._st; st.s = Math.max(0.3, Math.min(5, st.s * (e.deltaY < 0 ? 1.1 : 1 / 1.1))); apply(box); }, { passive: false });
+    var img = box.querySelector('img'); if (!img.complete) img.addEventListener('load', function () { apply(box); });
+  });
+  var pb = d.getElementById('bonPrintBtn'); if (pb) pb.addEventListener('click', function () { w.print(); });
+  var ab = d.getElementById('bonAutoRot');
+  if (ab) ab.addEventListener('click', function () {
+    boxes.forEach(function (box) { var img = box.querySelector('img'); if (img.naturalWidth > img.naturalHeight * 1.1) { box._st.r = 90; box._st.s = 1; box._st.x = 0; box._st.y = 0; apply(box); } });
   });
 }
 function bonMonthList(y, m) {   // payments whose Tanggal Bayar is in that month, oldest first
@@ -3111,7 +3144,7 @@ $('repBon').onclick = function () {
   var v = String($('repMonth').value || '').split('-'), y = +v[0], m = +v[1]; if (!v[0]) return;
   var w = window.open('', '_blank'), go = function () { bonPrint(bonMonthList(y, m), 'Bon putih ' + repLabelBulan(y, m), w); };
   if (w) { w.document.write('<p style="font-family:Arial;padding:16px">Menyiapkan bon putih…</p>'); }
-  if (payments.length) go(); else call('getPayments').then(function (l) { payments = l || []; go(); }).catch(function (e) { if (w) w.close(); toast(errText(e)); });
+  call('getPayments').then(function (l) { payments = l || []; go(); }).catch(function (e) { if (w) w.close(); toast(errText(e)); });   // always the newest list
 };
 
 $('bq').oninput = debounce(renderPays);
