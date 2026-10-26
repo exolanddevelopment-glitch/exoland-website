@@ -7008,6 +7008,11 @@ function openKn(k, preset) {
   if (can) acts.appendChild(btnEl('Ubah kontrak & jadwal', 'sec', function () { knEdit(k); }));
   if (can && k.kebun && kbReady(k)) acts.appendChild(btnEl('Mulai garap', '', function () { kbStartModal([k.id]); }));
   if (can && k.units.length > 1) acts.appendChild(btnEl('Pisah per plot', 'sec', function () { knSplitModal(k); }));
+  if (can && (k.status !== 'Aktif' || k.arsip) && k.nOpen) acts.appendChild(btnEl('Hapus sisa tagihan', 'sec', function () {
+    jlModal('Hapus sisa tagihan', k.id + ' · ' + knNama(k), function (b) { b.appendChild(el('p', 'hint', 'Tagihan kontrak ini yang belum dibayar dihapus (tidak ditagih). Tagihan yang sudah ada pembayarannya tetap.')); }, 'Hapus, tidak ditagih', function () {
+      return call('hapusSisaTagihan', { id: k.id }).then(function (r) { toast(r.tagihan + ' tagihan dihapus.'); knPendingId = k.id; obData = null; return refreshSewa(); });
+    }, 'danger');
+  }));
   if (can && k.status === 'Aktif') acts.appendChild(btnEl('Akhiri kontrak', 'sec', function () { knEndModal(k); }));
   if (acts.children.length) body.appendChild(acts);
   body.appendChild(el('h3', 'tn-h3', 'Tagihan'));
@@ -7083,10 +7088,13 @@ function billTable(bills) {
 function knEndModal(k) {
   jlModal('Akhiri kontrak', k.id + ' · ' + knNama(k), function (b) {
     b.appendChild(fieldBox('ke_tgl', 'Tanggal selesai', inp('date', iso(today0()))));
-    b.appendChild(fieldBox('ke_alasan', 'Alasan', inp('text', '', { maxlength: 300, placeholder: 'Contoh: pindah, tidak diperpanjang' })));
-    b.appendChild(el('p', 'hint', 'Tagihan yang belum dibayar dan mulai sesudah tanggal ini dihapus. Tagihan yang sudah lewat tetap ada sampai dilunasi. Unitnya otomatis jadi Kosong.'));
+    b.appendChild(fieldBox('ke_alasan', 'Alasan', inp('text', '', { maxlength: 300, placeholder: 'Contoh: pindah, tidak diperpanjang, dobel' })));
+    var hs = document.createElement('select'); hs.id = 'f_ke_hapus';
+    [['1', 'Hapus, tidak ditagih'], ['0', 'Tetap ditagih (jadi tunggakan)']].forEach(function (x) { var op = el('option', '', x[1]); op.value = x[0]; hs.appendChild(op); });
+    b.appendChild(fieldBox('ke_hapus', 'Tagihan yang belum dibayar', hs, k.tunggakan ? 'Sekarang ada tunggakan ' + rp(k.tunggakan) + '.' : ''));
+    b.appendChild(el('p', 'hint', 'Tagihan sesudah tanggal selesai selalu dihapus. Tagihan yang sudah ada pembayarannya tidak pernah dihapus. Unitnya otomatis jadi Kosong.'));
   }, 'Akhiri kontrak', function () {
-    return call('endKontrak', { id: k.id, tanggal: $('f_ke_tgl').value, alasan: $('f_ke_alasan').value }).then(function (r) {
+    return call('endKontrak', { id: k.id, tanggal: $('f_ke_tgl').value, alasan: $('f_ke_alasan').value, hapus: $('f_ke_hapus').value === '1' }).then(function (r) {
       toast('Kontrak ' + k.id + ' selesai.' + (r.sisa.length ? ' Masih ada ' + r.sisa.length + ' tagihan belum lunas.' : ''));
       knPendingId = k.id; return refreshSewa();
     });
@@ -7367,7 +7375,7 @@ function renderBills() {
   box.appendChild(el('label', '', 'Pilih tagihan yang dibayar'));
   if (!groups.length) box.appendChild(el('div', 'muted', 'Kontrak ini tidak punya tagihan terbuka.'));
   groups.forEach(function (g) {
-    if (groups.length > 1) box.appendChild(el('div', 'ob-k', g.k.id + ' · ' + unitsTxt(g.k) + (g.k.usaha ? ' · ' + g.k.usaha : '')));
+    if (groups.length > 1 || g.k.status !== 'Aktif') box.appendChild(el('div', 'ob-k', g.k.id + ' · ' + unitsTxt(g.k) + (g.k.usaha ? ' · ' + g.k.usaha : '') + (g.k.status !== 'Aktif' ? ' · Kontrak selesai, sisa tunggakan' : '')));
     if (!g.bills.length) box.appendChild(el('div', 'muted small', 'Semua tagihan sudah lunas.'));
     g.bills.forEach(function (b, i) {
       var pk = obPick[b.id] = obPick[b.id] || { on: false, bayar: b.sisa, sisa: 'tunggakan' };
