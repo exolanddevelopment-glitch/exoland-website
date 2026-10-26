@@ -3857,12 +3857,15 @@ function dmyify(i) {
   i.addEventListener('click', function (e) {   // calendar icon area: open the browser's date picker
     if (e.offsetX < i.clientWidth - 40) return;
     var p = document.createElement('input'); p.type = 'date'; p.tabIndex = -1;
-    var r = i.getBoundingClientRect(); p.style.cssText = 'position:fixed;left:' + r.left + 'px;top:' + r.bottom + 'px;width:' + r.width + 'px;height:1px;opacity:0;border:0;padding:0;pointer-events:none';
+    // sits exactly on top of the visible box (invisible), so Chrome opens its calendar right under it
+    var r = i.getBoundingClientRect();
+    p.style.cssText = 'position:absolute;left:' + (r.left + window.scrollX) + 'px;top:' + (r.top + window.scrollY) + 'px;width:' + r.width + 'px;height:' + r.height + 'px;margin:0;opacity:0;border:0;padding:0;pointer-events:none;z-index:-1;box-sizing:border-box';
     if (mn) p.min = mn; if (mx) p.max = mx; NATIVE_VAL.set.call(p, i.value || '');
     document.body.appendChild(p);
     p.addEventListener('change', function () { i.value = NATIVE_VAL.get.call(p); i.dispatchEvent(new Event('input', { bubbles: true })); i.dispatchEvent(new Event('change', { bubbles: true })); });
     p.addEventListener('blur', function () { setTimeout(function () { p.remove(); }, 300); });
-    try { p.showPicker(); } catch (er) { p.remove(); }
+    p.getBoundingClientRect();   // make Chrome place it before the calendar opens
+    try { p.focus({ preventScroll: true }); p.showPicker(); } catch (er) { p.remove(); }
   });
 }
 ['tanggal', 'mulai', 'tDeadline'].forEach(function (id) { var x = document.getElementById(id); if (x) dmyify(x); });
