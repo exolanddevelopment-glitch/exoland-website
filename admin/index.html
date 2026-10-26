@@ -881,6 +881,10 @@
   .js-x { border:0; background:none; cursor:pointer; color:var(--muted); font-size:18px; }
   .js-dates { grid-column:2 / 4; font-size:12.5px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
   .js-row.locked .js-f b { font-size:15px; }
+  .kn-lunasbar { display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; padding:12px 14px; margin:8px 0 10px; border:1px solid var(--line); border-radius:12px; background:var(--subtle); }
+  .kn-lunasbar input { width:auto; margin:0; }
+  .kn-lunasbar .btn { width:auto; margin:0; padding:9px 14px; }
+  .kn-lunasbar .muted { flex-basis:100%; font-size:13px; }
   .js-tools { display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-top:10px; }
   .js-tools .btn { width:auto; margin:0; padding:8px 14px; }
   .js-sum { margin-top:12px; font-size:14px; }
@@ -7327,6 +7331,21 @@ function knEdit(k, preset) {
   });
   function cycleOf(s) { return isOnce(s) || isGratis(s) || isIrr(s) ? 0 : months(s); }
   function lenMonths(r) { return r.u === 'tahun' ? 12 * r.n : r.u === 'bulan' ? r.n : 0; }
+  function setLunas(v) {   // set / move / remove the "Sudah lunas" period, then rebuild the unpaid bills after it
+    d.rows = (d.rows || []).filter(function (r) { return !r.lunas; });
+    if (v) {
+      var st = parseIso(d.mulai), e = parseIso(v);
+      if (st && e && e < st) { toast('Tanggal sudah lunas sebelum tanggal mulai kontrak.'); drawSched(); return; }
+      // it starts right after the last paid bill that ends before that date (paid bills keep their place), else at the contract start
+      knChain(d);
+      var lrow = { id: d._lunasId || '', lunas: true, jml: null, n: 1, u: 'tgl', end: v, tampil: 'Lunas' }, at = 0;
+      d.rows.forEach(function (r, i) { if (r.locked && r.B && r.B < e) at = i + 1; });
+      if (at && dayDiff(d.rows[at - 1].B, e) < 1) { toast('Tanggal itu sudah tercakup tagihan yang sudah dibayar.'); drawSched(); return; }
+      d.rows.splice(at, 0, lrow);
+    }
+    d.touched = true;
+    quick(autoM());
+  }
   function quick(m, repeatLast) {
     readTop();
     var start = parseIso(d.mulai), end = parseIso(d.selesai); if (!start) { toast('Isi tanggal mulai dulu.'); return; }
@@ -7359,8 +7378,19 @@ function knEdit(k, preset) {
     sched.appendChild(el('h3', 'tn-h3', 'Jadwal tagihan'));
     if (isGratis(d.siklus)) { sched.appendChild(el('p', 'muted', 'Gratis (karyawan): tidak ada tagihan.')); return; }
     if (isIrr(d.siklus)) { sched.appendChild(el('p', 'muted', 'Tidak tetap: tidak ada jadwal. Tagihan dibuat otomatis setiap kali uang masuk dicatat.')); return; }
-    sched.appendChild(el('p', 'hint', 'Susun sendiri: tiap baris = satu tagihan, berapa lama dan berapa rupiah. Tanggalnya menyambung otomatis. "Sudah lunas s/d" boleh diubah tanggalnya atau dihapus (×). Tagihan yang sudah dicatat pembayarannya terkunci.'));
+    sched.appendChild(el('p', 'hint', 'Susun sendiri: tiap baris = satu tagihan, berapa lama dan berapa rupiah. Tanggalnya menyambung otomatis. Tagihan yang sudah dicatat pembayarannya terkunci.'));
     knChain(d);
+    // "Sudah lunas s/d": always here. A date = everything up to it counts as paid (before the website); Reset = no such period,
+    // so old payments can be recorded month by month in Catat pembayaran.
+    var lr = d.rows.filter(function (r) { return r.lunas; })[0];
+    var lbar = el('div', 'kn-lunasbar');
+    lbar.appendChild(el('b', '', 'Sudah lunas s/d'));
+    var lIn = inp('date', lr && lr.B ? iso(lr.B) : '', { 'aria-label': 'Sudah lunas sampai tanggal' });
+    lIn.onchange = function () { setLunas(lIn.value); };
+    lbar.appendChild(lIn);
+    if (lr) lbar.appendChild(btnEl('Reset', 'sec', function () { setLunas(''); }));
+    lbar.appendChild(el('span', 'muted', lr ? 'Bulan sampai tanggal ini dianggap sudah dibayar (sebelum website). Reset kalau mau mencatat pembayaran lamanya satu per satu.' : 'Kosong: semua bulan ditagih dari tanggal mulai. Isi tanggal kalau bulan-bulan awal sudah dibayar sebelum website.'));
+    sched.appendChild(lbar);
     var box = el('div', 'js-box');
     d.rows.forEach(function (r, i) {
       var row = el('div', 'js-row' + (r.locked ? ' locked' : ''));
@@ -7369,9 +7399,7 @@ function knEdit(k, preset) {
       if (r.locked) {
         f.appendChild(el('b', 'num', r.jml === null ? 'Sudah lunas' : rp(r.jml)));
       } else if (r.lunas) {
-        var lI = inp('date', r.end || '', { 'aria-label': 'Sudah lunas sampai tanggal' });
-        lI.onchange = function () { d.touched = true; r.end = lI.value; drawSched(); };
-        f.appendChild(el('b', '', 'Sudah lunas s/d')); f.appendChild(lI);
+        f.appendChild(el('b', 'num', 'Sudah lunas'));
       } else {
         var nI = inp('number', r.n, { min: 1, max: 120, class: 'num', 'aria-label': 'Lama' }); nI.hidden = r.u === 'tgl';
         var uS = document.createElement('select'); [['bulan', 'bulan'], ['tahun', 'tahun'], ['tgl', 's/d tanggal']].forEach(function (x) { var o = el('option', '', x[1]); o.value = x[0]; uS.appendChild(o); }); uS.value = r.u;
@@ -7386,7 +7414,7 @@ function knEdit(k, preset) {
         f.appendChild(nI); f.appendChild(uS); f.appendChild(eI); f.appendChild(jI);
       }
       row.appendChild(f);
-      if (!r.locked) { var x = el('button', 'js-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Hapus baris'); x.onclick = function () { d.touched = true; d.rows.splice(i, 1); drawSched(); }; row.appendChild(x); }
+      if (!r.locked) { var x = el('button', 'js-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Hapus baris'); x.onclick = function () { if (r.lunas) { setLunas(''); return; } d.touched = true; d.rows.splice(i, 1); drawSched(); }; row.appendChild(x); }
       else row.appendChild(el('span', '', ''));
       var dt = el('div', 'js-dates muted'); row.appendChild(dt); r._dt = dt;
       box.appendChild(row);
@@ -7434,7 +7462,7 @@ function knEdit(k, preset) {
       d.touched = true;
       d.rows = g.bills.map(function (b) {
         var A = parseIso(b.a), B = parseIso(b.b), du = durOf(A, B);
-        if (b.jml === null && !b.locked) return { id: b.id, lunas: true, a: b.a, b: b.b, jml: null, n: 1, u: 'tgl', end: b.b, tampil: 'Lunas' };   // "Sudah lunas" without a recorded payment: editable
+        if (b.jml === null && !b.locked) { d._lunasId = b.id; return { id: b.id, lunas: true, a: b.a, b: b.b, jml: null, n: 1, u: 'tgl', end: b.b, tampil: 'Lunas' }; }   // "Sudah lunas" without a recorded payment: editable
         return { id: b.id, locked: b.locked, a: b.a, b: b.b, jml: b.jml, n: du.n, u: du.u, end: du.end, tampil: b.tampil };
       });
       render();
