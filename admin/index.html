@@ -3012,7 +3012,7 @@ function bonHalf(p, img) {
     '<div class="top"><div><div class="co">EXOTIC LAND DEVELOPMENT</div><div class="dari">Diterima dari: <b>' + bonEsc(unk ? (p.nama || 'Belum diketahui') + ' (belum teridentifikasi)' : k.nama) + '</b></div></div>' +
     '<div class="meta"><span>No. BPN</span><b>' + bonEsc(k.kwitansi || '-') + '</b><span>Jakarta,</span><b>' + bonEsc(k.tgl) + '</b><span>No. Kwt</span><b>' + bonEsc(k.kwitansi || '-') + '</b></div></div>' +
     '<h2>BUKTI PENERIMAAN</h2>' +
-    '<table><thead><tr><th style="width:30px">NO.</th><th>KETERANGAN</th><th style="width:110px">JUMLAH (RP.)</th></tr></thead><tbody>' + rows + '</tbody>' +
+    '<table><thead><tr><th style="width:30px">NO.</th><th>KETERANGAN</th><th style="width:92px">JUMLAH (RP.)</th></tr></thead><tbody>' + rows + '</tbody>' +
     '<tfoot><tr><td colspan="2" class="r">TOTAL</td><td class="r">' + bonRp(k.jumlah) + '</td></tr></tfoot></table>' +
     '<div class="terb"><u><b>TERBILANG</b></u> : <i>' + bonEsc(cap(terbilang(k.jumlah))) + '</i></div>' +
     '<div class="sign"><div><span>DITERIMA OLEH :</span><i>(nama &amp; paraf)</i></div><div><span>DISETUJUI OLEH :</span><i>(nama &amp; paraf)</i></div></div>' +
@@ -3023,17 +3023,17 @@ function bonHalf(p, img) {
 }
 var BON_CSS = '@page{size:A4;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#111;background:#fff}' +
   '.page{width:210mm;height:297mm;display:flex;flex-direction:column;page-break-after:always;overflow:hidden}.page:last-child{page-break-after:auto}' +
-  '.half{height:148.5mm;padding:9mm 10mm 7mm;display:flex;gap:5mm;position:relative}' +
+  '.half{height:148.5mm;padding:8mm 8mm 6mm;display:flex;gap:4mm;position:relative}' +
   '.cut{height:0;border-top:1.5px dashed #888;margin:0 6mm;position:relative}.cut span{position:absolute;left:0;top:-9px;background:#fff;padding-right:6px;font-size:11px;color:#666}' +
   '.form{flex:1;min-width:0;display:flex;flex-direction:column;gap:2.2mm;position:relative}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:4mm}' +
   '.co{font-size:12px;font-weight:700}.dari{font-size:11.5px;margin-top:1mm}.meta{display:grid;grid-template-columns:auto auto;column-gap:6px;row-gap:1px;font-size:11px;white-space:nowrap}.meta span{color:#444}' +
   'h2{margin:0;text-align:center;font-family:Georgia,serif;font-size:16px;letter-spacing:.06em;text-decoration:underline;text-underline-offset:3px}' +
   'table{border-collapse:collapse;width:100%;font-size:11.5px}table th,table td{border:1px solid #111;padding:3px 6px;vertical-align:top}table thead th{font-size:10px;letter-spacing:.08em;border-bottom:1.5px solid #111}' +
   'tbody td{border-top:1px solid #bbb;border-bottom:1px solid #bbb}tfoot td{font-weight:700;border-top:1.5px solid #111}.c{text-align:center}.r{text-align:right;white-space:nowrap}' +
-  '.terb{font-size:11.5px;border-bottom:1px solid #111;padding-bottom:1.5mm}.sign{display:flex;justify-content:space-between;font-size:11px}.sign div{display:flex;flex-direction:column;align-items:center;gap:9mm;width:42mm}.sign i{border-top:1px solid #111;width:40mm;text-align:center;font-style:normal;color:#555;font-size:10px;padding-top:1px}' +
-  '.bot{display:flex;gap:4mm;align-items:flex-start;margin-top:auto}.ak{width:56mm;font-size:10px}.ak th{font-size:10px;padding:2px}.ak td{text-align:center;padding:2px;border-top:1px solid #111}.ak tr.e td{height:9mm}' +
+  '.terb{font-size:11.5px;border-bottom:1px solid #111;padding-bottom:1.5mm}.sign{display:flex;justify-content:space-between;font-size:11px}.sign div{display:flex;flex-direction:column;align-items:center;gap:9mm;width:38mm}.sign i{border-top:1px solid #111;width:36mm;text-align:center;font-style:normal;color:#555;font-size:10px;padding-top:1px}' +
+  '.bot{display:flex;gap:4mm;align-items:flex-start;margin-top:auto}.ak{width:44mm;font-size:9.5px}.ak th{font-size:10px;padding:2px}.ak td{text-align:center;padding:2px;border-top:1px solid #111}.ak tr.e td{height:9mm}' +
   '.dg{flex:1;display:grid;grid-template-columns:auto 1fr;column-gap:6px;row-gap:2px;font-size:11px}.dg b{grid-column:1/-1}.dg em{font-style:normal;border-bottom:1px solid #888}' +
-  '.proof{width:50mm;flex:0 0 50mm;display:flex;flex-direction:column;gap:1.5mm}.pl{font-size:10px;font-weight:700;letter-spacing:.06em;color:#444}' +
+  '.proof{width:72mm;flex:0 0 72mm;display:flex;flex-direction:column;gap:1.5mm}.pl{font-size:10px;font-weight:700;letter-spacing:.06em;color:#444}' +
   '.pbox{flex:1;min-height:0;position:relative;overflow:hidden;border:1px solid #bbb;border-radius:4px;cursor:grab}.pbox img{position:absolute;left:50%;top:50%;object-fit:contain;transform-origin:center;user-select:none;-webkit-user-drag:none;pointer-events:none}' +
   '.tools{position:absolute;right:3px;bottom:3px;display:flex;gap:2px;opacity:0;transition:opacity .15s}.pbox:hover .tools{opacity:1}.tools button{width:26px;height:26px;border:1px solid #888;border-radius:4px;background:#fff;font-size:14px;cursor:pointer;padding:0}@media print{.tools{display:none}.pbox{border-color:#bbb}}.ph{flex:1;border:2px dashed #999;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2mm;text-align:center;padding:4mm}.ph b{font-size:13px;letter-spacing:.06em}.ph span{font-size:10px;color:#555}' +
   '.batal{position:absolute;top:40%;left:15%;transform:rotate(-12deg);border:4px solid #b42318;color:#b42318;font-size:44px;font-weight:800;padding:0 16px;opacity:.85}' +
