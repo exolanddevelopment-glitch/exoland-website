@@ -2265,6 +2265,8 @@ function applyLocks() {
   });
 }
 function show(view) {
+  // opening Catat again (menu or tab) after a save starts a new payment instead of staying on the kwitansi screen
+  if (view === 'catat' && $('doneView') && !$('doneView').hidden) { $('doneView').hidden = true; $('formView').hidden = false; resetForm(); }
   if (me && me.v2 && view === 'penyewa') {   // new tabs: the old Penyewa page is split into Penyewa (people) and Kontrak
     if (tnPendingNew) { knPendingNew = tnPendingNew; tnPendingNew = null; view = 'kon'; }
     else if (tnPendingKey) { knPendingId = tnPendingKey; tnPendingKey = null; view = 'kon'; }
