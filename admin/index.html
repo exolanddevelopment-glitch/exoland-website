@@ -2037,7 +2037,7 @@ function endOf(start, t, n) {
   if (t && t.once && t.selesaiIso) return parseIso(t.selesaiIso);
   var e = addMonths(start, tm(t) * n); if (e.getDate() === start.getDate()) e.setDate(e.getDate() - 1); return e;
 }
-function cycleWord(t) { var s = typeof t === 'object' ? t.siklus : t; if (isOnce(s)) return 'kontrak (sekali bayar)'; var m = months(s); return m % 12 === 0 ? (m === 12 ? 'tahun' : m / 12 + ' tahun') : m === 1 ? 'bulan' : m + ' bulan'; }
+function cycleWord(t) { var s = typeof t === 'object' ? t.siklus : t; if (/garap/i.test(String(s || ''))) return 'garapan (bayar sesudah panen)'; if (isOnce(s)) return 'kontrak (sekali bayar)'; var m = months(s); return m % 12 === 0 ? (m === 12 ? 'tahun' : m / 12 + ' tahun') : m === 1 ? 'bulan' : m + ' bulan'; }
 function unitLabel(t) { if (isOnce(t.siklus)) return 'Sekali bayar'; var w = cycleWord(t); return /^\d/.test(w) ? 'Berapa kali (tiap ' + w + ')' : 'Berapa ' + w; }
 var BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 function longDate(d) { return d.getDate() + ' ' + BULAN[d.getMonth()] + ' ' + d.getFullYear(); }
@@ -2594,7 +2594,7 @@ function choose(t) {
     var last = sewa.length ? sewa[0].sdIso : '';
     if (t.lunasIso && t.lunasIso > last) last = t.lunasIso;
     if (last && !t.once) { var nx = parseIso(last); nx.setDate(nx.getDate() + 1); $('mulai').value = iso(nx); }
-    $('hist').innerHTML = pastPays.length ? '<div style="margin-bottom:4px;color:var(--ink);font-weight:500">Pembayaran terakhir</div>' : (t.lunasIso ? 'Belum ada pembayaran di website. Dari data sewa, lunas s/d ' + dmy(parseIso(t.lunasIso)) + '.' : 'Belum ada pembayaran tercatat untuk penyewa ini.');
+    $('hist').innerHTML = pastPays.length ? '<div style="margin-bottom:4px;color:var(--ink);font-weight:500">Pembayaran terakhir</div>' : (t.lunasIso && !(me && me.v2) ? 'Belum ada pembayaran di website. Dari data sewa, lunas s/d ' + dmy(parseIso(t.lunasIso)) + '.' : 'Belum ada pembayaran tercatat untuk penyewa ini.');
     pastPays.forEach(function (x) {
       var d = document.createElement('div'); d.className = 'h-row num';
       var l = document.createElement('span'); l.textContent = x.sdIso ? x.mulai + ' – ' + x.sd : (x.jenis || '-');
