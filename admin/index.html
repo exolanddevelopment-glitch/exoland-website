@@ -3039,8 +3039,8 @@ function bonHalf(p, img) {
     : '<div class="ph">' + (img === 'pdf' ? '<b>BUKTI PDF</b><span>Bukti berupa PDF, lampirkan cetakannya.</span>' : img === 'err' ? '<b>BUKTI ADA</b><span>Tersimpan di Riwayat, tapi foto terlalu lama dimuat. Cetak bon ini sendiri dari Riwayat.</span>'
       : cash ? '<b>TUNAI</b><span>Dibayar cash, tanpa bukti transfer.</span>' : '<b>BUKTI MENYUSUL</b><span>Cetak ulang setelah bukti ditambahkan di Riwayat.</span>') + '</div>';
   return '<section class="half"><div class="form">' +
-    '<div class="top"><div><div class="dari">Diterima dari: <b>' + bonEsc(unk ? (p.nama || 'Belum diketahui') + ' (belum teridentifikasi)' : k.nama) + '</b></div></div>' +
-    '<div class="meta"><span>No. BPN</span><b>' + bonEsc(k.kwitansi || '-') + '</b><span>Jakarta,</span><b>' + bonEsc(k.tgl) + '</b><span>No. Kwt</span><b>' + bonEsc(k.kwitansi || '-') + '</b></div></div>' +
+    '<div class="top"><div><div class="dari">Diterima dari: <b>' + bonEsc(unk ? (p.nama || 'Belum diketahui') + ' (belum teridentifikasi)' : k.nama) + '</b></div>' + (k.kwitansi ? '<div class="ref">No. Kwt sistem: ' + bonEsc(k.kwitansi) + '</div>' : '') + '</div>' +
+    '<div class="meta"><span>No. BPN</span><b class="blank"></b><span>Jakarta,</span><b>' + bonEsc(k.tgl) + '</b><span>No. Kwt</span><b class="blank"></b></div></div>' +
     '<h2>BUKTI PENERIMAAN</h2>' +
     '<table><thead><tr><th style="width:30px">NO.</th><th>KETERANGAN</th><th style="width:92px">JUMLAH (RP.)</th></tr></thead><tbody>' + rows + '</tbody>' +
     '<tfoot><tr><td colspan="2" class="r">TOTAL</td><td class="r">' + bonRp(k.jumlah) + '</td></tr></tfoot></table>' +
@@ -3056,7 +3056,7 @@ var BON_CSS = '@page{size:A4;margin:0}*{box-sizing:border-box}body{margin:0;font
   '.half{height:148.5mm;padding:8mm 8mm 6mm;display:flex;gap:4mm;position:relative}' +
   '.cut{height:0;border-top:1.5px dashed #888;margin:0 6mm;position:relative}.cut span{position:absolute;left:0;top:-9px;background:#fff;padding-right:6px;font-size:11px;color:#666}' +
   '.form{flex:1;min-width:0;display:flex;flex-direction:column;gap:2.2mm;position:relative}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:4mm}' +
-  '.co{font-size:12px;font-weight:700}.dari{font-size:11.5px;margin-top:1mm}.meta{display:grid;grid-template-columns:auto auto;column-gap:6px;row-gap:1px;font-size:11px;white-space:nowrap}.meta span{color:#444}' +
+  '.co{font-size:12px;font-weight:700}.dari{font-size:11.5px;margin-top:1mm}.meta{display:grid;grid-template-columns:auto auto;column-gap:6px;row-gap:1px;font-size:11px;white-space:nowrap}.meta span{color:#444}.meta b.blank{display:inline-block;width:38mm;border-bottom:1px solid #888;height:12px}.ref{font-size:9.5px;color:#666;margin-top:1.2mm}' +
   'h2{margin:0;text-align:center;font-family:Georgia,serif;font-size:16px;letter-spacing:.06em;text-decoration:underline;text-underline-offset:3px}' +
   'table{border-collapse:collapse;width:100%;font-size:11.5px}table th,table td{border:1px solid #111;padding:3px 6px;vertical-align:top}table thead th{font-size:10px;letter-spacing:.08em;border-bottom:1.5px solid #111}' +
   'tbody td{border-top:1px solid #bbb;border-bottom:1px solid #bbb}tfoot td{font-weight:700;border-top:1.5px solid #111}.c{text-align:center}.r{text-align:right;white-space:nowrap}' +
