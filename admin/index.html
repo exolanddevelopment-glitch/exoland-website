@@ -2923,7 +2923,7 @@ function renderPays() {
   var rows = payments.filter(function (p) {
     if (filter === 'no' && (p.bukti.length || isVoid(p)) && p.id !== selId) return false;
     if (filter === 'unk' && (!isUnk(p) || isVoid(p)) && p.id !== selId) return false;
-    return !q || (p.nama + ' ' + p.inv + ' ' + p.unit + ' ' + p.id + ' ' + p.kwitansi + ' ' + (p.jenis || '')).elHas(q);
+    return !q || (p.nama + ' ' + p.inv + ' ' + p.unit + ' ' + p.id + ' ' + p.kwitansi + ' ' + (p.jenis || '') + ' ' + (p.ktr || '') + ' ' + (p.plots || []).join(' ')).elHas(q);
   });
   if (sortBy === 'unit' || sortBy === 'nama') rows.sort(function (a, b) { return sortKey(a).localeCompare(sortKey(b), 'id', { numeric: true }); });
   else if (sortBy === 'tgl') rows.sort(function (a, b) { var x = parseDmy(a.tgl), y = parseDmy(b.tgl); return (y ? y.getTime() : 0) - (x ? x.getTime() : 0); });
