@@ -3040,7 +3040,7 @@ function bonHalf(p, img) {
       : cash ? '<b>TUNAI</b><span>Dibayar cash, tanpa bukti transfer.</span>' : '<b>BUKTI MENYUSUL</b><span>Cetak ulang setelah bukti ditambahkan di Riwayat.</span>') + '</div>';
   return '<section class="half"><div class="form">' +
     '<div class="top"><div><div class="dari">Diterima dari: <b>' + bonEsc(unk ? (p.nama || 'Belum diketahui') + ' (belum teridentifikasi)' : k.nama) + '</b></div>' + (k.kwitansi ? '<div class="ref">No. Kwt sistem: ' + bonEsc(k.kwitansi) + '</div>' : '') + '</div>' +
-    '<div class="meta"><span>No. BPN</span><b class="blank"></b><span>Jakarta,</span><b>' + bonEsc(k.tgl) + '</b><span>No. Kwt</span><b class="blank"></b></div></div>' +
+    '<div class="meta"><span>No. BPn</span><b class="blank"></b><span>Jakarta,</span><b>' + bonEsc(k.tgl) + '</b><span>No. Kwt</span><b class="blank"></b></div></div>' +
     '<h2>BUKTI PENERIMAAN</h2>' +
     '<table><thead><tr><th style="width:30px">NO.</th><th>KETERANGAN</th><th style="width:92px">JUMLAH (RP.)</th></tr></thead><tbody>' + rows + '</tbody>' +
     '<tfoot><tr><td colspan="2" class="r">TOTAL</td><td class="r">' + bonRp(k.jumlah) + '</td></tr></tfoot></table>' +
