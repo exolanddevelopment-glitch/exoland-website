@@ -3083,6 +3083,23 @@ var BON_CSS = '@page{size:A4;margin:0}*{box-sizing:border-box}body{margin:0;font
   '.batal{position:absolute;top:40%;left:15%;transform:rotate(-12deg);border:4px solid #b42318;color:#b42318;font-size:44px;font-weight:800;padding:0 16px;opacity:.85}' +
   '.bar{position:sticky;top:0;background:#f1f1f1;padding:10px 14px;font-size:14px;display:flex;gap:10px;align-items:center;border-bottom:1px solid #ccc}.bar button{font-size:14px;padding:8px 14px;cursor:pointer}' +
   '@media screen{body{background:#ddd}.page{margin:10px auto;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.2)}}@media print{.bar{display:none}}';
+/* Photos are made smaller before printing (max 1500 px, JPEG): still sharp on half a sheet, but the print job is many times
+ * smaller, so the printer does not run out of memory and print pages twice. */
+function bonShrink(src) {
+  return new Promise(function (res) {
+    var im = new Image();
+    im.onload = function () {
+      try {
+        var max = 1500, k = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight));
+        var c = document.createElement('canvas'); c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k);
+        var g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height);
+        var out = c.toDataURL('image/jpeg', 0.82); res(out.length < src.length ? out : src);
+      } catch (e) { res(src); }
+    };
+    im.onerror = function () { res(src); };
+    im.src = src;
+  });
+}
 function bonPrint(list, title, w0) {
   list = list.filter(function (p) { return p.status !== 'BATAL'; });
   // a "bayar gabungan" is ONE bon (all its contracts as lines)
@@ -3098,7 +3115,7 @@ function bonPrint(list, title, w0) {
       if (!queue.length) { if (!running) resolve(); return; }
       var p = queue.shift(), id = bonProofId(p); running++;
       var tmo = new Promise(function (res, rej) { setTimeout(function () { rej(new Error('lambat')); }, 40000); });   // one slow photo must never block the rest
-      var job = id ? Promise.race([call('getFile', { id: id, ctx: 'bukti' }), tmo]).then(function (f) { imgs[p.id] = /^image\//.test(f.mime) ? 'data:' + f.mime + ';base64,' + f.data : 'pdf'; }).catch(function () { imgs[p.id] = 'err'; }) : Promise.resolve();
+      var job = id ? Promise.race([call('getFile', { id: id, ctx: 'bukti' }), tmo]).then(function (f) { return /^image\//.test(f.mime) ? bonShrink('data:' + f.mime + ';base64,' + f.data) : 'pdf'; }).then(function (v) { imgs[p.id] = v; }).catch(function () { imgs[p.id] = 'err'; }) : Promise.resolve();
       job.then(function () { running--; done++; try { w.document.getElementById('st').textContent = 'Menyiapkan ' + list.length + ' bon putih… memuat bukti transfer ' + done + '/' + list.length; } catch (e) {} next(); });
     }
     for (var i = 0; i < 4; i++) next();
