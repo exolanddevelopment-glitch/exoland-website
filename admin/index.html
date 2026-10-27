@@ -2110,7 +2110,13 @@ function afterWrite() { clearTimeout(afterWrite.t); afterWrite.t = setTimeout(fu
 function refreshView(wrote) {
   lastRefresh = Date.now();
   if (!me) return;
-  obData = null; unData = null; dashData = null; ksData = null;
+  // lists for other pages are dropped (they load fresh when opened); the open page keeps its list until the new one arrives,
+  // so clicking around while it refreshes still works
+  var cv = curView;
+  obData = null;
+  if (cv !== 'unit') unData = null;
+  if (cv !== 'dash' && cv !== 'kal') dashData = null;
+  if (cv !== 'kos') ksData = null;
   if (wrote) call('getFormData').then(function (f) { tenants = f.tenants || []; me.tenants = tenants; cacheWrite('getFormData', me); try { if (!chosen) renderList(); } catch (e) {} }).catch(function () {});
   var v = curView;
   try {
