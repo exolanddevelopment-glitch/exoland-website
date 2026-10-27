@@ -7719,7 +7719,11 @@ function obForChosen() {
   if (!obData || !obData.on || !chosen) return [];
   var me0 = obData.list.filter(function (x) { return x.k.id === chosen.key; })[0], pny = me0 ? me0.k.pny : chosen.pny;
   return obData.list.filter(function (x) { return x.k.id === chosen.key || (pny && x.k.pny === pny); })
-    .sort(function (a, b) { return (a.k.id === chosen.key ? -1 : 0) - (b.k.id === chosen.key ? -1 : 0) || a.k.id.localeCompare(b.k.id); });
+    .sort(function (a, b) {   // oldest unpaid period first (an ended contract's leftover before the new one), then contract number
+      var fa = a.bills.length ? String(a.bills[0].a) : '9999', fb = b.bills.length ? String(b.bills[0].a) : '9999';
+      a.bills.forEach(function (x) { if (String(x.a) < fa) fa = String(x.a); }); b.bills.forEach(function (x) { if (String(x.a) < fb) fb = String(x.a); });
+      return fa < fb ? -1 : fa > fb ? 1 : a.k.id.localeCompare(b.k.id);
+    });
 }
 function renderBills() {
   var box = $('billBox'); box.innerHTML = '';
