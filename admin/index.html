@@ -632,6 +632,16 @@
   .ks-card .row4 { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin-top:10px; font-size:12.5px; color:var(--muted); } .ks-card .row4 b { display:block; color:var(--ink); font-size:15px; }
   .ks-tools { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; max-width:var(--pw); }
   .ks-legend { display:flex; flex-wrap:wrap; gap:12px; font-size:12.5px; color:var(--muted); } .ks-legend i { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:5px; vertical-align:-1px; }
+  .ks-mode { margin:0; }
+  .dn-floors { margin:0 0 10px; }
+  .dn-wrap { overflow-x:auto; }
+  .dn-plan { position:relative; min-width:620px; border:2px solid var(--line); border-radius:12px; background:var(--subtle); }
+  .dn-plan > * { position:absolute; box-sizing:border-box; }
+  .dn-plan .ks-tile { min-height:0; padding:7px 9px; overflow:hidden; }
+  .dn-plan .ks-tile.dim { opacity:.28; }
+  .dn-x { display:flex; align-items:center; justify-content:center; text-align:center; font-size:11px; color:var(--muted); border:1px solid var(--line); background:var(--card, #fff); border-radius:8px; padding:4px; line-height:1.2; }
+  :root[data-theme="dark"] .dn-x { background:#1d1d22; }
+  .dn-note { margin:8px 0 0; font-size:12px; color:var(--muted); }
   .ks-floor { margin:0 0 14px; } .ks-floor h4 { margin:0 0 6px; font-size:13px; color:var(--muted); font-weight:700; }
   .ks-tiles { display:grid; grid-template-columns:repeat(auto-fill, minmax(118px, 1fr)); gap:8px; }
   .ks-tile { justify-content:flex-start; text-align:left; border-radius:12px; padding:9px 10px; border:1px solid var(--line); cursor:pointer; font:inherit; color:var(--ink); min-height:74px; display:flex; flex-direction:column; gap:2px; }
@@ -1231,7 +1241,8 @@
     <section id="view-kos" hidden>
       <div class="page-head" style="max-width:var(--pw)">
         <div><h1>Kos &amp; Apartemen</h1><p>Kamar dan unit sewa di gedung kos dan apartemen. Kamarnya dari Unit Sewa, penyewanya dari Penyewa. Kamar tanpa kontrak Aktif otomatis Kosong.</p></div>
-        <button class="btn sec" id="ksManage" type="button" style="width:auto;margin:0;padding:11px 18px" hidden>Atur properti</button>
+        <div class="head-btns"><div class="segs ks-mode" id="ksMode" hidden><button type="button" data-ksm="kotak" class="on">Kotak</button><button type="button" data-ksm="denah">Denah</button></div>
+        <button class="btn sec" id="ksManage" type="button" style="width:auto;margin:0;padding:11px 18px" hidden>Atur properti</button></div>
       </div>
       <div class="ks-cards" id="ksCards"><div class="empty">Memuat…</div></div>
       <div id="ksProp" hidden>
@@ -5648,6 +5659,15 @@ function renderKosGrid() {
     return !ksFilter || r.lvl === ksFilter;
   }).sort(ksUnitSort);
   var box = $('ksGrid'); box.innerHTML = '';
+  var dn = denahOf(ksProp);
+  $('ksMode').hidden = !dn;
+  $$('#ksMode [data-ksm]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-ksm') === (dn ? ksMode : 'kotak')); });
+  if (dn && ksMode === 'denah') {
+    renderDenah(box, dn, function (r) { return ksFilter === 'habis' ? r.habis !== undefined : !ksFilter || r.lvl === ksFilter; });
+    var s0 = ksSel && ksData.rooms.filter(function (r) { return r.key === ksSel; })[0];
+    if (s0) openKosRoom(s0, true); else closeKosRoom();
+    setTimeout(fitAll, 0); return;
+  }
   if (!rs.length) { emptyBox(box, ksFilter ? 'Tidak ada kamar dengan status ini.' : 'Belum ada kamar.'); }
   var apt = p && p.tipe === 'Apartemen', groups = {}, order = [];
   rs.forEach(function (r) { var g = !apt && p.invs.length > 1 ? ksCode(p, r) : ''; if (!groups[g]) { groups[g] = []; order.push(g); } groups[g].push(r); });
@@ -5669,6 +5689,65 @@ function renderKosGrid() {
   if (r0) openKosRoom(r0, true); else closeKosRoom();
   setTimeout(fitAll, 0);
 }
+/* ---------- Denah (floor plan) for Kost ACU 100OP. Only the arrangement of the rooms is copied from the drawing (not to scale);
+ * sizes are the numbers written on the plan, in cm (l = length; null = not written, still to be measured). ---------- */
+var DENAH = {
+  'maphar 002a': { floors: [
+    { name: 'Lantai 2', box: [272, 270, 1755, 1190], items: [
+      ['r', '202', 272, 270, 587, 605], ['r', '201', 272, 605, 590, 945], ['r', '203', 587, 270, 877, 515], ['x', 'KM', 877, 270, 977, 515], ['r', '204', 977, 270, 1260, 515],
+      ['r', '205', 1260, 270, 1590, 515], ['x', 'KM · tangga', 1590, 270, 1755, 515], ['r', '207', 700, 605, 990, 855], ['x', 'KM', 990, 605, 1090, 855], ['r', '206', 1090, 605, 1372, 855],
+      ['r', '208', 1372, 605, 1755, 855], ['x', 'KM', 272, 945, 422, 1190], ['r', '211', 818, 943, 1062, 1190], ['x', 'KM', 1062, 943, 1162, 1190], ['r', '210', 1162, 943, 1405, 1190], ['r', '209', 1405, 943, 1755, 1190]] },
+    { name: 'Lantai 3', box: [255, 235, 1812, 1215], items: [
+      ['r', '314', 255, 235, 587, 592], ['r', '312', 255, 592, 587, 955], ['x', 'KM', 255, 955, 370, 1215], ['r', '315', 587, 235, 885, 498], ['x', 'KM', 885, 235, 988, 498], ['r', '316', 988, 235, 1287, 498],
+      ['r', '317', 1287, 235, 1635, 498], ['x', 'KM · tangga', 1635, 235, 1812, 498], ['r', '319', 700, 595, 1003, 858], ['x', 'KM', 1003, 595, 1108, 858], ['r', '318', 1108, 595, 1405, 858], ['r', '320', 1405, 595, 1812, 858],
+      ['r', '323', 823, 950, 1075, 1215], ['x', 'KM', 1075, 950, 1178, 1215], ['r', '322', 1178, 950, 1428, 1215], ['r', '321', 1428, 950, 1812, 1215]] },
+    { name: 'Lantai 4', box: [272, 200, 1805, 1200], items: [
+      ['r', '424', 413, 200, 707, 458], ['r', '425', 707, 200, 997, 458], ['x', 'KM', 997, 200, 1100, 458], ['r', '426', 1100, 200, 1395, 458], ['r', '427', 1395, 200, 1690, 458], ['x', 'KM', 1690, 200, 1805, 458],
+      ['r', '430', 418, 577, 750, 838], ['r', '429', 750, 577, 1090, 838], ['r', '428', 1090, 577, 1395, 838], ['x', 'KM', 1395, 577, 1505, 838],
+      ['x', 'Tangga', 420, 945, 712, 1200], ['r', '431', 840, 838, 1395, 1200], ['x', 'Kamar petugas kebersihan · 260 × 240 cm', 1535, 948, 1805, 1200]] }],
+    size: { '201': [270, 340], '202': [270, 335], '203': [290, 245, 'luar'], '204': [285, 245, 'luar'], '205': [370, 245], '206': [285, 250, 'luar'], '207': [290, 250, 'luar'], '208': [380, 250],
+      '209': [350, 245], '210': [245, 245, 'luar'], '211': [245, 245, 'luar'], '312': [310, null], '314': [310, null], '315': [290, 245, 'luar'], '316': [285, 245, 'luar'], '317': [330, 245],
+      '318': [285, 250, 'luar'], '319': [290, 250, 'luar'], '320': [380, 250], '321': [360, 245], '322': [240, 245, 'luar'], '323': [240, 245, 'luar'],
+      '424': [280, 245], '425': [280, 245, 'luar'], '426': [285, 245, 'luar'], '427': [285, 245], '428': [295, 255], '429': [230, 255, 'km'], '430': [220, 255, 'km'], '431': [540, 350] } }
+};
+var ksMode = (function () { try { return localStorage.getItem('ksMode') || 'kotak'; } catch (e) { return 'kotak'; } })(), ksFloor = 0;
+function denahOf(propName) {
+  var p = ksData && ksData.props.filter(function (x) { return x.nama === propName; })[0];
+  if (!p) return null;
+  for (var i = 0; i < p.invs.length; i++) { var d = DENAH[String(p.invs[i]).toLowerCase().trim()]; if (d) return d; }
+  return null;
+}
+function denahSize(r) {
+  var d = denahOf(r.prop); if (!d) return null;
+  var z = d.size[String(r.unit).trim()]; if (!z) return null;
+  var m = function (c) { return (c / 100).toFixed(2).replace('.', ','); };
+  var t = z[1] ? m(z[0]) + ' × ' + m(z[1]) + ' m · ' + (z[0] * z[1] / 10000).toFixed(1).replace('.', ',') + ' m²' : 'lebar ' + m(z[0]) + ' m (panjang belum diukur)';
+  return t + (z[2] === 'luar' ? ' · kamar mandi di luar kamar' : z[2] === 'km' ? ' · + kamar mandi 1,00 × 1,35 m' : '');
+}
+function renderDenah(box, d, match) {
+  var fl = d.floors[Math.min(ksFloor, d.floors.length - 1)];
+  var segs = el('div', 'segs dn-floors');
+  d.floors.forEach(function (f, i) { var b = el('button', i === ksFloor ? 'on' : '', f.name); b.type = 'button'; b.onclick = function () { ksFloor = i; renderKosGrid(); }; segs.appendChild(b); });
+  box.appendChild(segs);
+  var byUnit = {};
+  ksData.rooms.filter(function (r) { return r.prop === ksProp; }).forEach(function (r) { var u = String(r.unit).trim(); if (!byUnit[u] || byUnit[u].kosong) byUnit[u] = r; });
+  var bx = fl.box, W = bx[2] - bx[0], H = bx[3] - bx[1];
+  var wrap = el('div', 'dn-wrap'), plan = el('div', 'dn-plan'); plan.style.aspectRatio = W + ' / ' + H;
+  var pos = function (n, it) { n.style.left = ((it[2] - bx[0]) / W * 100) + '%'; n.style.top = ((it[3] - bx[1]) / H * 100) + '%'; n.style.width = ((it[4] - it[2]) / W * 100) + '%'; n.style.height = ((it[5] - it[3]) / H * 100) + '%'; };
+  fl.items.forEach(function (it) {
+    if (it[0] === 'x') { var x = el('div', 'dn-x', it[1]); pos(x, it); plan.appendChild(x); return; }
+    var r = byUnit[it[1]];
+    var t = el('button', 'ks-tile ' + (r ? r.lvl : 'kosong') + (r && ksSel === r.key ? ' on' : '') + (r && !match(r) ? ' dim' : '')); t.type = 'button';
+    t.appendChild(el('b', '', it[1]));
+    t.appendChild(el('span', '', !r ? 'Belum ada di Unit Sewa' : r.kosong ? 'Kosong' : r.nama.split('/')[0]));
+    if (r) t.appendChild(el('small', '', r.kosong ? (r.harga ? rpShort(r.harga) : '') : (r.habis !== undefined ? (r.habis < 0 ? 'Kontrak habis' : 'Habis ' + r.habis + ' hr') : (r.st || ''))));
+    t.title = it[1] + (r ? ' · ' + (r.nama || 'Kosong') + (r.st ? ' · ' + r.st : '') : '');
+    if (r) t.onclick = function () { openKosRoom(r); }; else t.disabled = true;
+    pos(t, it); plan.appendChild(t);
+  });
+  wrap.appendChild(plan); box.appendChild(wrap);
+  box.appendChild(el('p', 'dn-note', 'Denah tidak sesuai skala: hanya posisi kamar. Ukuran kamar ada di detail kamar.'));
+}
 function closeKosRoom() { ksSel = null; $('ksEmpty').hidden = false; $('ksBody').hidden = true; $('ksSplit').classList.remove('show-detail'); $('view-kos').classList.remove('detail-open'); }
 function openKosRoom(r, noRedraw) {
   ksSel = r.key;
@@ -5679,11 +5758,11 @@ function openKosRoom(r, noRedraw) {
   var box = $('ksDetail'); box.innerHTML = '';
   var acts = el('div', 'tn-actions');
   if (r.kosong) {
-    box.appendChild(kvGrid([['Harga', r.harga ? rp(r.harga) + ' / ' + (r.siklus || 'bulan') : '-'], r.catatan ? ['Catatan', r.catatan] : null]));
+    box.appendChild(kvGrid([denahSize(r) ? ['Ukuran', denahSize(r)] : null, ['Harga', r.harga ? rp(r.harga) + ' / ' + (r.siklus || 'bulan') : '-'], r.catatan ? ['Catatan', r.catatan] : null]));
     if (ksData.canTenant && lv('penyewa') === 'U') acts.appendChild(btnEl('Isi penyewa', '', function () { tnPendingNew = { inv: r.inv, unit: r.unit || '-', harga: r.harga, siklus: r.siklus || 'Bulanan', unitId: r.key }; show('penyewa'); }));
   } else {
     var wa = null; if (r.wa) { wa = el('a', '', r.wa); wa.href = 'https://wa.me/' + String(r.wa).replace(/\D/g, '').replace(/^0/, '62'); wa.target = '_blank'; wa.rel = 'noopener'; }
-    box.appendChild(kvGrid([['WhatsApp', wa || '-'], ['Siklus', r.gratis ? 'Gratis (karyawan)' : r.siklus || '-'], [r.gratis ? 'Nilai sewa normal' : 'Harga', r.harga ? rp(r.harga) : '-'], ['Mulai', r.mulaiIso ? dmy(parseIso(r.mulaiIso)) : '-'],
+    box.appendChild(kvGrid([denahSize(r) ? ['Ukuran', denahSize(r)] : null, ['WhatsApp', wa || '-'], ['Siklus', r.gratis ? 'Gratis (karyawan)' : r.siklus || '-'], [r.gratis ? 'Nilai sewa normal' : 'Harga', r.harga ? rp(r.harga) : '-'], ['Mulai', r.mulaiIso ? dmy(parseIso(r.mulaiIso)) : '-'],
       r.dueDay ? ['Bayar tiap', 'tanggal ' + r.dueDay] : ['Selesai', r.selesaiIso ? dmy(parseIso(r.selesaiIso)) + (r.habis !== undefined ? (r.habis < 0 ? ' (sudah lewat)' : ' (' + r.habis + ' hari lagi)') : '') : '-'],
       r.gratis ? null : ['Lunas s/d', r.lunasIso ? dmy(parseIso(r.lunasIso)) : '-'], r.catatan ? ['Catatan', r.catatan] : null]));
     if (r.bad) box.appendChild(el('p', 'msg err', 'Ada tanggal yang salah di kontrak ini. Perbaiki di halaman Penyewa.'));
@@ -5724,6 +5803,7 @@ function kosManage() {
   }, '+ Tambah properti', function () { setTimeout(function () { kosPropModal(null); }, 0); });
 }
 $('ksManage').onclick = kosManage;
+$$('#ksMode [data-ksm]').forEach(function (b) { b.onclick = function () { ksMode = b.getAttribute('data-ksm'); try { localStorage.setItem('ksMode', ksMode); } catch (e) {} if (ksData && ksProp) renderKosGrid(); }; });
 $('ksBack').onclick = function () { closeKosRoom(); renderKosGrid(); };
 $$('#ksSegs [data-ksf]').forEach(function (b) { b.onclick = function () { ksFilter = b.getAttribute('data-ksf'); renderKosGrid(); }; });
 
