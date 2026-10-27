@@ -3103,7 +3103,7 @@ function bonPrint(list, title, w0) {
     }
     for (var i = 0; i < 4; i++) next();
   }).then(function () {
-    var html = '<div class="bar"><b>' + bonEsc(title) + '</b> · ' + list.length + ' bon, ' + Math.ceil(list.length / 2) + ' lembar A4<button id="bonPrintBtn">Cetak / simpan PDF</button><button id="bonAutoRot" title="Foto yang melebar diputar supaya lebih besar">Putar otomatis foto lebar</button><span style="color:#555">Arahkan mouse ke foto: putar ⟲ ⟳, perbesar + −, geser dengan menarik.</span></div>';
+    var html = '<div class="bar"><b>' + bonEsc(title) + '</b> · ' + list.length + ' bon, ' + Math.ceil(list.length / 2) + ' lembar <span id="bonPaperLbl">A4</span><label style="display:inline-flex;align-items:center;gap:6px">Kertas <select id="bonPaper" style="font:inherit;padding:6px 8px"><option value="a4">A4 (21 × 29,7 cm)</option><option value="f4">F4 / Folio (21 × 33 cm)</option></select></label><button id="bonPrintBtn">Cetak / simpan PDF</button><button id="bonAutoRot" title="Foto yang melebar diputar supaya lebih besar">Putar otomatis foto lebar</button><span style="color:#555">Arahkan mouse ke foto: putar ⟲ ⟳, perbesar + −, geser dengan menarik.</span></div>';
     for (var i = 0; i < list.length; i += 2) {
       html += '<div class="page">' + bonHalf(list[i], imgs[list[i].id]) + (list[i + 1] ? '<div class="cut"><span>✂ potong di sini</span></div>' + bonHalf(list[i + 1], imgs[list[i + 1].id]) : '') + '</div>';
     }
@@ -3137,6 +3137,16 @@ function bonPhotoTools(w) {
     var img = box.querySelector('img'); if (!img.complete) img.addEventListener('load', function () { apply(box); });
   });
   var pb = d.getElementById('bonPrintBtn'); if (pb) pb.addEventListener('click', function () { w.print(); });
+  // paper: A4 or F4 (folio). Each bon is exactly half the sheet, so the cut line is always in the middle.
+  var ps = d.getElementById('bonPaper');
+  function paper(v) {
+    var css = d.getElementById('paperCss'); if (!css) { css = d.createElement('style'); css.id = 'paperCss'; d.head.appendChild(css); }
+    css.textContent = v === 'f4' ? '@page{size:210mm 330mm;margin:0}.page{height:330mm}.half{height:165mm;flex-basis:165mm}.cut{top:165mm}' : '';
+    var lb = d.getElementById('bonPaperLbl'); if (lb) lb.textContent = v === 'f4' ? 'F4' : 'A4';
+    try { localStorage.setItem('bonPaper', v); } catch (e) {}
+    setTimeout(function () { boxes.forEach(apply); }, 50);   // photos refit to the new size
+  }
+  if (ps) { var saved = 'a4'; try { saved = localStorage.getItem('bonPaper') || 'a4'; } catch (e) {} ps.value = saved; paper(saved); ps.addEventListener('change', function () { paper(ps.value); }); }
   var ab = d.getElementById('bonAutoRot');
   if (ab) ab.addEventListener('click', function () {
     boxes.forEach(function (box) { var img = box.querySelector('img'); if (img.naturalWidth > img.naturalHeight * 1.1) { box._st.r = 90; box._st.s = 1; box._st.x = 0; box._st.y = 0; apply(box); } });
