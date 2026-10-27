@@ -7428,6 +7428,25 @@ function knEdit(k, preset) {
       base = d.rows.slice(); a = addDays(d.rows[d.rows.length - 1].B, 1); m = lenMonths(tmpl);
     } else {
       base = d.rows.filter(function (r) { return r.locked || r.lunas; });   // paid rows stay; the rest is rebuilt after them
+      // a hole before a paid row (e.g. "Sudah lunas" moved back from 23/09 to 23/08 while 24/09 is paid) gets its own bills,
+      // so 24/08 – 23/09 can still be paid in Catat pembayaran
+      if (m > 0) {
+        var filled = [], cur = start;
+        base.forEach(function (r) {
+          if (r.locked && cur && r.A && dayDiff(cur, r.A) >= 1) {
+            var gEnd = addDays(r.A, -1), g = 0;
+            while (cur <= gEnd && g++ < 240) {
+              var fr = m % 12 === 0 ? { n: m / 12, u: 'tahun' } : { n: m, u: 'bulan' };
+              fr.jml = Math.round(d.harga * m / (cycleOf(d.siklus) || m));
+              var fb = rowEnd(cur, fr);
+              if (fb > gEnd || dayDiff(fb, gEnd) <= 3) { fr = { n: 1, u: 'tgl', end: iso(gEnd), jml: fr.jml }; fb = gEnd; }
+              filled.push(fr); cur = addDays(fb, 1);
+            }
+          }
+          filled.push(r); if (r.B) cur = addDays(r.B, 1);
+        });
+        base = filled; knChain({ mulai: d.mulai, rows: base });
+      }
       var lk = base[base.length - 1]; a = lk && lk.B ? addDays(lk.B, 1) : start;
     }
     if (m === -1) { if (end) add.push({ n: 1, u: 'tgl', end: iso(end), jml: d.harga }); else toast('Isi tanggal selesai untuk sekali bayar.'); }
