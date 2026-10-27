@@ -633,6 +633,7 @@
   .ks-tools { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; max-width:var(--pw); }
   .ks-legend { display:flex; flex-wrap:wrap; gap:12px; font-size:12.5px; color:var(--muted); } .ks-legend i { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:5px; vertical-align:-1px; }
   .ks-mode { margin:0; }
+  .rep-range { display:inline-flex; align-items:center; gap:8px; flex-wrap:wrap; } .rep-range input { width:150px; margin:0; } .rep-range .btn { width:auto; margin:0; padding:10px 16px; }
   .dn-floors { margin:0 0 10px; }
   .dn-wrap { overflow-x:auto; }
   .dn-plan { position:relative; margin:0 auto; border:2px solid var(--line); border-radius:12px; background:#f7f7f8; }
@@ -1808,8 +1809,8 @@
         <div class="head-btns"><button class="btn" id="repBon" type="button" style="width:auto;margin:0;padding:11px 18px">Cetak bon putih</button><button class="btn sec" id="repReload" type="button" style="width:auto;margin:0;padding:11px 18px">Muat ulang</button><button class="btn sec" id="repBack" type="button" style="width:auto;margin:0;padding:11px 18px">← Riwayat pembayaran</button></div>
       </div>
       <div class="rp-top">
-        <div class="segs" id="repMode"><button type="button" data-rm="m" class="on">Bulanan</button><button type="button" data-rm="y">Rekap tahunan</button></div>
-        <select id="repMonth" aria-label="Bulan"></select><select id="repYear" aria-label="Tahun" hidden></select>
+        <div class="segs" id="repMode"><button type="button" data-rm="m" class="on">Bulanan</button><button type="button" data-rm="r">Pilih tanggal</button><button type="button" data-rm="y">Rekap tahunan</button></div>
+        <select id="repMonth" aria-label="Bulan"></select><select id="repYear" aria-label="Tahun" hidden></select><span class="rep-range" id="repRange" hidden><input id="repFrom" type="date" aria-label="Dari tanggal"><span>s/d</span><input id="repTo" type="date" aria-label="Sampai tanggal"><button class="btn" id="repGo" type="button">Tampilkan</button></span>
         <span class="muted" id="repInfo"></span>
       </div>
       <div id="repBody"><div class="empty">Memuat…</div></div>
@@ -3145,6 +3146,11 @@ function bonMonthList(y, m) {   // payments whose Tanggal Bayar is in that month
   return payments.filter(function (p) { var d = parseDmy(p.tgl); return d && d.getFullYear() === y && d.getMonth() === m; })
     .sort(function (a, b) { var da = parseDmy(a.tgl), db = parseDmy(b.tgl); return da - db || String(a.kwitansi).localeCompare(String(b.kwitansi)); });
 }
+function bonRangeList(a, b) {   // payments whose Tanggal Bayar is from a to b (both days included), oldest first
+  var a0 = new Date(a.getFullYear(), a.getMonth(), a.getDate()), b0 = new Date(b.getFullYear(), b.getMonth(), b.getDate(), 23, 59);
+  return payments.filter(function (p) { var d = parseDmy(p.tgl); return d && d >= a0 && d <= b0; })
+    .sort(function (x, y) { var dx = parseDmy(x.tgl), dy = parseDmy(y.tgl); return dx - dy || String(x.kwitansi).localeCompare(String(y.kwitansi)); });
+}
 function mergeUpd(upd) { var g = upd.group || [upd]; payments = payments.map(function (x) { var n = g.filter(function (y) { return y.id === x.id; })[0]; return n || x; }); }
 
 function checkB() { $('bsave').disabled = !selId || !($('bfile').files || []).length; }
@@ -3185,8 +3191,15 @@ $('cancelYes').onclick = function () {
 $('dDownload').onclick = function () { var p = current(); if (p) downloadKwitansi(kwOf(p), $('dSign'), this); };
 $('dBon').onclick = function () { var p = current(); if (p) bonPrint([p], 'Bon putih ' + (p.kwitansi || p.id)); };
 $('repBon').onclick = function () {
-  var v = String($('repMonth').value || '').split('-'), y = +v[0], m = +v[1]; if (!v[0]) return;
-  var w = window.open('', '_blank'), go = function () { bonPrint(bonMonthList(y, m), 'Bon putih ' + repLabelBulan(y, m), w); };
+  var go, w;
+  if (repMode === 'r') {   // custom range, by Tanggal Bayar
+    var fa = parseIso($('repFrom').value), fb = parseIso($('repTo').value); if (!fa || !fb || fb < fa) { toast('Isi tanggal dari dan sampai dulu.'); return; }
+    w = window.open('', '_blank');
+    go = function () { bonPrint(bonRangeList(fa, fb), 'Bon putih ' + dmy(fa) + ' – ' + dmy(fb), w); };
+  } else {
+    var v = String($('repMonth').value || '').split('-'), y = +v[0], m = +v[1]; if (!v[0]) return;
+    w = window.open('', '_blank'); go = function () { bonPrint(bonMonthList(y, m), 'Bon putih ' + repLabelBulan(y, m), w); };
+  }
   if (w) { w.document.write('<p style="font-family:Arial;padding:16px">Menyiapkan bon putih…</p>'); }
   call('getPayments').then(function (l) { payments = l || []; go(); }).catch(function (e) { if (w) w.close(); toast(errText(e)); });   // always the newest list
 };
@@ -6549,10 +6562,15 @@ function openReport() { show('laporan'); }
 function loadReport(force) {
   repFillPickers();
   $$('#repMode [data-rm]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-rm') === repMode); });
-  $('repMonth').hidden = repMode !== 'm'; $('repYear').hidden = repMode !== 'y'; $('repBon').hidden = repMode !== 'm';
+  $('repMonth').hidden = repMode !== 'm'; $('repYear').hidden = repMode !== 'y'; $('repRange').hidden = repMode !== 'r'; $('repBon').hidden = repMode === 'y';
+  if (repMode === 'r' && !$('repFrom').value) { var t0 = today0(); $('repFrom').value = iso(new Date(t0.getFullYear(), t0.getMonth(), 1)); $('repTo').value = iso(t0); }
   if (lv('bukti') !== 'U') { emptyBox($('repBody'), 'Laporan hanya untuk yang punya akses "Ubah" di Riwayat pembayaran.'); return; }
-  var arg = repMode === 'm' ? { y: +$('repMonth').value.split('-')[0], m: +$('repMonth').value.split('-')[1] } : { y: +$('repYear').value, m: -1 };
-  var key = arg.y + '_' + arg.m, seq = ++repSeq;
+  var arg = repMode === 'm' ? { y: +$('repMonth').value.split('-')[0], m: +$('repMonth').value.split('-')[1] } : repMode === 'r' ? { from: $('repFrom').value, to: $('repTo').value } : { y: +$('repYear').value, m: -1 };
+  if (repMode === 'r') {
+    if (!arg.from || !arg.to) { emptyBox($('repBody'), 'Isi tanggal dari dan sampai, lalu tekan Tampilkan.'); return; }
+    if (arg.to < arg.from) { emptyBox($('repBody'), 'Tanggal sampai sebelum tanggal dari.'); return; }
+  }
+  var key = repMode === 'r' ? 'r_' + arg.from + '_' + arg.to : arg.y + '_' + arg.m, seq = ++repSeq;
   if (repCache[key] && !force) { repData = repCache[key]; renderReport(); return; }
   emptyBox($('repBody'), 'Menyusun laporan…'); $('repInfo').textContent = '';
   syncing(1, 'getIncomeReport');
@@ -6602,13 +6620,13 @@ function renderReport() {
   box.appendChild(foot);
 }
 function renderReportMonth(d, box) {
-  var mr = d.month, lbl = repLabelBulan(mr.y, mr.m);
+  var mr = d.month, lbl = mr.label || repLabelBulan(mr.y, mr.m);
   $('repInfo').textContent = mr.nPay + ' pembayaran · disusun ' + d.made;
   var g = el('div', 'rp-grid');
   mr.sections.forEach(function (s) { g.appendChild(repCard(s, 'Uang yang masuk ' + lbl)); });
   box.appendChild(g);
   var chk = el('div', 'card rp-warn'); chk.appendChild(el('b', '', 'Periksa sebelum mengunduh'));
-  if (!mr.nPay) chk.appendChild(el('div', 'msg warn', '● Belum ada pembayaran tercatat dengan tanggal bayar di ' + lbl + '.'));
+  if (!mr.nPay) chk.appendChild(el('div', 'msg warn', '● Belum ada pembayaran tercatat dengan tanggal bayar ' + (mr.label ? lbl : 'di ' + lbl) + '.'));
   if (mr.unknown.length) {
     var u = el('div', 'msg err', '● ' + mr.unknown.length + ' uang masuk belum teridentifikasi: ' + rp(mr.unknown.reduce(function (a, x) { return a + x.jumlah; }, 0)) + ' (' + mr.unknown.map(function (x) { return x.nama; }).slice(0, 4).join(', ') + (mr.unknown.length > 4 ? ', …' : '') + '). Tetap masuk laporan, tulisan merah.');
     var lb = btnEl('Lihat', 'sec', function () { filter = 'unk'; show('bukti'); setTimeout(function () { $$('[data-filter]').forEach(function (x) { x.classList.toggle('on', x.getAttribute('data-filter') === 'unk'); }); renderPays(); }, 0); }); u.appendChild(lb); chk.appendChild(u);
@@ -6723,9 +6741,9 @@ function repFitCols(pdf, rows) {
   RP_W = need;
 }
 function repPdfMonth(pdf, mr) {
-  var lbl = (BULAN_L[mr.m] + ' ' + mr.y).toUpperCase(), y = 0, pageNo = 0;
+  var lbl = (mr.label || BULAN_L[mr.m] + ' ' + mr.y).toUpperCase(), y = 0, pageNo = 0;
   var secs = mr.sections.filter(function (s) { return s.entries.length; });
-  function newPage() { pdf.page(); pageNo++; y = repBar(pdf, RP_TOP, 'PEMASUKAN SEWA BULAN ' + lbl, 9.5) + 1.5; }
+  function newPage() { pdf.page(); pageNo++; y = repBar(pdf, RP_TOP, 'PEMASUKAN SEWA ' + (mr.label ? 'TANGGAL ' : 'BULAN ') + lbl, 9.5) + 1.5; }
   function rowsH(rows) { return rows.reduce(function (a, r) { return a + (r.gap || 0) + repRowH(pdf, r.cells, r.bold, r.label); }, 0); }
   if (!repPdfMonth.fixed) repFitCols(pdf, secs.reduce(function (a, s) { return a.concat(repSectionRows(s)); }, []));  // one set of widths for every table in the file
   newPage();
@@ -6798,7 +6816,7 @@ function repMakePdf() {
   });
   return pdf.blob();
 }
-function repFileName() { var d = repData; return d.month ? 'Laporan pemasukan ' + repLabelBulan(d.month.y, d.month.m) + '.pdf' : 'Rekap pemasukan ' + d.y + (repYMode === 'lengkap' ? ' (lengkap)' : '') + '.pdf'; }
+function repFileName() { var d = repData; return d.month ? 'Laporan pemasukan ' + (d.month.label ? d.month.label.replace(/\//g, '-') : repLabelBulan(d.month.y, d.month.m)) + '.pdf' : 'Rekap pemasukan ' + d.y + (repYMode === 'lengkap' ? ' (lengkap)' : '') + '.pdf'; }
 function repDownload(btn) {
   var label = btn.textContent; btn.disabled = true; btn.textContent = 'Membuat PDF…';
   setTimeout(function () {
@@ -6826,6 +6844,7 @@ function repPreview(btn) {
 }
 $$('#repMode [data-rm]').forEach(function (b) { b.onclick = function () { repMode = b.getAttribute('data-rm'); loadReport(); }; });
 $('repMonth').onchange = function () { repRows = false; loadReport(); };
+$('repGo').onclick = function () { repRows = false; loadReport(); };
 $('repYear').onchange = function () { loadReport(); };
 $('repBack').onclick = function () { show('bukti'); };
 $('repReload').onclick = function () { loadReport(true); };
