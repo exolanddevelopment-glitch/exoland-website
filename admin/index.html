@@ -635,7 +635,7 @@
   .ks-mode { margin:0; }
   .dn-floors { margin:0 0 10px; }
   .dn-wrap { overflow-x:auto; }
-  .dn-plan { position:relative; min-width:620px; border:2px solid var(--line); border-radius:12px; background:var(--subtle); }
+  .dn-plan { position:relative; margin:0 auto; border:2px solid var(--line); border-radius:12px; background:var(--subtle); }
   .dn-plan > * { position:absolute; box-sizing:border-box; }
   .dn-plan .ks-tile { min-height:0; padding:7px 9px; overflow:hidden; }
   .dn-plan .ks-tile.dim { opacity:.28; }
@@ -2349,13 +2349,13 @@ document.addEventListener('click', function (e) { var m = $('userMenu'); if (!m.
 function fitSplit(id, minW) {
   var sp = $(id);
   if (!sp || sp.offsetParent === null) return;
-  if (window.innerWidth < minW) { sp.classList.remove('fit'); sp.style.height = ''; return; }
+  if (window.innerWidth < minW || (id === 'ksSplit' && document.querySelector('#ksGrid .dn-plan'))) { sp.classList.remove('fit'); sp.style.height = ''; return; }   // floor plan: no inner scroll box
   sp.classList.add('fit');
   var top = sp.getBoundingClientRect().top + window.scrollY;
   sp.style.height = Math.max(460, window.innerHeight - top - 20) + 'px';
 }
 function fitAll() { fitSplit('unSplit', 1181); fitSplit('tnSplit', 1181); fitSplit('split', 900); fitSplit('tdSplit', 1181); fitSplit('jlSplit', 1181); fitSplit('ckSplit', 1181); fitSplit('pbSplit', 1181); fitSplit('ksSplit', 1181); fitSplit('ktSplit', 1181); fitSplit('pySplit', 1181); fitSplit('knSplit', 1181); }
-window.addEventListener('resize', function () { clearTimeout(fitAll.t); fitAll.t = setTimeout(fitAll, 120); });
+window.addEventListener('resize', function () { clearTimeout(fitAll.t); fitAll.t = setTimeout(function () { fitAll(); if (typeof fitDenah === 'function') fitDenah(); }, 120); });
 /* ---------- files ---------- */
 function readFiles(input, opts) {
   opts = opts || {};
@@ -5732,7 +5732,7 @@ function renderDenah(box, d, match) {
   var byUnit = {};
   ksData.rooms.filter(function (r) { return r.prop === ksProp; }).forEach(function (r) { var u = String(r.unit).trim(); if (!byUnit[u] || byUnit[u].kosong) byUnit[u] = r; });
   var bx = fl.box, W = bx[2] - bx[0], H = bx[3] - bx[1];
-  var wrap = el('div', 'dn-wrap'), plan = el('div', 'dn-plan'); plan.style.aspectRatio = W + ' / ' + H;
+  var wrap = el('div', 'dn-wrap'), plan = el('div', 'dn-plan'); plan.style.aspectRatio = W + ' / ' + H; plan.setAttribute('data-ratio', W / H);
   var pos = function (n, it) { n.style.left = ((it[2] - bx[0]) / W * 100) + '%'; n.style.top = ((it[3] - bx[1]) / H * 100) + '%'; n.style.width = ((it[4] - it[2]) / W * 100) + '%'; n.style.height = ((it[5] - it[3]) / H * 100) + '%'; };
   fl.items.forEach(function (it) {
     if (it[0] === 'x') { var x = el('div', 'dn-x', it[1]); pos(x, it); plan.appendChild(x); return; }
@@ -5747,7 +5747,10 @@ function renderDenah(box, d, match) {
   });
   wrap.appendChild(plan); box.appendChild(wrap);
   box.appendChild(el('p', 'dn-note', 'Denah tidak sesuai skala: hanya posisi kamar. Ukuran kamar ada di detail kamar.'));
+  setTimeout(fitDenah, 0);
 }
+/* the floor plan uses the full width; the page itself scrolls (no scroll box inside the plan) */
+function fitDenah() { var plan = document.querySelector('#ksGrid .dn-plan'); if (plan) plan.style.width = ''; }
 function closeKosRoom() { ksSel = null; $('ksEmpty').hidden = false; $('ksBody').hidden = true; $('ksSplit').classList.remove('show-detail'); $('view-kos').classList.remove('detail-open'); }
 function openKosRoom(r, noRedraw) {
   ksSel = r.key;
