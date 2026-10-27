@@ -7505,6 +7505,7 @@ function knEdit(k, preset) {
   function quick(m, repeatLast) {
     readTop();
     var start = parseIso(d.mulai), end = parseIso(d.selesai); if (!start) { toast('Isi tanggal mulai dulu.'); return; }
+    if (k && k.status !== 'Aktif' && !end) { toast('Kontrak sudah selesai: isi dulu Tanggal selesai (kapan penyewa keluar), supaya tagihan berhenti di tanggal itu.'); drawSched(); return; }
     knChain(d);
     var base, a, add = [], tmpl = null;
     if (repeatLast) {
@@ -7708,7 +7709,17 @@ function renderBills() {
   if (!obData) { box.appendChild(el('div', 'muted', 'Memuat tagihan…')); loadOpenBills().then(function () { renderBills(); check(); }).catch(function (e) { box.innerHTML = ''; box.appendChild(el('div', 'msg err', 'Gagal memuat tagihan: ' + errText(e))); }); return; }
   var groups = obForChosen();
   box.appendChild(el('label', '', 'Pilih tagihan yang dibayar'));
-  if (!groups.length) box.appendChild(el('div', 'muted', 'Kontrak ini tidak punya tagihan terbuka.'));
+  var anyOpen = groups.some(function (g) { return g.bills.length; });
+  if (chosen.ended && !anyOpen) {   // former tenant: old months are not open bills any more, explain how to add them
+    var hb = el('div', 'msg warn');
+    hb.appendChild(el('div', '', 'Bulan-bulan sewa ' + chosen.nama.split('/')[0].trim() + ' tidak punya tagihan terbuka lagi (dianggap lunas, atau dihapus waktu kontrak selesai). Untuk mencatat pembayaran bulan lama:'));
+    var ol = el('ol', ''); ol.style.margin = '6px 0 8px 18px'; ol.style.padding = '0';
+    ['Buka kontraknya, tekan "Ubah kontrak & jadwal".', 'Isi "Tanggal selesai" (kapan penyewa keluar), kalau masih kosong.', 'Mundurkan "Sudah lunas s/d" ke sebelum bulan yang mau dicatat, lalu Simpan.', 'Kembali ke sini: bulan itu muncul dan bisa dipilih.'].forEach(function (t) { ol.appendChild(el('li', '', t)); });
+    hb.appendChild(ol);
+    var kid = chosen.key, go = btnEl('Buka kontrak ' + kid, 'sec', function () { knFilter = 'selesai'; knPendingId = kid; show('kon'); }); go.style.width = 'auto'; go.style.margin = '0';
+    hb.appendChild(go); box.appendChild(hb);
+    if (!groups.length) return;
+  } else if (!groups.length) box.appendChild(el('div', 'muted', 'Kontrak ini tidak punya tagihan terbuka.'));
   groups.forEach(function (g) {
     if (groups.length > 1 || g.k.status !== 'Aktif') box.appendChild(el('div', 'ob-k', g.k.id + ' · ' + unitsTxt(g.k) + (g.k.usaha ? ' · ' + g.k.usaha : '') + (g.k.status !== 'Aktif' ? ' · Kontrak selesai, sisa tunggakan' : '')));
     if (!g.bills.length) box.appendChild(el('div', 'muted small', 'Semua tagihan sudah lunas.'));
