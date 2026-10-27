@@ -1813,7 +1813,7 @@
           <div class="toolbar">
             <div class="search">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-              <input id="bq" type="search" placeholder="Cari nama, unit, atau no. kwitansi" autocomplete="off" aria-label="Cari pembayaran">
+              <input id="bq" type="search" placeholder="Cari nama, unit, no. kwitansi, KTR, atau jumlah (1.400.000 / 1,4jt)" autocomplete="off" aria-label="Cari pembayaran">
             </div>
             <div class="pills">
               <button class="pill on" data-filter="all" type="button">Semua</button>
@@ -2918,11 +2918,22 @@ function sortKey(p) {
   if (sortBy === 'nama') return p.nama.toLowerCase();
   return '';
 }
+/* Search by amount: "1400000", "1.400.000", "Rp 1.400.000", "1,4jt", "1.4 juta", "1400rb", "1400k" all mean 1.400.000.
+ * Returns null when the text is not an amount (then it is a normal word search, e.g. "613"). */
+function amountQ(q) {
+  var t = String(q || '').toLowerCase().replace(/^rp\.?\s*/, '').replace(/\s+/g, '');
+  var m = /^(\d+(?:[.,]\d+)?)(jt|juta|rb|ribu|k)$/.exec(t);
+  if (m) return Math.round(parseFloat(m[1].replace(',', '.')) * (m[2] === 'jt' || m[2] === 'juta' ? 1e6 : 1e3));
+  if (/^\d{1,3}([.,]\d{3})+$/.test(t)) return +t.replace(/[.,]/g, '');
+  if (/^\d{5,}$/.test(t)) return +t;   // 25000, 1400000 (short numbers like 613 stay a normal search)
+  return null;
+}
 function renderPays() {
-  var q = $('bq').value.toLowerCase().trim();
+  var q = $('bq').value.toLowerCase().trim(), amt = amountQ(q);
   var rows = payments.filter(function (p) {
     if (filter === 'no' && (p.bukti.length || isVoid(p)) && p.id !== selId) return false;
     if (filter === 'unk' && (!isUnk(p) || isVoid(p)) && p.id !== selId) return false;
+    if (amt !== null && Number(p.jumlah) === amt) return true;
     return !q || (p.nama + ' ' + p.inv + ' ' + p.unit + ' ' + p.id + ' ' + p.kwitansi + ' ' + (p.jenis || '') + ' ' + (p.ktr || '') + ' ' + (p.plots || []).join(' ')).elHas(q);
   });
   if (sortBy === 'unit' || sortBy === 'nama') rows.sort(function (a, b) { return sortKey(a).localeCompare(sortKey(b), 'id', { numeric: true }); });
