@@ -5795,9 +5795,19 @@ function openKosRoom(r, noRedraw) {
       r.gratis ? null : ['Lunas s/d', r.lunasIso ? dmy(parseIso(r.lunasIso)) : '-'], r.catatan ? ['Catatan', r.catatan] : null]));
     if (r.bad) box.appendChild(el('p', 'msg err', 'Ada tanggal yang salah di kontrak ini. Perbaiki di halaman Penyewa.'));
     if (ksData.canPay && !r.bad && !r.gratis && !/^Ikut /.test(r.st || '')) acts.appendChild(btnEl('Catat bayar', '', function () { payFor(r.key); }));
-    if (r.wa && (r.lvl === 'telat' || r.lvl === 'segera')) { var rm = el('a', 'btn sec', 'Ingatkan via WhatsApp'); rm.target = '_blank'; rm.rel = 'noopener';
-      rm.href = 'https://wa.me/' + String(r.wa).replace(/\D/g, '').replace(/^0/, '62') + '?text=' + encodeURIComponent('Halo ' + r.nama.split('/')[0].trim() + ', sewa ' + r.inv + ' unit ' + r.unit + ' sebesar ' + rp(r.harga) + (r.lunasIso ? ' sudah lunas sampai ' + dmy(parseIso(r.lunasIso)) : '') + '. Mohon dibayar ya. Terima kasih. - Exotic Land Development');
-      acts.appendChild(rm); }
+    if (!r.gratis && !r.noBill) {   // every rented room (Meikarta, kos ...): reminder with the next due date
+      if (r.wa) {
+        var due = r.lunasIso ? addDays(parseIso(r.lunasIso), 1) : null;
+        var msg = 'Halo ' + r.nama.split('/')[0].trim() + ', sewa ' + r.inv + ' unit ' + r.unit + ' sebesar ' + rp(r.harga) +
+          (due ? ' jatuh tempo pada tanggal ' + dmy(due) + ' untuk periode ' + ('0' + (due.getMonth() + 1)).slice(-2) + '/' + due.getFullYear() : '') + '. Mohon dibayar ya. Terima kasih.';
+        var rm = el('a', 'btn sec', 'Ingatkan via WhatsApp'); rm.target = '_blank'; rm.rel = 'noopener';
+        rm.href = 'https://wa.me/' + String(r.wa).replace(/\D/g, '').replace(/^0/, '62') + '?text=' + encodeURIComponent(msg);
+        acts.appendChild(rm);
+      } else {
+        var nw = btnEl('Ingatkan via WhatsApp', 'sec', function () { toast('Nomor WhatsApp ' + r.nama.split('/')[0].trim() + ' belum diisi. Isi dulu di Penyewa.'); });
+        nw.title = 'Nomor WhatsApp belum diisi di Penyewa'; nw.style.opacity = '.55'; acts.appendChild(nw);
+      }
+    }
   }
   if (ksData.canTenant) acts.appendChild(r.kosong ? btnEl('Buka di Unit', 'sec', function () { unPendingId = r.key; show('unit'); }) : btnEl('Buka di Penyewa', 'sec', function () { tnPendingKey = r.key; show('penyewa'); }));
   if (acts.children.length) box.appendChild(acts);
