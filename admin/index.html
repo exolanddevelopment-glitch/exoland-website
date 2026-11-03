@@ -3082,7 +3082,158 @@ var BON_CSS = '@page{size:A4;margin:0}*{box-sizing:border-box}body{margin:0;font
   '.tools{position:absolute;right:3px;bottom:3px;display:flex;gap:2px;opacity:0;transition:opacity .15s}.pbox:hover .tools{opacity:1}.tools button{width:26px;height:26px;border:1px solid #888;border-radius:4px;background:#fff;font-size:14px;cursor:pointer;padding:0}@media print{.tools{display:none}.pbox{border-color:#bbb}}.ph{flex:1;border:2px dashed #999;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2mm;text-align:center;padding:4mm}.ph b{font-size:13px;letter-spacing:.06em}.ph span{font-size:10px;color:#555}' +
   '.batal{position:absolute;top:40%;left:15%;transform:rotate(-12deg);border:4px solid #b42318;color:#b42318;font-size:44px;font-weight:800;padding:0 16px;opacity:.85}' +
   '.bar{position:sticky;top:0;background:#f1f1f1;padding:10px 14px;font-size:14px;display:flex;gap:10px;align-items:center;border-bottom:1px solid #ccc}.bar button{font-size:14px;padding:8px 14px;cursor:pointer}' +
-  '@media screen{body{background:#ddd}.page{margin:10px auto;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.2)}}@media print{.bar{display:none}}';
+  '@media screen{body{background:#ddd}.page{margin:10px auto;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.2)}}@media print{.bar{display:none}}@media print{body>*{display:none!important}body::before{content:"Bon putih tidak bisa dicetak langsung dari sini. Tutup jendela ini, tekan Unduh PDF, lalu cetak file PDF-nya.";display:block;font:16px Arial;padding:40px}}.pdfing .page{box-shadow:none!important;margin:0 auto!important}.pdfing .tools{display:none!important}';
+/* Bon putih is only given as a PDF file (printing straight from the browser tab made some printers print pages twice).
+ * The PDF is drawn from the bon page itself: same layout, text stays sharp, photos at their original size. */
+function bonNoPrint(w) {
+  var d = w.document;
+  d.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && String(e.key).toLowerCase() === 'p') {
+      e.preventDefault();
+      var st = d.getElementById('bonMsg'); if (st) st.textContent = 'Cetak langsung tidak bisa. Tekan "Unduh PDF", lalu cetak file PDF-nya.';
+    }
+  }, true);
+  var bar = d.querySelector('.bar'); if (bar && !d.getElementById('bonMsg')) { var m = d.createElement('b'); m.id = 'bonMsg'; m.style.color = '#b42318'; bar.appendChild(m); }
+}
+function bonPdf(w, btn) {
+  var d = w.document, msg = d.getElementById('bonMsg'), say = function (t) { if (msg) msg.textContent = t; };
+  if (btn.disabled) return;
+  var f4 = (d.getElementById('bonPaper') || {}).value === 'f4', pages = Array.prototype.slice.call(d.querySelectorAll('.page'));
+  btn.disabled = true; d.body.classList.add('pdfing'); say('Membuat PDF…');
+  var doc = new BonPdfDoc(f4 ? 935.43 : 841.89), i = 0;
+  function next() {
+    if (i >= pages.length) return Promise.resolve();
+    say('Membuat PDF… halaman ' + (i + 1) + '/' + pages.length);
+    return bonPdfPage(w, pages[i++], doc).then(function () { return new Promise(function (r) { setTimeout(r, 0); }); }).then(next);
+  }
+  next().then(function () {
+    var a = d.createElement('a'), U = w.URL || URL;
+    a.href = U.createObjectURL(doc.blob()); a.download = (d.title || 'Bon putih').replace(/[\/\\:*?"<>|]+/g, '-') + (f4 ? ' (F4)' : ' (A4)') + '.pdf';
+    d.body.appendChild(a); a.click(); setTimeout(function () { a.remove(); }, 1000);
+    say('PDF sudah diunduh. Buka file PDF-nya, lalu cetak dari sana.');
+  }).catch(function (e) { say('Gagal membuat PDF: ' + (e && e.message ? e.message : e)); })
+    .then(function () { btn.disabled = false; d.body.classList.remove('pdfing'); });
+}
+/* A small PDF writer for the bon: text (Helvetica / Times / ZapfDingbats), lines, boxes, clipped and turned photos. */
+function BonPdfDoc(H) { this.H = H; this.pages = []; this.imgs = []; this.cache = {}; }
+BonPdfDoc.prototype.page = function () { this.cur = { ops: [], imgs: [] }; this.pages.push(this.cur); return this.cur; };
+BonPdfDoc.prototype.op = function (s) { this.cur.ops.push(s); };
+BonPdfDoc.prototype.useImg = function (page, im) { var k = this.imgs.indexOf(im); if (k < 0) { this.imgs.push(im); k = this.imgs.length - 1; } if (page.imgs.indexOf(k) < 0) page.imgs.push(k); return k; };
+BonPdfDoc.prototype.blob = function () {
+  var parts = [], len = 0, offs = [], H = this.H.toFixed(2);
+  function put(x) { if (typeof x === 'string') { var b = new Uint8Array(x.length); for (var i = 0; i < x.length; i++) b[i] = x.charCodeAt(i) & 255; x = b; } parts.push(x); len += x.length; }
+  function obj(n, body) { offs[n] = len; put(n + ' 0 obj\n'); (Array.isArray(body) ? body : [body]).forEach(put); put('\nendobj\n'); }
+  put('%PDF-1.4\n%\xe2\xe3\xcf\xd3\n');
+  var FONTS = ['Helvetica', 'Helvetica-Bold', 'Helvetica-Oblique', 'Helvetica-BoldOblique', 'Times-Roman', 'Times-Bold', 'Times-Italic', 'ZapfDingbats'];
+  var fObj = 3, iObj = fObj + FONTS.length, pObj = iObj + this.imgs.length;
+  obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2, '<< /Type /Pages /Kids [' + this.pages.map(function (p, i) { return (pObj + i * 2) + ' 0 R'; }).join(' ') + '] /Count ' + this.pages.length + ' >>');
+  FONTS.forEach(function (f, i) { obj(fObj + i, '<< /Type /Font /Subtype /Type1 /BaseFont /' + f + (f === 'ZapfDingbats' ? '' : ' /Encoding /WinAnsiEncoding') + ' >>'); });
+  this.imgs.forEach(function (im, i) { obj(iObj + i, ['<< /Type /XObject /Subtype /Image /Width ' + im.pw + ' /Height ' + im.ph + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + im.bytes.length + ' >>\nstream\n', im.bytes, '\nendstream']); });
+  var fres = FONTS.map(function (f, i) { return '/F' + (i + 1) + ' ' + (fObj + i) + ' 0 R'; }).join(' ');
+  this.pages.forEach(function (p, i) {
+    var n = pObj + i * 2, xo = p.imgs.map(function (k) { return '/Im' + k + ' ' + (iObj + k) + ' 0 R'; }).join(' ');
+    obj(n, '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 ' + H + '] /Resources << /Font << ' + fres + ' >>' + (xo ? ' /XObject << ' + xo + ' >>' : '') + ' >> /Contents ' + (n + 1) + ' 0 R >>');
+    var s = p.ops.join('\n'); obj(n + 1, ['<< /Length ' + s.length + ' >>\nstream\n', s, '\nendstream']);
+  });
+  var count = pObj + this.pages.length * 2, xref = len, x = 'xref\n0 ' + count + '\n0000000000 65535 f \n';
+  for (var i = 1; i < count; i++) x += ('0000000000' + offs[i]).slice(-10) + ' 00000 n \n';
+  put(x + 'trailer\n<< /Size ' + count + ' /Root 1 0 R >>\nstartxref\n' + xref + '\n%%EOF');
+  return new Blob(parts, { type: 'application/pdf' });
+};
+function bonPdfImg(doc, img) {   // the photo as it is: a JPEG goes in unchanged; other pictures become a full-size JPEG (same pixels)
+  var src = img.src; if (doc.cache[src]) return Promise.resolve(doc.cache[src]);
+  return new Promise(function (res) {
+    if (/^data:image\/jpe?g;base64,/i.test(src)) {
+      var bin = atob(src.split(',')[1]), arr = new Uint8Array(bin.length); for (var k = 0; k < bin.length; k++) arr[k] = bin.charCodeAt(k);
+      return res(doc.cache[src] = { bytes: arr, pw: img.naturalWidth, ph: img.naturalHeight });
+    }
+    var cv = img.ownerDocument.createElement('canvas'); cv.width = img.naturalWidth; cv.height = img.naturalHeight;
+    var g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, cv.width, cv.height); g.drawImage(img, 0, 0);
+    var b64 = cv.toDataURL('image/jpeg', 0.95).split(',')[1], bin2 = atob(b64), a2 = new Uint8Array(bin2.length);
+    for (var j = 0; j < bin2.length; j++) a2[j] = bin2.charCodeAt(j);
+    res(doc.cache[src] = { bytes: a2, pw: cv.width, ph: cv.height });
+  });
+}
+/* one sheet of the bon page -> one PDF page, drawn from what is on screen (same positions, sizes, lines and photos) */
+function bonPdfPage(w, pg, doc) {
+  var d = w.document, P = pg.getBoundingClientRect(), K = 595.28 / P.width, H = doc.H, jobs = [], page = doc.page();
+  var X = function (x) { return ((x - P.left) * K).toFixed(2); }, Y = function (y) { return (H - (y - P.top) * K).toFixed(2); };
+  function rgb(c) { var m = String(c).match(/[\d.]+/g); if (!m) return null; if (m.length > 3 && +m[3] === 0) return null; return [m[0] / 255, m[1] / 255, m[2] / 255].map(function (v) { return (+v).toFixed(3); }).join(' '); }
+  function borders(cs, r, cell) {   // cell in a collapsed table: its box already ends in the middle of the shared line
+    [['Top', r.left, r.top, r.right, r.top], ['Bottom', r.left, r.bottom, r.right, r.bottom], ['Left', r.left, r.top, r.left, r.bottom], ['Right', r.right, r.top, r.right, r.bottom]].forEach(function (b) {
+      var bw = parseFloat(cs['border' + b[0] + 'Width']) || 0, st = cs['border' + b[0] + 'Style'];
+      if (!bw || st === 'none' || st === 'hidden') return;
+      var col = rgb(cs['border' + b[0] + 'Color']); if (!col) return;
+      var o = cell ? 0 : b[0] === 'Top' || b[0] === 'Left' ? bw / 2 : -bw / 2, hz = b[0] === 'Top' || b[0] === 'Bottom';
+      var x1 = b[1] + (hz ? 0 : o), y1 = b[2] + (hz ? o : 0), x2 = b[3] + (hz ? 0 : o), y2 = b[4] + (hz ? o : 0);
+      doc.op('q ' + (bw * K).toFixed(2) + ' w ' + col + ' RG ' + (st === 'dashed' ? '[3 2] 0 d ' : st === 'dotted' ? '[1 1.5] 0 d ' : '') + X(x1) + ' ' + Y(y1) + ' m ' + X(x2) + ' ' + Y(y2) + ' l S Q');
+    });
+  }
+  function font(cs) {
+    var serif = /georgia|times/i.test(cs.fontFamily.split(',')[0]);
+    var b = parseInt(cs.fontWeight, 10) >= 600, it = cs.fontStyle === 'italic' || cs.fontStyle === 'oblique';
+    return serif ? (b ? 6 : it ? 7 : 5) : (b && it ? 4 : b ? 2 : it ? 3 : 1);
+  }
+  function underlined(node) { for (var e = node.parentElement; e && e !== pg.parentNode; e = e.parentElement) { if (/underline/.test(w.getComputedStyle(e).textDecorationLine)) return true; } return false; }
+  function text(node) {
+    var el = node.parentElement, cs = w.getComputedStyle(el), fs = parseFloat(cs.fontSize), col = rgb(cs.color) || '0 0 0', f = font(cs);
+    var ls = parseFloat(cs.letterSpacing) || 0, under = underlined(node), re = /\S+/g, m, lines = {}, rg = d.createRange(), t = node.data;
+    while ((m = re.exec(t))) {
+      rg.setStart(node, m.index); rg.setEnd(node, m.index + m[0].length);
+      var r = rg.getBoundingClientRect(); if (!r.width) continue;
+      var base = r.bottom - fs * 0.21, parts = m[0].split(/([✓✔✂])/).filter(String), x = r.left;
+      parts.forEach(function (p) {
+        if (/^[✓✔✂]$/.test(p)) {   // drawn as small lines, so every PDF viewer shows them
+          var u = fs * 0.8, top = base - u * 0.8, lw = (Math.max(0.8, fs * 0.09) * K).toFixed(2);
+          if (p === '✂') doc.op('q ' + lw + ' w ' + col + ' RG ' + X(x) + ' ' + Y(top) + ' m ' + X(x + u) + ' ' + Y(base) + ' l S ' + X(x) + ' ' + Y(base) + ' m ' + X(x + u) + ' ' + Y(top) + ' l S ' +
+            X(x) + ' ' + Y(top) + ' m ' + X(x + u * 0.25) + ' ' + Y(top) + ' l S ' + X(x) + ' ' + Y(base) + ' m ' + X(x + u * 0.25) + ' ' + Y(base) + ' l S Q');
+          else doc.op('q ' + lw + ' w ' + col + ' RG ' + X(x) + ' ' + Y(base - u * 0.4) + ' m ' + X(x + u * 0.35) + ' ' + Y(base) + ' l ' + X(x + u) + ' ' + Y(top) + ' l S Q');
+          x += r.width * p.length / m[0].length;
+        } else {
+          var esc = MiniPdf.enc(p).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+          doc.op('BT /F' + f + ' ' + (fs * K).toFixed(2) + ' Tf ' + (ls * K).toFixed(2) + ' Tc ' + col + ' rg ' + X(x) + ' ' + Y(base) + ' Td (' + esc + ') Tj ET');
+          x += parts.length > 1 ? r.width * p.length / m[0].length : r.width;
+        }
+      });
+      if (under) { var key = Math.round(r.top); var L = lines[key] || (lines[key] = { a: r.left, b: r.right, y: r.bottom - fs * 0.08 }); L.a = Math.min(L.a, r.left); L.b = Math.max(L.b, r.right); }
+    }
+    Object.keys(lines).forEach(function (k) { var L = lines[k]; doc.op('q ' + (Math.max(0.6, fs * 0.07) * K).toFixed(2) + ' w ' + col + ' RG ' + X(L.a) + ' ' + Y(L.y) + ' m ' + X(L.b) + ' ' + Y(L.y) + ' l S Q'); });
+  }
+  function photo(img) {
+    var box = img.parentElement, br = box.getBoundingClientRect();
+    var cx = br.left + box.clientLeft, cy = br.top + box.clientTop, cw = box.clientWidth, ch = box.clientHeight;
+    var L = cx + img.offsetLeft, T = cy + img.offsetTop, ew = img.offsetWidth, eh = img.offsetHeight;
+    var rr = Math.min(ew / img.naturalWidth, eh / img.naturalHeight), iw = img.naturalWidth * rr, ih = img.naturalHeight * rr, x0 = L + (ew - iw) / 2, y0 = T + (eh - ih) / 2;
+    var tr = w.getComputedStyle(img).transform, a = 1, b = 0, c = 0, dd = 1, e = 0, f = 0;
+    if (tr && tr !== 'none') { var mm = tr.match(/-?[\d.]+(e-?\d+)?/g).map(Number); a = mm[0]; b = mm[1]; c = mm[2]; dd = mm[3]; e = mm[4]; f = mm[5]; }
+    var Ox = L + ew / 2, Oy = T + eh / 2;
+    var X0 = Ox + a * (x0 - Ox) + c * (y0 + ih - Oy) + e, Y0 = Oy + b * (x0 - Ox) + dd * (y0 + ih - Oy) + f;
+    var slot = page.ops.length; page.ops.push('');   // keeps the photo in its place in the drawing order
+    jobs.push(bonPdfImg(doc, img).then(function (im) {
+      var k = doc.useImg(page, im);
+      page.ops[slot] = 'q ' + X(cx) + ' ' + Y(cy + ch) + ' ' + (cw * K).toFixed(2) + ' ' + (ch * K).toFixed(2) + ' re W n ' +
+        [K * a * iw, -K * b * iw, -K * c * ih, K * dd * ih, (X0 - P.left) * K, H - (Y0 - P.top) * K].map(function (v) { return v.toFixed(4); }).join(' ') + ' cm /Im' + k + ' Do Q';
+    }));
+  }
+  (function walk(el) {
+    var cs = w.getComputedStyle(el);
+    if (cs.display === 'none' || cs.visibility === 'hidden') return;
+    if (el.tagName === 'IMG') { if (el.naturalWidth) photo(el); return; }
+    if (el.tagName === 'BUTTON' || el.tagName === 'SCRIPT' || el.tagName === 'STYLE') return;
+    var r = el.getBoundingClientRect();
+    if (el !== pg && r.width && r.height) {
+      var bg = rgb(cs.backgroundColor);
+      if (bg) doc.op(bg + ' rg ' + X(r.left) + ' ' + Y(r.bottom) + ' ' + (r.width * K).toFixed(2) + ' ' + (r.height * K).toFixed(2) + ' re f');
+      borders(cs, r, (el.tagName === 'TD' || el.tagName === 'TH') && w.getComputedStyle(el.closest('table')).borderCollapse === 'collapse');
+    }
+    for (var n = el.firstChild; n; n = n.nextSibling) {
+      if (n.nodeType === 3) { if (/\S/.test(n.data)) text(n); }
+      else if (n.nodeType === 1) walk(n);
+    }
+  })(pg);
+  return Promise.all(jobs);
+}
 function bonPrint(list, title, w0) {
   list = list.filter(function (p) { return p.status !== 'BATAL'; });
   // a "bayar gabungan" is ONE bon (all its contracts as lines)
@@ -3103,11 +3254,11 @@ function bonPrint(list, title, w0) {
     }
     for (var i = 0; i < 4; i++) next();
   }).then(function () {
-    var html = '<div class="bar"><b>' + bonEsc(title) + '</b> · ' + list.length + ' bon, ' + Math.ceil(list.length / 2) + ' lembar <span id="bonPaperLbl">A4</span><label style="display:inline-flex;align-items:center;gap:6px">Kertas <select id="bonPaper" style="font:inherit;padding:6px 8px"><option value="a4">A4 (21 × 29,7 cm)</option><option value="f4">F4 / Folio (21 × 33 cm)</option></select></label><button id="bonPrintBtn">Cetak / simpan PDF</button><button id="bonAutoRot" title="Foto yang melebar diputar supaya lebih besar">Putar otomatis foto lebar</button><span style="color:#555">Arahkan mouse ke foto: putar ⟲ ⟳, perbesar + −, geser dengan menarik.</span></div>';
+    var html = '<div class="bar"><b>' + bonEsc(title) + '</b> · ' + list.length + ' bon, ' + Math.ceil(list.length / 2) + ' lembar <span id="bonPaperLbl">A4</span><label style="display:inline-flex;align-items:center;gap:6px">Kertas <select id="bonPaper" style="font:inherit;padding:6px 8px"><option value="a4">A4 (21 × 29,7 cm)</option><option value="f4">F4 / Folio (21 × 33 cm)</option></select></label><button id="bonPrintBtn">Unduh PDF</button><button id="bonAutoRot" title="Foto yang melebar diputar supaya lebih besar">Putar otomatis foto lebar</button><span style="color:#555">Arahkan mouse ke foto: putar ⟲ ⟳, perbesar + −, geser dengan menarik.</span></div>';
     for (var i = 0; i < list.length; i += 2) {
       html += '<div class="page">' + bonHalf(list[i], imgs[list[i].id]) + (list[i + 1] ? '<div class="cut"><span>✂ potong di sini</span></div>' + bonHalf(list[i + 1], imgs[list[i + 1].id]) : '') + '</div>';
     }
-    try { w.document.body.innerHTML = html; bonPhotoTools(w); setTimeout(function () { try { w.focus(); w.print(); } catch (e) {} }, 600); } catch (e) { toast('Jendela cetak ditutup.'); }
+    try { w.document.body.innerHTML = html; bonPhotoTools(w); bonNoPrint(w); } catch (e) { toast('Jendela cetak ditutup.'); }
   });
 }
 /* photo controls in the print tab: rotate, zoom, drag. Only on screen; the print uses what you set. */
@@ -3136,7 +3287,7 @@ function bonPhotoTools(w) {
     box.addEventListener('wheel', function (e) { e.preventDefault(); var st = box._st; st.s = Math.max(0.3, Math.min(5, st.s * (e.deltaY < 0 ? 1.1 : 1 / 1.1))); apply(box); }, { passive: false });
     var img = box.querySelector('img'); if (!img.complete) img.addEventListener('load', function () { apply(box); });
   });
-  var pb = d.getElementById('bonPrintBtn'); if (pb) pb.addEventListener('click', function () { w.print(); });
+  var pb = d.getElementById('bonPrintBtn'); if (pb) pb.addEventListener('click', function () { bonPdf(w, pb); });
   // paper: A4 or F4 (folio). Each bon is exactly half the sheet, so the cut line is always in the middle.
   var ps = d.getElementById('bonPaper');
   function paper(v) {
