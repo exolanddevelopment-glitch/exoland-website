@@ -6022,8 +6022,8 @@ function ckStatus(o) {
   if (!o.aktif) return { cls: 'grey', txt: 'Nonaktif', k: 'off' };
   if (!o.last) return { cls: 'red', txt: 'Belum pernah dicek', k: 'telat' };
   if (o.telat > 0) return { cls: 'red', txt: 'Telat ' + o.telat + ' hari', k: 'telat' };
-  if (o.telat >= -7) return { cls: 'orange', txt: o.telat === 0 ? 'Hari ini' : 'Jatuh ' + dmy(parseIso(o.due)).slice(0, 5), k: 'minggu' };
-  return { cls: 'white', txt: 'Berikutnya ' + dmy(parseIso(o.due)).slice(0, 5), k: 'nanti' };
+  if (o.telat >= -7) return { cls: 'orange', txt: o.telat === 0 ? 'Hari ini' : 'Jatuh ' + dmy(parseIso(o.due)), k: 'minggu' };
+  return { cls: 'white', txt: 'Berikutnya ' + dmy(parseIso(o.due)), k: 'nanti' };
 }
 var CK_LVL_CLS = { Rawan: 'red', Sedang: 'orange', Aman: 'grey' };
 function ckPerson(email) { var p = (ckData.people || []).filter(function (x) { return x.email === email; })[0]; return p ? p.nama : (email || '-'); }
@@ -6092,7 +6092,13 @@ function openCk(o) {
     if (c.catatan) mid.appendChild(el('div', '', c.catatan));
     mid.appendChild(el('div', 'muted', c.lat ? (c.jarak !== null ? '📍 ' + c.jarak.toLocaleString('id-ID') + ' m dari titik lahan' : '📍 lokasi tercatat (titik pertama)') + (c.acc ? ' · akurasi ±' + c.acc + ' m' : '') : '📍 tanpa lokasi (HP tidak mengizinkan)'));
     var ph = el('div', 'ck-photos');
-    if (c.foto.length) ph.appendChild(galBtn('📷 Lihat ' + c.foto.length + ' foto', c.foto.map(function (f, i) { return { id: f.id, ctx: 'cek', cap: o.nama + ' · ' + fdtY(pdt(c.waktu)) + ' · ' + c.petugas + ' · foto ' + (i + 1) }; }), 'Cek lahan · ' + o.nama + ' · ' + fdtY(pdt(c.waktu))));
+    // photos per lahan when the check had more than one lahan (older checks: one button for all)
+    var byL = [], seenL = {};
+    c.foto.forEach(function (f) { var l = f.lahan || ''; if (!(l in seenL)) { seenL[l] = byL.length; byL.push({ l: l, f: [] }); } byL[seenL[l]].f.push(f); });
+    byL.forEach(function (g) {
+      var nm = g.l || o.nama;
+      ph.appendChild(galBtn('📷 ' + (g.l ? g.l + ' · ' : 'Lihat ') + g.f.length + ' foto', g.f.map(function (f, i) { return { id: f.id, ctx: 'cek', cap: nm + ' · ' + fdtY(pdt(c.waktu)) + ' · ' + c.petugas + ' · foto ' + (i + 1) }; }), 'Cek lahan · ' + nm + ' · ' + fdtY(pdt(c.waktu))));
+    });
     mid.appendChild(ph);
     if (c.temuan) {
       var tm = el('div', 'msg ' + (c.selesai ? 'okmsg' : 'err'), (c.selesai ? '✓ Temuan selesai: ' : 'Temuan: ') + c.temuan + (c.selesai ? ' → ' + c.selesai + ' (' + c.selesaiOleh + ', ' + fdtY(pdt(c.selesaiPada)) + ')' : ''));
@@ -6127,9 +6133,20 @@ function checkForm(o) {
         gl.textContent = txt;
       }, function () { gl.className = 'gps-line bad'; gl.textContent = '📍 Lokasi tidak diizinkan. Izinkan lokasi di browser supaya kunjungan tercatat. Tetap bisa dikirim tanpa lokasi.'; }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 });
     } else { gl.className = 'gps-line bad'; gl.textContent = '📍 HP / browser ini tidak bisa mengirim lokasi.'; }
-    var fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*'; fi.multiple = true;
-    b.appendChild(fieldBox('m_ck_file', 'Foto lahan (minimal 3)', fi)); var fl = el('div', 'files'); b.appendChild(fl);
-    makeDrop(fi); fi.addEventListener('change', function () { listFiles(fi, fl); });
+    // the day the land was checked: today by default; an earlier day when the result is logged later (then the phone's location is not used)
+    var td = inp('date', iso(today0()), { max: iso(today0()), min: iso(addDays(today0(), -60)) }), gpsTxt = null;
+    b.appendChild(fieldBox('m_ck_tgl', 'Tanggal cek', td, 'Isi tanggal lain kalau lahan dicek kemarin / hari lain dan baru dicatat sekarang.'));
+    td.addEventListener('change', function () {
+      var past = td.value && td.value < iso(today0());
+      if (past) { if (gpsTxt === null) gpsTxt = [gl.className, gl.textContent]; gl.className = 'gps-line'; gl.textContent = '📍 Cek bukan hari ini: lokasi HP sekarang tidak dipakai.'; }
+      else if (gpsTxt) { gl.className = gpsTxt[0]; gl.textContent = gpsTxt[1]; gpsTxt = null; }
+    });
+    // more than one lahan: one photo box per lahan, so it is clear which photo belongs to which lahan
+    (o.invs.length > 1 ? o.invs : ['']).forEach(function (l, k) {
+      var fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*'; fi.multiple = true; fi.setAttribute('data-lahan', l);
+      b.appendChild(fieldBox('m_ck_file' + (k ? '_' + k : ''), l ? 'Foto ' + l + ' (minimal 3)' : 'Foto lahan (minimal 3)', fi)); var fl = el('div', 'files'); b.appendChild(fl);
+      makeDrop(fi); fi.addEventListener('change', function () { listFiles(fi, fl); });
+    });
     [['patok', 'Patok lengkap?', 'Tidak'], ['garapan', 'Ada bangunan / garapan orang lain?', 'Ya'], ['papan', 'Papan nama perusahaan ada?', 'Tidak'], ['bersih', 'Perlu dibersihkan?', 'Ya']].forEach(function (q) {
       var r = el('div', 'yn-row'); r.appendChild(el('span', '', q[1]));
       var g = el('div', 'yn'); r.setAttribute('data-q', q[0]);
@@ -6138,12 +6155,17 @@ function checkForm(o) {
     });
     b.appendChild(fieldBox('m_ck_cat', 'Catatan', inp('text', '', { maxlength: 500, placeholder: 'Wajib kalau ada temuan, misalnya patok mana yang hilang' })));
   }, 'Kirim hasil cek', function () {
-    var fi = $('f_m_ck_file');
-    if ((fi.files || []).length < 3) throw new Error('Minimal 3 foto lahan.');
+    var fis = Array.prototype.slice.call($('jlmBody').querySelectorAll('input[type=file][data-lahan]'));
+    fis.forEach(function (fi) { var l = fi.getAttribute('data-lahan'), n = (fi.files || []).length;
+      if (n < 3) throw new Error('Minimal 3 foto' + (l ? ' untuk ' + l : ' lahan') + '.'); if (n > 10) throw new Error('Maksimal 10 foto' + (l ? ' untuk ' + l : '') + '.'); });
     var miss = ['patok', 'garapan', 'papan', 'bersih'].filter(function (k) { return !ans[k]; });
     if (miss.length) throw new Error('Jawab semua pertanyaan Ya / Tidak.');
-    return readFiles(fi, { max: 1600 }).then(function (files) {
-      return call('submitCheck', { id: o.id, files: files, patok: ans.patok, garapan: ans.garapan, papan: ans.papan, bersih: ans.bersih, catatan: $('f_m_ck_cat').value,
+    return Promise.all(fis.map(function (fi) { var l = fi.getAttribute('data-lahan');
+      return readFiles(fi, { max: 1600 }).then(function (fs) { return fs.map(function (f) { if (l) f.lahan = l; return f; }); }); }))
+    .then(function (groups) { return [].concat.apply([], groups); }).then(function (files) {
+      var tg = $('f_m_ck_tgl').value, past = tg && tg < iso(today0());
+      if (past) gps = null;
+      return call('submitCheck', { id: o.id, tanggal: tg, files: files, patok: ans.patok, garapan: ans.garapan, papan: ans.papan, bersih: ans.bersih, catatan: $('f_m_ck_cat').value,
         lat: gps ? gps.lat : '', lng: gps ? gps.lng : '', acc: gps ? gps.acc : '' });
     }).then(function (d) { toast('Hasil cek terkirim.' + (d.jarak !== '' && d.jarak !== undefined ? ' ' + Number(d.jarak).toLocaleString('id-ID') + ' m dari titik lahan.' : '')); applyChecks(d, o.id); });
   });
