@@ -598,6 +598,8 @@
   .ck-hist { border-top:1px solid var(--line-2); padding:10px 0; display:grid; grid-template-columns:96px minmax(0,1fr) auto; gap:10px; font-size:13.5px; }
   .ck-hist > .st { align-self:start; }
   .ck-hist .muted.num { font-size:12px; white-space:pre-line; }
+  #ckList .pay-right .st, #ckState { max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  @media (max-width:700px) { #ckBody .tn-head { flex-wrap:wrap; } #ckState { max-width:100%; } }
   .ck-inv { border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin:12px 0; }
   .ck-inv.done { background:var(--ok-bg); }
   .ck-inv-h { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px; }
@@ -6025,7 +6027,7 @@ function applyChecks(d, keepId) {
 function ckStatus(o) {
   if (!o.aktif) return { cls: 'grey', txt: 'Nonaktif', k: 'off' };
   if (!o.last) return { cls: 'red', txt: 'Belum pernah dicek', k: 'telat' };
-  if (o.kurang && o.kurang.length) return { cls: 'orange', txt: 'Belum lengkap: ' + o.kurang.join(', '), k: 'minggu' };
+  if (o.kurang && o.kurang.length) return { cls: 'orange', txt: 'Belum lengkap · ' + o.kurang.length + ' belum dicek', k: 'minggu', tip: 'Belum dicek: ' + o.kurang.join(', ') };
   if (o.telat > 0) return { cls: 'red', txt: 'Telat ' + o.telat + ' hari', k: 'telat' };
   if (o.telat >= -7) return { cls: 'orange', txt: o.telat === 0 ? 'Hari ini' : 'Jatuh ' + dmy(parseIso(o.due)), k: 'minggu' };
   return { cls: 'white', txt: 'Berikutnya ' + dmy(parseIso(o.due)), k: 'nanti' };
@@ -6061,7 +6063,7 @@ function renderCkList() {
     if (o.temuan) nm.appendChild(el('span', 'st red', o.temuan + ' temuan'));
     mid.appendChild(nm);
     mid.appendChild(metaEl([ckPerson(o.petugas), ' tiap ' + o.tiap + ' hari · ' + (o.last ? 'cek terakhir ' + dmy(parseIso(o.last.slice(0, 10))) : 'belum pernah dicek') + (o.invs.length > 1 ? ' · ' + o.invs.length + ' plot' : '')]));
-    var right = el('div', 'pay-right'); right.appendChild(el('span', 'st ' + st.cls, st.txt));
+    var right = el('div', 'pay-right'), sp = el('span', 'st ' + st.cls, st.txt); if (st.tip) sp.title = st.tip; right.appendChild(sp);
     b.appendChild(mid); b.appendChild(right);
     b.onclick = function () { openCk(o); };
     return b;
@@ -6072,10 +6074,10 @@ function openCk(o) {
   ckSel = o;
   var st = ckStatus(o);
   $('ckTitle').textContent = o.nama; $('ckSub').textContent = o.id + ' · ' + o.tingkat + ', tiap ' + o.tiap + ' hari';
-  $('ckState').className = 'st ' + st.cls; $('ckState').textContent = st.txt;
+  $('ckState').className = 'st ' + st.cls; $('ckState').textContent = st.txt; $('ckState').title = st.tip || '';
   var box = $('ckDetail'); box.innerHTML = '';
   var lands = o.invs.map(function (inv) { var x = (ckData.land || []).filter(function (l) { return l.inv === inv; })[0]; return x ? inv + (x.lok ? ' (' + x.lok + (x.luas ? ', ' + x.luas + ' m²' : '') + ')' : '') : inv + ' (tidak ada di Data tanah)'; });
-  box.appendChild(kvGrid([['Lahan', lands.join('; ')], ['Petugas', ckPerson(o.petugas)], ['Jadwal', 'Tiap ' + o.tiap + ' hari · berikutnya ' + dmy(parseIso(o.due))],
+  box.appendChild(kvGrid([['Lahan', lands.join('; ')], (o.kurang && o.kurang.length) ? ['Belum dicek', o.kurang.join(', ')] : null, ['Petugas', ckPerson(o.petugas)], ['Jadwal', 'Tiap ' + o.tiap + ' hari · berikutnya ' + dmy(parseIso(o.due))],
     o.alasan ? ['Alasan / catatan', o.alasan] : null, ['Titik lokasi', o.lat ? o.lat.toFixed(5) + ', ' + o.lng.toFixed(5) : 'Belum ada (tersimpan saat cek pertama dengan lokasi HP)']]));
   var acts = el('div', 'tn-actions');
   if (ckData.canEdit && o.aktif) acts.appendChild(btnEl('Cek sekarang', '', function () { checkForm(o); }));
