@@ -807,7 +807,7 @@
   /* Two panes that each scroll on their own (like an email app): the list on the left, the details on the right.
      The split gets the height of the screen (set by fitSplit in the script), so nothing needs the page scrollbar. */
   .lg-grid { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:16px; align-items:start; }
-  @media (max-width:1000px) { .lg-grid { grid-template-columns:1fr; } #lgTabs { flex-wrap:wrap; } }
+  @media (max-width:1000px) { .lg-grid { grid-template-columns:1fr; } }
   .lg-h { margin:0 0 14px; font-size:16px; }
   .lg-fields .btn { margin-top:14px; }
   .lg-list { display:flex; flex-direction:column; gap:8px; }
@@ -822,7 +822,7 @@
   .fit > .tn-detailcol, .fit > .bukti-detailcol { position:static; min-height:0; height:100%; overflow-y:auto; overscroll-behavior:contain; padding:2px 4px 2px 2px; }
   .fit ::-webkit-scrollbar { width:10px; } .fit ::-webkit-scrollbar-thumb { background:color-mix(in srgb, var(--muted) 45%, transparent); border-radius:10px; border:2px solid transparent; background-clip:padding-box; }
   .fit ::-webkit-scrollbar-track { background:transparent; }
-  @media (max-width:1180px) { .grid-bukti.tn-split { grid-template-columns:1fr; } .tn-split:not(.show-detail) .tn-detailcol { display:none; } .tn-split.show-detail .tn-listcol { display:none; } .tn-split .back { display:inline-block; margin-bottom:12px; } #view-penyewa.detail-open .health, #view-penyewa.detail-open #healthNote, #view-penyewa.detail-open .page-head, #view-tanah.detail-open .health, #view-tanah.detail-open #tdNote, #view-tanah.detail-open .page-head, #view-tanah.detail-open .td-filters { display:none; } }
+  @media (max-width:1180px) { .grid-bukti.tn-split { grid-template-columns:1fr; } .tn-split:not(.show-detail) .tn-detailcol { display:none; } .tn-split.show-detail .tn-listcol { display:none; } .tn-split .back { display:inline-block; margin-bottom:12px; } #view-penyewa.detail-open .health, #view-penyewa.detail-open #healthNote, #view-penyewa.detail-open .page-head, #view-tanah.detail-open .health, #view-tanah.detail-open #tdNote, #view-tanah.detail-open .page-head, #view-tanah.detail-open .td-filters, #view-pny.detail-open .health, #view-pny.detail-open .page-head, #view-kon.detail-open .health, #view-kon.detail-open .page-head { display:none; } }
   @media (max-width:899px) { .health { grid-template-columns:1fr 1fr; } .hc b { font-size:22px; } }
 
   .toast { position:fixed; left:50%; transform:translateX(-50%); bottom:26px; background:#18181b; color:#fff; padding:11px 18px; border-radius:12px; font-size:14px; z-index:70; max-width:calc(100% - 32px); box-shadow:0 12px 30px -12px rgba(0,0,0,.5); }
@@ -2390,6 +2390,7 @@ function fitSplit(id, minW) {
   var top = sp.getBoundingClientRect().top + window.scrollY;
   sp.style.height = Math.max(460, window.innerHeight - top - 20) + 'px';
 }
+function phoneTop() { if (window.matchMedia('(max-width: 1180px)').matches) window.scrollTo(0, 0); }   // phone: a detail opened from a long list starts at the top
 function fitAll() { fitSplit('unSplit', 1181); fitSplit('tnSplit', 1181); fitSplit('split', 900); fitSplit('tdSplit', 1181); fitSplit('jlSplit', 1181); fitSplit('ckSplit', 1181); fitSplit('pbSplit', 1181); fitSplit('ksSplit', 1181); fitSplit('ktSplit', 1181); fitSplit('pySplit', 1181); fitSplit('knSplit', 1181); }
 window.addEventListener('resize', function () { clearTimeout(fitAll.t); fitAll.t = setTimeout(function () { fitAll(); if (typeof fitDenah === 'function') fitDenah(); }, 120); });
 /* ---------- files ---------- */
@@ -6208,7 +6209,13 @@ function openKosRoom(r, noRedraw) {
       }
     }
   }
-  if (ksData.canTenant) acts.appendChild(r.kosong ? btnEl('Buka di Unit', 'sec', function () { unPendingId = r.key; show('unit'); }) : btnEl('Buka di Penyewa', 'sec', function () { tnPendingKey = r.key; show('penyewa'); }));
+  if (ksData.canTenant) {
+    if (r.kosong) acts.appendChild(btnEl('Buka di Unit', 'sec', function () { unPendingId = r.key; show('unit'); }));
+    else if (me && me.v2) {   // the person (name, KTP, WhatsApp) and the contract (price, dates, bills) are on two pages
+      acts.appendChild(btnEl('Buka di Penyewa', 'sec', function () { pyPendingKtr = r.key; show('pny'); }));
+      acts.appendChild(btnEl('Buka di Kontrak', 'sec', function () { knPendingId = r.key; show('kon'); }));
+    } else acts.appendChild(btnEl('Buka di Penyewa', 'sec', function () { tnPendingKey = r.key; show('penyewa'); }));
+  }
   if (acts.children.length) box.appendChild(acts);
   if (!r.kosong) {
     box.appendChild(el('h3', 'tn-h3', 'Pembayaran terakhir'));
@@ -7422,7 +7429,7 @@ function preloadPages() {
 
 /* ====================== SEWA (baru): Penyewa · Kontrak · Tagihan ====================== */
 function backLink(fn) { var b = el('button', 'link back', '← Kembali ke daftar'); b.type = 'button'; b.onclick = fn; return b; }
-var syData = null, pySel = null, pyMode = 'view', pyFilter = 'semua', pyShow = 200, pyPendingId = null;
+var syData = null, pySel = null, pyMode = 'view', pyFilter = 'semua', pyShow = 200, pyPendingId = null, pyPendingKtr = null;
 var knPick = {};
 var knSel = null, knMode = 'view', knFilter = 'aktif', knShow = 200, knPendingId = null, knPendingNew = null, knBills = {}, knDraft = null;
 function applyV2() {
@@ -7453,6 +7460,7 @@ function applySewa(d) {
   var nK = d.kontrak.filter(function (k) { return k.kebun && kbReady(k); }).length;
   $$('[data-kb-badge]').forEach(function (b) { b.textContent = nK; b.hidden = !nK; });
   // reopen what was open (or what another page asked for)
+  if (pyPendingKtr) { var kp = syKon(pyPendingKtr) || syKonByUnitKey(pyPendingKtr); pyPendingKtr = null; if (kp) pyPendingId = kp.pny; }
   if (pyPendingId) { var p0 = syPen(pyPendingId); pyPendingId = null; if (p0) { show('pny'); openPy(p0); } }
   else if (pySel && pyMode === 'view') { var p1 = syPen(pySel.id); if (p1) openPy(p1); }
   if (knPendingNew) { var nw = knPendingNew; knPendingNew = null; openKn(null, nw); }
@@ -7545,7 +7553,7 @@ function renderPyList() {
     tags.appendChild(el('span', 'tag ' + (g.akt.length ? 'sewa' : 'cek'), p.arsip ? 'Arsip' : g.akt.length ? 'Aktif' : 'Tanpa kontrak'));
     right.appendChild(tags);
     b.appendChild(mid); b.appendChild(right);
-    b.onclick = function () { openPy(p); };
+    b.onclick = function () { openPy(p); phoneTop(); };
     box.appendChild(b);
   });
   if (list.length > pyShow) { var more = btnEl('Tampilkan ' + Math.min(200, list.length - pyShow) + ' lagi', 'sec', function () { pyShow += 200; renderPyList(); }); more.style.margin = '12px'; box.appendChild(more); }
@@ -7744,7 +7752,7 @@ function renderKnList() {
     mid.appendChild(el('div', 'muted kn-sub', (isGarap(k.siklus) ? 'Garapan' : k.siklus) + (k.harga ? ' · ' + rp(k.harga) : '') + (k.selesai ? (isGarap(k.siklus) ? ' · panen ' : ' · s/d ') + dmy(parseIso(k.selesai)) : '')));
     var right = el('div', 'pay-right'); right.appendChild(stEl(knState(k, t0)));
     b.appendChild(mid); b.appendChild(right);
-    b.onclick = function () { openKn(k); };
+    b.onclick = function () { openKn(k); phoneTop(); };
     box.appendChild(b);
   });
   if (list.length > knShow) { var more = btnEl('Tampilkan ' + Math.min(200, list.length - knShow) + ' lagi', 'sec', function () { knShow += 200; renderKnList(); }); more.style.margin = '12px'; box.appendChild(more); }
