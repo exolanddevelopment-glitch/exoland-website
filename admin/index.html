@@ -809,6 +809,7 @@
   .lg-grid { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:16px; align-items:start; }
   @media (max-width:1000px) { .lg-grid { grid-template-columns:1fr; } }
   .lg-h { margin:0 0 14px; font-size:16px; }
+  .lg-pp { display:flex; gap:8px; } .lg-pp select { flex:1; min-width:0; } .lg-pp .btn { width:auto; margin:0; padding:0 14px; flex:none; }
   .lg-fields .btn { margin-top:14px; }
   .lg-list { display:flex; flex-direction:column; gap:8px; }
   .lg-row { display:flex; gap:12px; align-items:flex-start; justify-content:space-between; border:1px solid var(--line); border-radius:12px; padding:10px 12px; font-size:13.5px; }
@@ -1333,7 +1334,6 @@
     <section id="view-legal" hidden>
       <div class="page-head" style="max-width:var(--pw)">
         <div><h1>Legal</h1><p>Surat perjanjian dan surat lain dari data sewa. Hasilnya PDF, nomor surat otomatis.</p></div>
-        <button class="btn sec" id="lgPP" type="button" style="width:auto;margin:0;padding:11px 18px" hidden>Pihak Pertama</button>
       </div>
       <div class="segs" id="lgTabs" role="tablist" style="margin-bottom:16px">
         <button type="button" data-lt="psm" class="on">Perjanjian Sewa</button><button type="button" data-lt="sp">Surat Peringatan</button><button type="button" data-lt="pem">Surat Pemberitahuan</button><button type="button" data-lt="jalan">Surat Jalan / Tugas</button>
@@ -2065,7 +2065,7 @@
 var tenants = [], chosen = null, pastPays = [], user = '', me = null, jumlahTouched = false;
 var payments = [], filter = 'all', sortBy = 'baru', selId = null, lastSaved = null, signers = [], sigCache = {};
 var $ = function (id) { return document.getElementById(id); };
-var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+var $$ = function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };   // root: only inside that element
 var rp = function (n) { return 'Rp ' + Math.round(n).toLocaleString('id-ID'); };
 var num = function (s) { return Number(String(s).replace(/[^\d]/g, '')) || 0; };
 function pad(n) { return (n < 10 ? '0' : '') + n; }
@@ -5553,8 +5553,8 @@ $('jlBack').onclick = function () { if (jlDirtyCheck()) return; closeTrip(); ren
 /* ====================== LEGAL ======================
  * Letters from templates. The engine gives the contract data, the letter number, and keeps a copy of each letter's data,
  * so "Unduh lagi" makes exactly the same PDF. The PDF is drawn here (same writer as the bon putih): F4 by default, or A4. */
-var lgData = null, lgTab = 'psm', lgKtr = '', lgPaper = 'f4';
-try { lgPaper = localStorage.getItem('lgPaper') || 'f4'; } catch (e) {}
+var lgData = null, lgTab = 'psm', lgKtr = '', lgPaper = 'f4', lgPP = '';
+try { lgPaper = localStorage.getItem('lgPaper') || 'f4'; lgPP = localStorage.getItem('lgPP') || ''; } catch (e) {}
 var LG_MON = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 var LG_DAY = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 function lgTgl(s) { var d = parseIso(s); return d ? d.getDate() + ' ' + LG_MON[d.getMonth()] + ' ' + d.getFullYear() : ''; }
@@ -5638,7 +5638,8 @@ function loadLegal() {
   if (!lgData) emptyBox($('lgBody'), 'Memuat…');
   return call('getLegal').then(applyLegal).catch(function (e) { emptyBox($('lgBody'), 'Gagal memuat: ' + errText(e)); });
 }
-function applyLegal(d) { lgData = d; $('lgPP').hidden = !d.isOwner; renderLegal(); }
+function applyLegal(d) { lgData = d; if (d.savedPP) lgSetPP(d.savedPP); renderLegal(); }
+function lgSetPP(id) { lgPP = id; try { localStorage.setItem('lgPP', id); } catch (e) {} }
 function renderLegal() {
   $$('#lgTabs [data-lt]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-lt') === lgTab); });
   var box = $('lgBody'); box.innerHTML = '';
@@ -5661,10 +5662,20 @@ function lgNum(id) { return Number(String($(id).value || '').replace(/\D/g, ''))
 function lgForm() {
   var d = lgData, can = d.canEdit, card = el('div', 'card');
   card.appendChild(el('h3', 'lg-h', 'Buat surat perjanjian sewa'));
-  if (!d.pp.nama) {
-    var w = el('div', 'msg warn'); w.textContent = d.isOwner ? 'Data Pihak Pertama (nama, alamat, No. KTP) belum diisi. Isi dulu lewat tombol "Pihak Pertama" di kanan atas.' : 'Data Pihak Pertama belum diisi. Minta Pemilik mengisinya dulu.';
-    card.appendChild(w);
+  // Pihak Pertama = the one who rents it out and signs on the left (Derren, or a coworker)
+  var pw = el('div', 'fld'), pl = el('label', '', 'Pihak Pertama (yang menyewakan)'); pl.htmlFor = 'f_lg_pp'; pw.appendChild(pl);
+  var prow = el('div', 'lg-pp'), pps = document.createElement('select'); pps.id = 'f_lg_pp';
+  if (!d.pps.length) { var oz = el('option', '', 'Belum ada, tekan "+ Tambah"'); oz.value = ''; pps.appendChild(oz); }
+  d.pps.forEach(function (x) { var o = el('option', '', x.nama + ' · KTP ...' + String(x.ktp).slice(-4)); o.value = x.id; pps.appendChild(o); });
+  if (d.pps.some(function (x) { return x.id === lgPP; })) pps.value = lgPP; else if (d.pps.length) lgSetPP(pps.value = d.pps[0].id);
+  pps.onchange = function () { lgSetPP(pps.value); };
+  prow.appendChild(pps);
+  if (can) {
+    var ed = btnEl('Ubah', 'sec', function () { lgPPModal(d.pps.filter(function (x) { return x.id === pps.value; })[0]); }); ed.disabled = !d.pps.length; prow.appendChild(ed);
+    prow.appendChild(btnEl('+ Tambah', 'sec', function () { lgPPModal(null); }));
   }
+  pw.appendChild(prow); pw.appendChild(el('p', 'hint', 'Yang tanda tangan di kiri sebagai pemilik / kuasa. Pilihan terakhir diingat di HP / komputer ini.'));
+  card.appendChild(pw);
   var ts = document.createElement('select'); d.tpls.forEach(function (t) { var o = el('option', '', t.nama); o.value = t.id; ts.appendChild(o); });
   card.appendChild(fieldBox('lg_tpl', 'Template', ts));
   var tpl = d.tpls.filter(function (t) { return t.id === ts.value; })[0] || {};
@@ -5703,9 +5714,9 @@ function lgForm() {
   var err = el('p', 'msg err'); err.hidden = true; f.appendChild(err);
   var go = btnEl('Unduh PDF', '', function () {
     err.hidden = true;
-    var p = { tpl: ts.value, ktr: k.ktr, nama: $('f_lg_nama').value.trim(), idn: $('f_lg_idn').value.replace(/\D/g, ''), alamat: $('f_lg_alamat').value.trim(),
+    var p = { tpl: ts.value, ppId: $('f_lg_pp').value, ktr: k.ktr, nama: $('f_lg_nama').value.trim(), idn: $('f_lg_idn').value.replace(/\D/g, ''), alamat: $('f_lg_alamat').value.trim(),
       lantai: $('f_lg_lantai').value.trim(), kamar: $('f_lg_kamar').value.trim(), harga: lgNum('f_lg_harga'), dep: lgNum('f_lg_dep'), mulai: $('f_lg_mulai').value, tanggal: $('f_lg_tgl').value };
-    var bad = p.nama.length < 2 ? 'Isi nama penyewa sesuai KTP.' : p.idn.length !== 16 ? 'No. KTP harus 16 angka.' : p.alamat.length < 10 ? 'Isi alamat sesuai KTP.' :
+    var bad = !p.ppId ? 'Pilih Pihak Pertama dulu (tekan "+ Tambah" kalau belum ada).' : p.nama.length < 2 ? 'Isi nama penyewa sesuai KTP.' : p.idn.length !== 16 ? 'No. KTP harus 16 angka.' : p.alamat.length < 10 ? 'Isi alamat sesuai KTP.' :
       !p.lantai || !p.kamar ? 'Isi lantai dan nomor kamar.' : !p.harga ? 'Isi harga sewa.' : !p.dep ? 'Isi uang jaminan.' : !p.mulai ? 'Isi tanggal masa sewa dimulai.' : !p.tanggal ? 'Isi tanggal perjanjian.' : '';
     if (bad) { err.textContent = bad; err.hidden = false; return; }
     go.disabled = true; go.textContent = 'Menyimpan…';
@@ -5716,7 +5727,7 @@ function lgForm() {
   });
   f.appendChild(go);
   f.appendChild(el('p', 'hint', 'Nomor surat dibuat otomatis dan suratnya tersimpan di Riwayat, jadi bisa diunduh lagi kapan saja.'));
-  if (!can || !d.pp.nama) { $$('input,select,textarea,button', f).forEach(function (i) { if (i !== ps) i.disabled = true; }); if (!can) f.appendChild(el('p', 'hint', 'Anda hanya bisa melihat. Untuk membuat surat perlu akses Ubah di Legal.')); }
+  if (!can) { $$('input,select,textarea,button', f).forEach(function (i) { if (i !== ps) i.disabled = true; }); f.appendChild(el('p', 'hint', 'Anda hanya bisa melihat. Untuk membuat surat perlu akses Ubah di Legal.')); }
   return card;
 }
 function lgHistory() {
@@ -5750,17 +5761,17 @@ function lgCancel(s) {
     return call('cancelLegal', { no: s.no, alasan: $('f_m_lg_why').value }).then(function (d) { toast('Surat ' + s.no + ' dibatalkan.'); applyLegal(d); });
   }, 'danger-solid');
 }
-$('lgPP').onclick = function () {
-  var pp = lgData ? lgData.pp : {};
-  jlModal('Pihak Pertama', 'Dipakai di semua surat perjanjian. Disimpan di sistem, tidak di kode website.', function (b) {
-    b.appendChild(fieldBox('m_pp_nama', 'Nama (sesuai KTP)', inp('text', pp.nama, { maxlength: 80 })));
-    var ta = document.createElement('textarea'); ta.rows = 2; ta.maxLength = 300; ta.value = pp.alamat || '';
+function lgPPModal(x) {
+  jlModal(x ? 'Ubah Pihak Pertama' : 'Tambah Pihak Pertama', 'Pihak yang menyewakan dan tanda tangan di kiri surat. Data ini disimpan di sistem, tidak di kode website.', function (b) {
+    b.appendChild(fieldBox('m_pp_nama', 'Nama (sesuai KTP)', inp('text', x ? x.nama : '', { maxlength: 80 })));
+    var ta = document.createElement('textarea'); ta.rows = 2; ta.maxLength = 300; ta.value = x ? x.alamat : '';
     b.appendChild(fieldBox('m_pp_alamat', 'Alamat (sesuai KTP)', ta));
-    b.appendChild(fieldBox('m_pp_ktp', 'No. KTP', inp('text', pp.ktp, { maxlength: 16, inputmode: 'numeric' })));
+    b.appendChild(fieldBox('m_pp_ktp', 'No. KTP', inp('text', x ? x.ktp : '', { maxlength: 16, inputmode: 'numeric' })));
+    if (x) { var del = el('a', '', 'Hapus dari daftar'); del.href = '#'; del.style.color = 'var(--err)'; del.onclick = function (e) { e.preventDefault(); if (!confirm('Hapus ' + x.nama + ' dari daftar Pihak Pertama? Surat yang sudah dibuat tidak berubah.')) return; call('saveLegalPP', { id: x.id, hapus: true }).then(function (d) { jlmHide(); toast(x.nama + ' dihapus dari daftar.'); applyLegal(d); }).catch(function (e2) { toast(errText(e2)); }); }; var pd = el('p', 'small'); pd.appendChild(del); b.appendChild(pd); }
   }, 'Simpan', function () {
-    return call('saveLegalPP', { nama: $('f_m_pp_nama').value, alamat: $('f_m_pp_alamat').value, ktp: $('f_m_pp_ktp').value }).then(function (d) { toast('Data Pihak Pertama tersimpan.'); applyLegal(d); });
+    return call('saveLegalPP', { id: x ? x.id : '', nama: $('f_m_pp_nama').value, alamat: $('f_m_pp_alamat').value, ktp: $('f_m_pp_ktp').value }).then(function (d) { toast('Pihak Pertama tersimpan.'); applyLegal(d); });
   });
-};
+}
 $$('#lgTabs [data-lt]').forEach(function (b) { b.onclick = function () { lgTab = b.getAttribute('data-lt'); renderLegal(); }; });
 
 /* ====================== PENGGUNA & AKSES ====================== */
