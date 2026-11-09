@@ -806,9 +806,19 @@
   .tl-item .muted { font-size:12.5px; }
   /* Two panes that each scroll on their own (like an email app): the list on the left, the details on the right.
      The split gets the height of the screen (set by fitSplit in the script), so nothing needs the page scrollbar. */
+  .lg-grid { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:16px; align-items:start; }
+  @media (max-width:1000px) { .lg-grid { grid-template-columns:1fr; } #lgTabs { flex-wrap:wrap; } }
+  .lg-h { margin:0 0 14px; font-size:16px; }
+  .lg-fields .btn { margin-top:14px; }
+  .lg-list { display:flex; flex-direction:column; gap:8px; }
+  .lg-row { display:flex; gap:12px; align-items:flex-start; justify-content:space-between; border:1px solid var(--line); border-radius:12px; padding:10px 12px; font-size:13.5px; }
+  .lg-row.batal > div:first-child > b, .lg-row.batal > div:first-child > div:nth-child(2) { text-decoration:line-through; opacity:.7; }
+  .lg-acts { display:flex; flex-direction:column; gap:6px; flex:none; }
+  .lg-acts .btn { width:auto; margin:0; padding:7px 12px; font-size:12.5px; }
+  .lg-soon h3 { margin:0 0 8px; } .lg-soon p { margin:10px 0 0; }
   .fit { overflow:hidden; align-items:stretch !important; }
   .fit > .tn-listcol, .fit > .bukti-listcol { display:flex; flex-direction:column; min-height:0; }
-  .fit #unList, .fit #tnList, .fit #payList, .fit #tdList, .fit #jlList, .fit #ckList, .fit #pbList, .fit #ksGrid, .fit #ktList { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; }
+  .fit #unList, .fit #tnList, .fit #payList, .fit #tdList, .fit #jlList, .fit #ckList, .fit #pbList, .fit #ksGrid, .fit #ktList, .fit #pyList, .fit #knList { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; }
   .fit > .tn-detailcol, .fit > .bukti-detailcol { position:static; min-height:0; height:100%; overflow-y:auto; overscroll-behavior:contain; padding:2px 4px 2px 2px; }
   .fit ::-webkit-scrollbar { width:10px; } .fit ::-webkit-scrollbar-thumb { background:color-mix(in srgb, var(--muted) 45%, transparent); border-radius:10px; border:2px solid transparent; background-clip:padding-box; }
   .fit ::-webkit-scrollbar-track { background:transparent; }
@@ -968,6 +978,9 @@
       <button class="nav" data-view="kontak" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>
         Kontak</button>
+      <button class="nav" data-view="legal" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>
+        Legal</button>
       <button class="nav" data-view="set" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
         Pengaturan</button>
@@ -1314,6 +1327,18 @@
           </div>
         </div>
       </div>
+    </section>
+
+    <!-- ================= LEGAL ================= -->
+    <section id="view-legal" hidden>
+      <div class="page-head" style="max-width:var(--pw)">
+        <div><h1>Legal</h1><p>Surat perjanjian dan surat lain dari data sewa. Hasilnya PDF, nomor surat otomatis.</p></div>
+        <button class="btn sec" id="lgPP" type="button" style="width:auto;margin:0;padding:11px 18px" hidden>Pihak Pertama</button>
+      </div>
+      <div class="segs" id="lgTabs" role="tablist" style="margin-bottom:16px">
+        <button type="button" data-lt="psm" class="on">Perjanjian Sewa</button><button type="button" data-lt="sp">Surat Peringatan</button><button type="button" data-lt="pem">Surat Pemberitahuan</button><button type="button" data-lt="jalan">Surat Jalan / Tugas</button>
+      </div>
+      <div id="lgBody" style="max-width:var(--pw)"></div>
     </section>
 
     <!-- ================= PENGECEKAN TANAH ================= -->
@@ -2152,6 +2177,7 @@ function refreshView(wrote) {
     else if (v === 'jalan') loadTrips();
     else if (v === 'cek') loadChecks();
     else if (v === 'kontak') loadContacts();
+    else if (v === 'legal') loadLegal();
     else if (v === 'penyewa') loadTenantsPage();
     else if (v === 'catat' && chosen && me.v2 && !$('chosenBox').hidden) renderBills();
   } catch (e) {}
@@ -2193,7 +2219,7 @@ function cacheClear() { try { Object.keys(localStorage).filter(function (k) { re
 var syncN = 0;
 var syncPend = {};
 var SYNC_NAMES = { getFormData: 'data awal', getDashboard: 'dashboard', getTasks: 'tugas', getPayments: 'riwayat pembayaran', getTenants: 'penyewa', getLand: 'data tanah',
-  getTrips: 'perjalanan', getChecks: 'pengecekan tanah', getPbb: 'PBB', getKos: 'kos & apartemen', getContacts: 'kontak', getLogs: 'log', checkData: 'pemeriksaan data', getUsers: 'pengguna', getBackups: 'backup' };
+  getTrips: 'perjalanan', getChecks: 'pengecekan tanah', getPbb: 'PBB', getKos: 'kos & apartemen', getContacts: 'kontak', getLegal: 'legal', getLogs: 'log', checkData: 'pemeriksaan data', getUsers: 'pengguna', getBackups: 'backup' };
 function syncing(d, fn) {
   syncN = Math.max(0, syncN + d);
   if (fn) { if (d > 0) syncPend[fn] = Date.now(); else delete syncPend[fn]; }
@@ -2237,7 +2263,7 @@ $$('[data-theme-switch]').forEach(function (s) {
 applyTheme(document.documentElement.getAttribute('data-theme') || 'light');
 
 /* ---------- navigation ---------- */
-var VIEWS = ['dash', 'edai', 'kal', 'tugas', 'set', 'soon', 'catat', 'bukti', 'jalan', 'pbb', 'penyewa', 'pny', 'kon', 'unit', 'kos', 'tanah', 'cek', 'kontak', 'laporan'];
+var VIEWS = ['dash', 'edai', 'kal', 'tugas', 'set', 'soon', 'catat', 'bukti', 'jalan', 'pbb', 'penyewa', 'pny', 'kon', 'unit', 'kos', 'tanah', 'cek', 'kontak', 'legal', 'laporan'];
 var knKind = 'kontrak';   // the Kontrak page shows normal contracts; "kebun" = the Kebun / Sawah page (same page, garapan contracts)
 /* Menu groups: one menu item, its pages as tabs at the top of the page. */
 var GROUPS = { agenda: ['kal', 'tugas'], bayar: ['catat', 'bukti', 'laporan'], tanah: ['tanah', 'cek'], sewa: ['penyewa', 'unit', 'kos'] };
@@ -2284,7 +2310,7 @@ var curView = 'dash';
 function saveWhere() { try { localStorage.setItem('elWhere', JSON.stringify({ v: curView, jt: typeof jlTab === 'string' ? jlTab : '', st: typeof setTab === 'string' ? setTab : '' })); history.replaceState(null, '', '#' + curView); } catch (e) {} }
 function readWhere() { try { return JSON.parse(localStorage.getItem('elWhere') || '{}') || {}; } catch (e) { return {}; } }
 /* ---------- access per page: "-" (Akses ditolak), "L" (lihat), "U" (ubah). The engine checks it again on every call. ---------- */
-var PAGE_NAME = { dash: 'Dashboard', kal: 'Kalender', tugas: 'Tugas', catat: 'Catat pembayaran', bukti: 'Riwayat pembayaran', jalan: 'Perjalanan Kantor', pbb: 'PBB', penyewa: 'Penyewa', kos: 'Kos & Apartemen', tanah: 'Data tanah', cek: 'Pengecekan tanah', kontak: 'Kontak', set: 'Pengaturan' };
+var PAGE_NAME = { dash: 'Dashboard', kal: 'Kalender', tugas: 'Tugas', catat: 'Catat pembayaran', bukti: 'Riwayat pembayaran', jalan: 'Perjalanan Kantor', pbb: 'PBB', penyewa: 'Penyewa', kos: 'Kos & Apartemen', tanah: 'Data tanah', cek: 'Pengecekan tanah', kontak: 'Kontak', legal: 'Legal', set: 'Pengaturan' };
 function lv(page) { if (me && me.owner) return 'U'; return me && me.perms ? (me.perms[page] || '-') : '-'; }
 function canPay() { return lv('catat') === 'U'; }
 function isAdmin() { return !!(me && (me.owner || me.heavy)); }
@@ -2339,6 +2365,7 @@ function show(view) {
   if (view === 'pny' || view === 'kon' || view === 'kebun') loadSewa();
   if (view === 'edai') openEdai();
   if (view === 'kontak') loadContacts();
+  if (view === 'legal') loadLegal();
   if (view === 'laporan') loadReport();
   if (view === 'set') openSetTab(setTab);
   window.scrollTo(0, 0);
@@ -3121,12 +3148,12 @@ function bonPdf(w, btn) {
     .then(function () { btn.disabled = false; d.body.classList.remove('pdfing'); });
 }
 /* A small PDF writer for the bon: text (Helvetica / Times / ZapfDingbats), lines, boxes, clipped and turned photos. */
-function BonPdfDoc(H) { this.H = H; this.pages = []; this.imgs = []; this.cache = {}; }
+function BonPdfDoc(H, W) { this.H = H; this.W = W || 595.28; this.pages = []; this.imgs = []; this.cache = {}; }
 BonPdfDoc.prototype.page = function () { this.cur = { ops: [], imgs: [] }; this.pages.push(this.cur); return this.cur; };
 BonPdfDoc.prototype.op = function (s) { this.cur.ops.push(s); };
 BonPdfDoc.prototype.useImg = function (page, im) { var k = this.imgs.indexOf(im); if (k < 0) { this.imgs.push(im); k = this.imgs.length - 1; } if (page.imgs.indexOf(k) < 0) page.imgs.push(k); return k; };
 BonPdfDoc.prototype.blob = function () {
-  var parts = [], len = 0, offs = [], H = this.H.toFixed(2);
+  var parts = [], len = 0, offs = [], H = this.H.toFixed(2), W = this.W.toFixed(2);
   function put(x) { if (typeof x === 'string') { var b = new Uint8Array(x.length); for (var i = 0; i < x.length; i++) b[i] = x.charCodeAt(i) & 255; x = b; } parts.push(x); len += x.length; }
   function obj(n, body) { offs[n] = len; put(n + ' 0 obj\n'); (Array.isArray(body) ? body : [body]).forEach(put); put('\nendobj\n'); }
   put('%PDF-1.4\n%\xe2\xe3\xcf\xd3\n');
@@ -3139,7 +3166,7 @@ BonPdfDoc.prototype.blob = function () {
   var fres = FONTS.map(function (f, i) { return '/F' + (i + 1) + ' ' + (fObj + i) + ' 0 R'; }).join(' ');
   this.pages.forEach(function (p, i) {
     var n = pObj + i * 2, xo = p.imgs.map(function (k) { return '/Im' + k + ' ' + (iObj + k) + ' 0 R'; }).join(' ');
-    obj(n, '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 ' + H + '] /Resources << /Font << ' + fres + ' >>' + (xo ? ' /XObject << ' + xo + ' >>' : '') + ' >> /Contents ' + (n + 1) + ' 0 R >>');
+    obj(n, '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + W + ' ' + H + '] /Resources << /Font << ' + fres + ' >>' + (xo ? ' /XObject << ' + xo + ' >>' : '') + ' >> /Contents ' + (n + 1) + ' 0 R >>');
     var s = p.ops.join('\n'); obj(n + 1, ['<< /Length ' + s.length + ' >>\nstream\n', s, '\nendstream']);
   });
   var count = pObj + this.pages.length * 2, xref = len, x = 'xref\n0 ' + count + '\n0000000000 65535 f \n';
@@ -3163,7 +3190,7 @@ function bonPdfImg(doc, img) {   // the photo as it is: a JPEG goes in unchanged
 }
 /* one sheet of the bon page -> one PDF page, drawn from what is on screen (same positions, sizes, lines and photos) */
 function bonPdfPage(w, pg, doc) {
-  var d = w.document, P = pg.getBoundingClientRect(), K = 595.28 / P.width, H = doc.H, jobs = [], page = doc.page();
+  var d = w.document, P = pg.getBoundingClientRect(), K = doc.W / P.width, H = doc.H, jobs = [], page = doc.page();
   var X = function (x) { return ((x - P.left) * K).toFixed(2); }, Y = function (y) { return (H - (y - P.top) * K).toFixed(2); };
   function rgb(c) { var m = String(c).match(/[\d.]+/g); if (!m) return null; if (m.length > 3 && +m[3] === 0) return null; return [m[0] / 255, m[1] / 255, m[2] / 255].map(function (v) { return (+v).toFixed(3); }).join(' '); }
   function borders(cs, r, cell) {   // cell in a collapsed table: its box already ends in the middle of the shared line
@@ -3184,7 +3211,7 @@ function bonPdfPage(w, pg, doc) {
   function underlined(node) { for (var e = node.parentElement; e && e !== pg.parentNode; e = e.parentElement) { if (/underline/.test(w.getComputedStyle(e).textDecorationLine)) return true; } return false; }
   function text(node) {
     var el = node.parentElement, cs = w.getComputedStyle(el), fs = parseFloat(cs.fontSize), col = rgb(cs.color) || '0 0 0', f = font(cs);
-    var ls = parseFloat(cs.letterSpacing) || 0, under = underlined(node), re = /\S+/g, m, lines = {}, rg = d.createRange(), t = node.data;
+    var ls = parseFloat(cs.letterSpacing) || 0, under = underlined(node), re = /[^\s-]+-*|-+/g, m, lines = {}, rg = d.createRange(), t = node.data;
     while ((m = re.exec(t))) {
       rg.setStart(node, m.index); rg.setEnd(node, m.index + m[0].length);
       var r = rg.getBoundingClientRect(); if (!r.width) continue;
@@ -5522,15 +5549,228 @@ $('jlNew').onclick = function () { if (jlDirtyCheck()) return; jlSeq++; jlTab = 
 $('jlVehNew').onclick = function () { vehicleModal(null); };
 $('jlBack').onclick = function () { if (jlDirtyCheck()) return; closeTrip(); renderTripList(); };
 
+/* ====================== LEGAL ======================
+ * Letters from templates. The engine gives the contract data, the letter number, and keeps a copy of each letter's data,
+ * so "Unduh lagi" makes exactly the same PDF. The PDF is drawn here (same writer as the bon putih): F4 by default, or A4. */
+var lgData = null, lgTab = 'psm', lgKtr = '', lgPaper = 'f4';
+try { lgPaper = localStorage.getItem('lgPaper') || 'f4'; } catch (e) {}
+var LG_MON = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+var LG_DAY = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+function lgTgl(s) { var d = parseIso(s); return d ? d.getDate() + ' ' + LG_MON[d.getMonth()] + ' ' + d.getFullYear() : ''; }
+function lgHari(s) { var d = parseIso(s); return d ? LG_DAY[d.getDay()] + ', ' + lgTgl(s) : ''; }
+function lgWords(n) { return terbilang(n).split(' ').map(cap).join(' '); }
+function lgRp(n) { return Math.round(n || 0).toLocaleString('id-ID'); }
+function lgRoom(unit) { var d = String(unit || '').replace(/\D/g, ''); return d.length === 3 ? { lantai: d.charAt(0), kamar: d.slice(1) } : d.length === 4 ? { lantai: d.slice(0, 2), kamar: d.slice(2) } : { lantai: '', kamar: '' }; }
+var LG_TPL = {
+  'psm-acu-bulanan': function (x) {
+    var E = bonEsc, kv = function (k, v) { return '<div class="kv"><span class="k">' + k + '</span><span class="c">:</span><span class="v">' + v + '</span></div>'; };
+    var rl = function (n, k, v) { return '<div class="rl"><span class="n">' + n + '.</span><span class="k">' + k + '</span><span class="c">:</span><span class="v">' + v + '</span></div>'; };
+    var dep2 = 'Rp ' + lgRp(x.dep) + ',- (' + lgWords(x.dep) + ')';
+    return ['<div class="keep"><div class="ttl"><b><u>PERJANJIAN SEWA MENYEWA</u></b></div><div class="nos">No. ' + E(x.no) + '</div></div>', '<p class="bl">&nbsp;</p>',
+      '<p>Pada hari ini ' + lgHari(x.tanggal) + ' yang bertandatangan di bawah ini adalah :</p>',
+      kv('Nama', '<b>' + E(x.pp.nama) + '</b>'), kv('Alamat', E(x.pp.alamat)), kv('No KTP', E(x.pp.ktp)),
+      '<p>Selaku Pihak Menyewa</p>', '<p>Selanjutnya disebut <b>Pihak Pertama</b></p>',
+      kv('Nama', '<b>' + E(x.nama) + '</b>'), kv('Alamat', E(x.alamat)), kv('No. KTP', E(x.idn)),
+      '<p>Selanjutnya disebut <b>Pihak Kedua</b> yang menyewa.</p>',
+      '<p class="fi">Dengan ini para pihak bermaksud untuk membuat dan menandatangani Surat Perjanjian Sewa Menyewa kost pada :</p>',
+      rl(1, 'Lantai', E(x.lantai)), rl(2, 'Nomor Kamar', E(x.kamar)), rl(3, 'Alamat', 'Jl. Hayam Wuruk 100 O &amp; P.'), rl(4, 'Masa sewa dimulai', lgTgl(x.mulai)),
+      '<p class="bl">&nbsp;</p>',
+      '<p>Pihak Kedua menyetujui Bahwa Pihak Pertama menyewakan Kost tersebut secara bulanan yang dapat diperpanjang dengan harga sewa Rp. ' + lgRp(x.harga) + ' (' + lgWords(x.harga) + ') per bulan dengan adanya biaya jaminan sebesar Rp ' + lgRp(x.dep) + ' (' + lgWords(x.dep) + ') saat pertama kali masuk.</p>',
+      '<p class="bl">&nbsp;</p>']
+      .concat(LG_ACU_RULES.map(function (h) { return h.replace('{DEP2}', dep2); }))
+      .concat(['<p class="bl">&nbsp;</p>', '<div class="sig"><p class="bl">&nbsp;</p><p>Jakarta, ' + lgTgl(x.tanggal) + '</p><div class="sg"><b>PIHAK PERTAMA</b><b>PIHAK KEDUA</b></div>' +
+        '<p class="bl">&nbsp;</p><p class="bl">&nbsp;</p><p class="bl">&nbsp;</p><p class="bl">&nbsp;</p><div class="sg"><b>' + E(x.pp.nama) + '</b><b>' + E(x.nama) + '</b></div></div>']);
+  }
+};
+var LG_ACU_RULES = ["<p>Pihak Kedua menyatakan menyetujui semua peraturan dan tata tertib rumah kost yang dipersyaratkan oleh Pihak Pertama sebagai berikut:</p>", "<p class=\"bl\">&nbsp;</p>", "<p class=\"keep\"><b><u>PERATURAN DAN TATA TERTIB RUMAH KOST</u></b></p>", "<p class=\"bl\">&nbsp;</p>", "<div class=\"sec keep\"><span class=\"n\">A.</span><b>PENDAFTARAN</b></div>", "<div class=\"li\"><span class=\"n\">1.</span>Pihak kedua diminta secara menyeluruh mengetahui, memahami dan menaati PERATURAN DAN TATA TERTIB RUMAH KOST;</div>", "<div class=\"li\"><span class=\"n\">2.</span>Pihak kedua mengisi formulir perjanjian kontrak sewa dan menyerahkan <i>fotocopy</i> KTP (Kartu Tanda Penduduk) dan/atau identitas lain;</div>", "<div class=\"li\"><span class=\"n\">3.</span>Pihak kedua wajib membayar sewa kamar kost dimuka minimal 1(satu) bulan pertama;</div>", "<div class=\"li\"><span class=\"n\">4.</span>Pihak kedua akan mendapatkan kunci kamar dari pemilik kost, dan kunci kamar tersebut harus dikembalikan apabila berhenti sewa kamar kost;</div>", "<div class=\"li\"><span class=\"n\">5.</span>Apabila pihak kedua membatalkan sewa kamar kost karena pindah dan lain sebagainya, maka uang sewa yang sudah dibayarkan untuk masa sewa 1(satu) bulan tidak dapat dikembalikan dengan alasan apapun serta tidak dapat dipindah tangankan (over kontrak) kepada pihak lain.</div>", "<div class=\"li\"><span class=\"n\">6.</span>Kunci yang hilang akan dikenakan denda Rp.100.000.- (Seratus Ribu Rupiah).</div>", "<p class=\"bl\">&nbsp;</p>", "<div class=\"sec keep\"><span class=\"n\">B.</span><b>WAKTU DAN CARA PEMBAYARAN</b></div>", "<div class=\"li\"><span class=\"n\">1.</span>Pelunasan pertama dibayarkan sebelum mulai masuk kamar kost;</div>", "<div class=\"li\"><span class=\"n\">2.</span>Pelunasan seterusnya dibayarkan selambat-lambatnya 1 minggu sebelum berakhirnya masa sewa kamar kost;</div>", "<div class=\"li\"><span class=\"n\">3.</span>Keterlambatan pembayaran akan dikenakan denda sebesar Rp 50.000,- (Lima Puluh Ribu Rupiah) perhari terhitung sejak masa sewa kamar kost berakhir. Keterlambatan pembayaran jika tidak memperpanjang kembali sewa bulanan, akan dikenakan sewa kamar harian terhitung sejak masa sewa kamar kost berakhir (tanggal 1,2,3,4,5)(dengan sewa perhari Rp 100.000,- (Seratus Ribu Rupiah));</div>", "<div class=\"li\"><span class=\"n\">4.</span>Jika pihak kedua tidak membayar sewa kamar kost selama 5(lima) hari dan tidak ada pemberitahuan sebelumnya, maka pihak kedua akan dinyatakan keluar/berhenti menyewa, dan pemilik rumah kost berhak untuk membersihkan kamar dari barang-barang yang ditinggalkan serta tidak bertanggung jawab atas barang tersebut, dan pemilik rumah kost dapat menyewakan kembali kepada penyewa kost yang baru;</div>", "<div class=\"li\"><span class=\"n\">5.</span>Apabila pihak kedua tidak ingin memperpanjang sewa, maka pihak kedua harus menginformasikan satu bulan sebelumnya dan menyerahkan kembali kamar kost ke pemilik rumah kost dalam keadaan tanpa penghuni dan dalam keadaan baik seperti sedia kala.</div>", "<div class=\"li\"><span class=\"n\">6.</span>Pembayaran hanya dilakukan melalui transfer ke bank <b>BCA</b> dengan no.rek <b>1615688888 a/n Yona Meicy Francisca</b>.</div>", "<p class=\"bl\">&nbsp;</p>", "<div class=\"sec keep\"><span class=\"n\">C.</span><b>TAMU DAN JAM KELUAR MASUK LINGKUNGAN KOST</b></div>", "<div class=\"li\"><span class=\"n\">1.</span>Waktu kunjungan tamu sampai dengan jam 22.00 WIB.</div>", "<div class=\"li\"><span class=\"n\">2.</span>Apabila ada anggota keluarga atau teman yang menginap, sesuai ketentuan yang diijinkan</div>", "<p class=\"i96\">max 1 x 24 Jam dan harus melapor kepada petugas rumah kost serta mengisi formulir menginap. Menginap akan dikenakan biaya Rp 100.000,- (Seratus Ribu Rupiah) per malam/per orang;</p>", "<div class=\"li\"><span class=\"n\">3.</span>Apabila ada anggota keluarga atau teman yang ingin datang dan masuk kedalam kamar (tidak menginap) akan dikenakan biaya Rp 75.000.- (Tujuh Puluh Lima Ribu Rupiah) per 6 jam / per orang;</div>", "<div class=\"li\"><span class=\"n\">4.</span>Pihak kedua yang akan pulang kampung/pergi dalam jangka waktu yang cukup lama, demi keamanan dan kenyamanan, diharapkan tidak menitipkan kunci kamar kepada siapapun, kecuali langsung kepada pemilik rumah atau petugas kost.</div>", "<p class=\"bl\">&nbsp;</p>", "<div class=\"sec keep\"><span class=\"n\">D.</span><b>PEMBAYARAN HAL LAIN</b></div>", "<div class=\"li\"><span class=\"n\">1.</span>Pihak kedua berkewajiban atas biaya Listrik token;</div>", "<div class=\"li\"><span class=\"n\">2.</span>Jika adanya tunggakan saat pihak kedua berhenti menyewa kost, semua biaya akan ditanggung oleh pihak kedua ;</div>", "<div class=\"li\"><span class=\"n\">3.</span>Penggunaan air oleh pihak kedua yang boleh digunakan adalah 10 m<sup>3</sup>. Jika pihak kedua menggunakan air lebih dari yang sudah ditentukan akan dikenakan biaya lebih yaitu Rp 15.000,-(lima belas ribu rupiah) per meter kubik.</div>", "<p class=\"bl\">&nbsp;</p>", "<div class=\"sec keep\"><span class=\"n\">E.</span><b>UANG JAMINAN</b></div>", "<div class=\"li\"><span class=\"n\">1.</span>Pihak kedua wajib untuk membayar uang jaminan yaitu sebesar {DEP2};</div>", "<div class=\"li\"><span class=\"n\">2.</span>Uang jaminan berfungsi sebagai jaminan agar kondisi kamar kost yang disewakan pertama kali dengan kondisi masih baik akan tetap terjaga kondisinya saat pihak kedua keluar;</div>", "<div class=\"li\"><span class=\"n\">3.</span>Jika adanya kekurangan dan kerusakan yang diakibatkan oleh pihak kedua maka biaya yang akan dikeluarkan untuk membenarkan kekurangan dan kerusakan akan dipotong dari uang jaminan;</div>", "<div class=\"li\"><span class=\"n\">4.</span>Kekurangan dan kerusakan yang diakibatkan oleh <i>wear and tear</i> tidak akan menyebabkan uang jaminan terpotong.</div>", "<p class=\"bl\">&nbsp;</p>", "<div class=\"sec keep\"><span class=\"n\">F.</span><b>KEBERSIHAN DAN PEMELIHARAAN</b></div>", "<div class=\"li\"><span class=\"n\">1.</span>Kebersihan kamar merupakan tanggung jawab pihak kedua;</div>", "<div class=\"li\"><span class=\"n\">2.</span>Matikan Lampu, Air, dan peralatan lainnya yang dapat menyebabkan korsleting Listrik Ketika meninggalkan kamar;</div>", "<div class=\"li\"><span class=\"n\">3.</span>Menjaga kebersihan area umum bersama, buang sampah pada tempat yang telah disediakan (tempat sampah). Sampah yang bukan pada umumnya mohon dibuang/dimasukan pada plastic dan di tempat sampah;</div>", "<div class=\"li\"><span class=\"n\">4.</span>Mohon tidak menaruh barang-barang pribadi di hall koridor atau halaman yang menggangu penghuni kamar lainnya (selain rak sepatu);</div>", "<div class=\"li\"><span class=\"n\">5.</span>Pihak kedua juga bertanggung jawab untuk menjaga pembersihan ruangan diluar kamar termasuk toilet bersama. Pihak kedua wajib menjaga kebersihan kamar mandi dan dilarang membuang benda apapun dalam saluran pembuangan kamar mandi yang dapat menimbulkan penyumbatan saluran.</div>", "<p class=\"bl\">&nbsp;</p>", "<div class=\"sec keep\"><span class=\"n\">G.</span><b>HAL-HAL YANG HARUS DIPERHATIKAN</b></div>", "<div class=\"li\"><span class=\"n\">1.</span>Dilarang melakukan hal yang menggagu orang lain atau yang menggangu ketertiban umum.</div>", "<div class=\"li\"><span class=\"n\">2.</span>Kehilangan/kerusakan barang-barang fasilitas kamar kost yang disebabkan oleh pihak kedua baik sengaja ataupun tidak sengaja akan dikenakan biaya ganti rugi/denda ;</div>", "<div class=\"li\"><span class=\"n\">3.</span>Dilarang melakukan kegiatan yang mengakibatkan mudah terbakar dikamar seperti masak dalam kamar serta membawa, menggunakan, menyimpan barang-barang yang mudah terbakar seperti minyak tanah, bensin, kompor. petasan, mesiu dan lain-lain;</div>", "<div class=\"li\"><span class=\"n\">4.</span>Dilarang membawa Binatang peliharaan;</div>", "<div class=\"li\"><span class=\"n\">5.</span>Tamu dilarang menginap tanpa izin pemilik/petugas rumah kost;</div>", "<div class=\"li\"><span class=\"n\">6.</span>Pihak kedua atau tamu yang membuat kegaduhan dan menimbulkan ketidaknyamanan atau ketidakamanan serta kerugian akan dikeluarkan dari rumah kost tanpa ada biaya pengeluaran;</div>", "<div class=\"li\"><span class=\"n\">7.</span>Pemilik rumah kost dapat membuka setiap kamar kost apabila diperlukan demi keamanan dan ketentraman ataupun pembenaran atau renovasi darurat yang harus dilakukan;</div>", "<div class=\"li\"><span class=\"n\">8.</span>Resiko kehilangan/kerusakan barang pribadi merupakan tanggung jawab pihak kedua, pemilik rumah kost tidak bertanggung jawab.</div>", "<div class=\"li\"><span class=\"n\">9.</span>Pihak kedua tidak diperbolehkan untuk mengoper segala sesuatu yang disewanya tersebut kepada pihak lain. Jika terjadi maka perjanjian sewa menyewa ini batal dengan sendirinya dan uang sewa hangus;</div>", "<div class=\"li\"><span class=\"n\">10.</span>Perjanjian ini berlaku sampai salah satu pihak membatalkan atau memberhentikan sewa;</div>", "<div class=\"li\"><span class=\"n\">11.</span>Pihak kedua berkewajiban untuk memelihara kost dengan sebaik-baiknya dan pihak kedua berkewajiban atas keamanan kost yang disewanya dari pihak yang tidak bertanggung jawab;</div>", "<div class=\"li\"><span class=\"n\">12.</span>Pihak pertama setuju dalam hal pemilik kamar kost menyewakan kamar kost dalam keadaan baik dan pihak kedua menerima kamar kost tersebut dalam keadaan baik.</div>", "<div class=\"li\"><span class=\"n\">13.</span>Tidak boleh ada kegiatan LGBT.</div>", "<div class=\"li\"><span class=\"n\">14.</span>Tindakan hukum lainya yang dilakukan pihak kedua adalah tanggung jawab pihak kedua sendiri, tidak ada sangkut pautnya dengan pihak pertama yang hanya menyewakan kamar kost.</div>", "<p class=\"bl\">&nbsp;</p>", "<div class=\"sec keep\"><span class=\"n\">H.</span><b>PERINGATAN</b></div>", "<p class=\"i48\">Jika melakukan pelanggaran maka pihak kedua akan diberikan peringatan , batas peringatan hanya 3x. jika sudah mendapatkan peringatan ke-3 maka surat sewa menyewa ini akan batal secara otomatis dan pihak kedua diwajibkan untuk keluar.</p>", "<p class=\"bl\">&nbsp;</p>", "<p>Sebagai akibat dari penandatanganan perjanjian ini, apabila pihak kedua melanggar peraturan tata tertib yang telah disepakati bersama, maka pihak kedua dapat dikeluarkan oleh pihak pertama selaku pemilik rumah kost dan sisa uang sewa tidak dapat dikembalikan.</p>", "<p class=\"bl\">&nbsp;</p>", "<p>Surat perjanjian ini dibuat dua rangkap. PIHAK PERTAMA dan PIHAK KEDUA masing-masing memiliki surat perjanjian yang telah ditanda tangani bersama diatas materai.</p>", "<p class=\"bl\">&nbsp;</p>", "<p>Demikian surat perjanjian ini dibuat, agar dapat dipatuhi dan digunakan sebagai mestinya.</p>"];
+var LG_CSS = '#lgPrint{position:fixed;left:-30000px;top:0;z-index:-1}' +
+  '#lgPrint .lg-page{background:#fff;color:#000;box-sizing:border-box;padding:96px;width:816px;height:1248px;font-family:"Times New Roman",Times,"Liberation Serif",serif;font-size:16px;line-height:27.6px;letter-spacing:0;margin:0 0 20px;font-kerning:none;font-variant-ligatures:none;font-feature-settings:"kern" 0,"liga" 0}' +
+  '#lgPrint.a4 .lg-page{width:793.7px;height:1122.5px}' +
+  '#lgPrint .lg-body{height:100%;overflow:hidden}' +
+  '#lgPrint p,#lgPrint div{margin:0;padding:0;border:0;text-align:justify;font:inherit;color:#000;background:none}' +
+  '#lgPrint b{font-weight:700}#lgPrint i{font-style:italic}#lgPrint sup{font-size:10.6px;line-height:0;vertical-align:5px}' +
+  '#lgPrint .ttl{text-align:center;font-size:21.3px;line-height:36.8px}#lgPrint .nos{text-align:center;font-size:14.7px;line-height:24px}' +
+  '#lgPrint .kv,#lgPrint .rl{display:flex;text-align:left}#lgPrint .kv .k{width:96px;flex:none;margin-left:48px}#lgPrint .kv .c,#lgPrint .rl .c{width:48px;flex:none}#lgPrint .kv .v,#lgPrint .rl .v{flex:1;min-width:0}' +
+  '#lgPrint .rl .n{width:24px;flex:none;margin-left:24px}#lgPrint .rl .k{width:144px;flex:none}' +
+  '#lgPrint .fi{text-indent:24px}#lgPrint .i48{padding-left:48px}#lgPrint .i96{padding-left:96px}' +
+  '#lgPrint .sec{position:relative;padding-left:48px;font-weight:700;text-align:left}#lgPrint .sec .n{position:absolute;left:24px;top:0}' +
+  '#lgPrint .li{position:relative;padding-left:96px}#lgPrint .li .n{position:absolute;left:72px;top:0;font-weight:700}' +
+  '#lgPrint .sg{display:flex}#lgPrint .sg b{width:66%;text-align:left}#lgPrint .sg b+b{width:34%}';
+/* lay the blocks out on pages: a block that does not fit goes to the next page; a heading moves with it; no blank line at the top of a page */
+function lgPages(blocks, paper) {
+  if (!$('lgCss')) { var st = el('style'); st.id = 'lgCss'; st.textContent = LG_CSS; document.head.appendChild(st); }
+  var host = $('lgPrint'); if (!host) { host = el('div'); host.id = 'lgPrint'; document.body.appendChild(host); }
+  host.innerHTML = ''; host.className = paper === 'a4' ? 'a4' : 'f4';
+  var pages = [], tmp = document.createElement('div'), bd;
+  function np() { var pg = el('div', 'lg-page'), b = el('div', 'lg-body'); pg.appendChild(b); host.appendChild(pg); pages.push(pg); return b; }
+  function isBl(n) { return n && n.classList && n.classList.contains('bl'); }
+  bd = np();
+  blocks.forEach(function (h) {
+    tmp.innerHTML = h; var node = tmp.firstChild;
+    if (isBl(node) && !bd.childNodes.length) return;
+    bd.appendChild(node);
+    if (bd.scrollHeight <= bd.clientHeight + 1) return;
+    bd.removeChild(node);
+    var carry = [];
+    while (bd.lastChild && bd.lastChild.classList.contains('keep') && bd.childNodes.length > 1) carry.unshift(bd.removeChild(bd.lastChild));
+    while (isBl(bd.lastChild)) bd.removeChild(bd.lastChild);
+    bd = np(); carry.forEach(function (c) { bd.appendChild(c); });
+    if (!isBl(node) || bd.childNodes.length) bd.appendChild(node);
+  });
+  return pages;
+}
+function legalPdf(x, paper) {
+  var tpl = LG_TPL[x.tpl]; if (!tpl) return Promise.reject(new Error('Template surat ini tidak ada di website. Muat ulang halaman.'));
+  var f4 = paper !== 'a4';
+  return (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(function () {
+    var pages = lgPages(tpl(x), paper), doc = new BonPdfDoc(f4 ? 936 : 841.89, f4 ? 612 : 595.28), i = 0;
+    function next() { if (i >= pages.length) return Promise.resolve(); return bonPdfPage(window, pages[i++], doc).then(next); }
+    return next().then(function () {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(doc.blob()); a.download = [x.unit, x.nama, x.tanggal].join(' - ').replace(/[\/\\:*?"<>|]+/g, '-') + '.pdf';
+      document.body.appendChild(a); a.click(); setTimeout(function () { a.remove(); $('lgPrint').innerHTML = ''; }, 1500);
+      return pages.length;
+    });
+  });
+}
+function loadLegal() {
+  if (!lgData) emptyBox($('lgBody'), 'Memuat…');
+  return call('getLegal').then(applyLegal).catch(function (e) { emptyBox($('lgBody'), 'Gagal memuat: ' + errText(e)); });
+}
+function applyLegal(d) { lgData = d; $('lgPP').hidden = !d.isOwner; renderLegal(); }
+function renderLegal() {
+  $$('#lgTabs [data-lt]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-lt') === lgTab); });
+  var box = $('lgBody'); box.innerHTML = '';
+  if (!lgData) return;
+  if (lgTab !== 'psm') {
+    var c0 = el('div', 'card lg-soon'), nm = { sp: 'Surat Peringatan (SP)', pem: 'Surat Pemberitahuan', jalan: 'Surat Jalan / Surat Tugas' }[lgTab];
+    c0.appendChild(el('h3', '', nm)); c0.appendChild(el('span', 'st blue', 'Coming soon'));
+    c0.appendChild(el('p', 'muted', 'Template ' + nm.toLowerCase() + ' akan ditambahkan di sini, dengan data penyewa / karyawan terisi otomatis seperti surat perjanjian.'));
+    box.appendChild(c0); return;
+  }
+  var grid = el('div', 'lg-grid'); box.appendChild(grid);
+  grid.appendChild(lgForm()); grid.appendChild(lgHistory());
+}
+function lgMoney(v) {
+  var i = inp('text', v ? lgRp(v) : '', { inputmode: 'numeric', maxlength: 15 });
+  i.addEventListener('input', function () { var n = i.value.replace(/\D/g, ''); i.value = n ? Number(n).toLocaleString('id-ID') : ''; });
+  return i;
+}
+function lgNum(id) { return Number(String($(id).value || '').replace(/\D/g, '')) || 0; }
+function lgForm() {
+  var d = lgData, can = d.canEdit, card = el('div', 'card');
+  card.appendChild(el('h3', 'lg-h', 'Buat surat perjanjian sewa'));
+  if (!d.pp.nama) {
+    var w = el('div', 'msg warn'); w.textContent = d.isOwner ? 'Data Pihak Pertama (nama, alamat, No. KTP) belum diisi. Isi dulu lewat tombol "Pihak Pertama" di kanan atas.' : 'Data Pihak Pertama belum diisi. Minta Pemilik mengisinya dulu.';
+    card.appendChild(w);
+  }
+  var ts = document.createElement('select'); d.tpls.forEach(function (t) { var o = el('option', '', t.nama); o.value = t.id; ts.appendChild(o); });
+  card.appendChild(fieldBox('lg_tpl', 'Template', ts));
+  var tpl = d.tpls.filter(function (t) { return t.id === ts.value; })[0] || {};
+  var list = d.kontrak.filter(function (k) { return k.prop === tpl.prop; }).sort(function (a, b) { return String(a.unit).localeCompare(String(b.unit), 'id', { numeric: true }); });
+  var ks = document.createElement('select'), o0 = el('option', '', list.length ? 'Pilih kamar / penyewa…' : 'Belum ada kontrak aktif di ' + tpl.prop); o0.value = ''; ks.appendChild(o0);
+  list.forEach(function (k) { var o = el('option', '', k.unit + ' · ' + k.panggilan + ' · ' + k.ktr); o.value = k.ktr; ks.appendChild(o); });
+  ks.value = lgKtr && list.some(function (k) { return k.ktr === lgKtr; }) ? lgKtr : '';
+  card.appendChild(fieldBox('lg_ktr', 'Kontrak', ks, 'Kontrak aktif di ' + (tpl.prop || '-') + '.'));
+  var f = el('div', 'lg-fields'); card.appendChild(f);
+  var k = list.filter(function (x) { return x.ktr === ks.value; })[0];
+  ks.onchange = function () { lgKtr = ks.value; renderLegal(); };
+  if (!k) { f.appendChild(el('p', 'muted', 'Pilih kontrak dulu. Nama, KTP, kamar, harga dan tanggal terisi otomatis dari data sewa.')); return card; }
+  var room = lgRoom(k.unit);
+  f.appendChild(fieldBox('lg_nama', 'Nama penyewa (sesuai KTP)', inp('text', k.namaKtp || String(k.panggilan).split('/')[0].trim(), { maxlength: 80 }),
+    k.namaKtp ? 'Dari data penyewa.' : 'Nama KTP belum tersimpan, diisi dari nama panggilan "' + k.panggilan + '". Periksa dan sesuaikan dengan KTP.'));
+  var ki = inp('text', k.idn, { maxlength: 16, inputmode: 'numeric', placeholder: '16 angka' });
+  if (k.idn) ki.readOnly = true;
+  f.appendChild(fieldBox('lg_idn', 'No. KTP penyewa', ki, k.idn ? 'Dari data penyewa. Kalau salah, ubah di Sewa → Penyewa.' : 'Belum ada di data penyewa. Akan disimpan ke data penyewa.'));
+  var ta = document.createElement('textarea'); ta.rows = 2; ta.maxLength = 300; ta.value = k.alamat || ''; ta.placeholder = 'Alamat lengkap seperti di KTP';
+  f.appendChild(fieldBox('lg_alamat', 'Alamat penyewa (sesuai KTP)', ta, k.alamat ? 'Dari data penyewa.' : 'Diketik sekali, lalu tersimpan di data penyewa.'));
+  var r1 = el('div', 'row');
+  r1.appendChild(fieldBox('lg_lantai', 'Lantai', inp('text', room.lantai, { maxlength: 4 })));
+  r1.appendChild(fieldBox('lg_kamar', 'Nomor kamar', inp('text', room.kamar, { maxlength: 6 })));
+  f.appendChild(r1);
+  var r2 = el('div', 'row');
+  r2.appendChild(fieldBox('lg_harga', 'Harga sewa per bulan (Rp)', lgMoney(k.harga)));
+  r2.appendChild(fieldBox('lg_dep', 'Uang jaminan (Rp)', lgMoney(k.dep || 500000), k.dep ? 'Dari deposit kontrak.' : 'Kontrak belum ada deposit; diisi Rp 500.000.'));
+  f.appendChild(r2);
+  var r3 = el('div', 'row');
+  r3.appendChild(fieldBox('lg_mulai', 'Masa sewa dimulai', inp('date', k.mulai)));
+  r3.appendChild(fieldBox('lg_tgl', 'Tanggal perjanjian', inp('date', d.today), 'Hari ini; bisa diubah.'));
+  f.appendChild(r3);
+  var ps = document.createElement('select'); [['f4', 'F4 / Folio (21,6 × 33 cm)'], ['a4', 'A4 (21 × 29,7 cm)']].forEach(function (x) { var o = el('option', '', x[1]); o.value = x[0]; ps.appendChild(o); });
+  ps.value = lgPaper; ps.onchange = function () { lgPaper = ps.value; try { localStorage.setItem('lgPaper', lgPaper); } catch (e) {} };
+  f.appendChild(fieldBox('lg_paper', 'Kertas', ps));
+  var err = el('p', 'msg err'); err.hidden = true; f.appendChild(err);
+  var go = btnEl('Unduh PDF', '', function () {
+    err.hidden = true;
+    var p = { tpl: ts.value, ktr: k.ktr, nama: $('f_lg_nama').value.trim(), idn: $('f_lg_idn').value.replace(/\D/g, ''), alamat: $('f_lg_alamat').value.trim(),
+      lantai: $('f_lg_lantai').value.trim(), kamar: $('f_lg_kamar').value.trim(), harga: lgNum('f_lg_harga'), dep: lgNum('f_lg_dep'), mulai: $('f_lg_mulai').value, tanggal: $('f_lg_tgl').value };
+    var bad = p.nama.length < 2 ? 'Isi nama penyewa sesuai KTP.' : p.idn.length !== 16 ? 'No. KTP harus 16 angka.' : p.alamat.length < 10 ? 'Isi alamat sesuai KTP.' :
+      !p.lantai || !p.kamar ? 'Isi lantai dan nomor kamar.' : !p.harga ? 'Isi harga sewa.' : !p.dep ? 'Isi uang jaminan.' : !p.mulai ? 'Isi tanggal masa sewa dimulai.' : !p.tanggal ? 'Isi tanggal perjanjian.' : '';
+    if (bad) { err.textContent = bad; err.hidden = false; return; }
+    go.disabled = true; go.textContent = 'Menyimpan…';
+    call('makeLegal', p).then(function (r) {
+      go.textContent = 'Membuat PDF…';
+      return legalPdf(r.made, lgPaper).then(function (n) { toast('Surat ' + r.made.no + ' dibuat (' + n + ' halaman).'); applyLegal(r); });
+    }).catch(function (e) { go.disabled = false; go.textContent = 'Unduh PDF'; err.textContent = errText(e); err.hidden = false; });
+  });
+  f.appendChild(go);
+  f.appendChild(el('p', 'hint', 'Nomor surat dibuat otomatis dan suratnya tersimpan di Riwayat, jadi bisa diunduh lagi kapan saja.'));
+  if (!can || !d.pp.nama) { $$('input,select,textarea,button', f).forEach(function (i) { if (i !== ps) i.disabled = true; }); if (!can) f.appendChild(el('p', 'hint', 'Anda hanya bisa melihat. Untuk membuat surat perlu akses Ubah di Legal.')); }
+  return card;
+}
+function lgHistory() {
+  var d = lgData, card = el('div', 'card');
+  card.appendChild(el('h3', 'lg-h', 'Riwayat surat'));
+  if (!d.surat.length) { card.appendChild(el('p', 'muted', 'Belum ada surat.')); return card; }
+  var lst = el('div', 'lg-list'); card.appendChild(lst);
+  d.surat.forEach(function (s) {
+    var r = el('div', 'lg-row' + (s.batal ? ' batal' : '')), m = el('div', ''); m.style.minWidth = '0';
+    m.appendChild(el('b', '', s.no));
+    m.appendChild(el('div', '', s.nama + (s.data.unit ? ' · kamar ' + s.data.unit : '') + ' · ' + dmy(parseIso(s.tanggal))));
+    m.appendChild(el('div', 'muted', s.tpl + ' · dibuat ' + s.oleh + (s.dibuat ? ', ' + dmy(parseIso(s.dibuat.slice(0, 10))) : '')));
+    if (s.batal) m.appendChild(el('div', 'neg', 'Dibatalkan: ' + s.batal));
+    r.appendChild(m);
+    var acts = el('div', 'lg-acts');
+    if (!s.batal) {
+      var dl = btnEl('Unduh lagi', 'sec', function () {
+        dl.disabled = true; legalPdf(s.data, lgPaper).catch(function (e) { toast(errText(e)); }).then(function () { dl.disabled = false; });
+      }); acts.appendChild(dl);
+      if (d.canCancel) acts.appendChild(btnEl('Batalkan', 'sec', function () { lgCancel(s); }));
+    }
+    r.appendChild(acts); lst.appendChild(r);
+  });
+  card.appendChild(el('p', 'hint', 'Unduh lagi memakai kertas yang dipilih di form (' + (lgPaper === 'a4' ? 'A4' : 'F4') + ').'));
+  return card;
+}
+function lgCancel(s) {
+  jlModal('Batalkan surat ' + s.no, s.nama + '. Surat tetap ada di riwayat (dicoret), nomornya tidak dipakai lagi.', function (b) {
+    b.appendChild(fieldBox('m_lg_why', 'Alasan', inp('text', '', { maxlength: 200, placeholder: 'Misalnya: salah tanggal, dibuat ulang' })));
+  }, 'Batalkan surat', function () {
+    return call('cancelLegal', { no: s.no, alasan: $('f_m_lg_why').value }).then(function (d) { toast('Surat ' + s.no + ' dibatalkan.'); applyLegal(d); });
+  }, 'danger-solid');
+}
+$('lgPP').onclick = function () {
+  var pp = lgData ? lgData.pp : {};
+  jlModal('Pihak Pertama', 'Dipakai di semua surat perjanjian. Disimpan di sistem, tidak di kode website.', function (b) {
+    b.appendChild(fieldBox('m_pp_nama', 'Nama (sesuai KTP)', inp('text', pp.nama, { maxlength: 80 })));
+    var ta = document.createElement('textarea'); ta.rows = 2; ta.maxLength = 300; ta.value = pp.alamat || '';
+    b.appendChild(fieldBox('m_pp_alamat', 'Alamat (sesuai KTP)', ta));
+    b.appendChild(fieldBox('m_pp_ktp', 'No. KTP', inp('text', pp.ktp, { maxlength: 16, inputmode: 'numeric' })));
+  }, 'Simpan', function () {
+    return call('saveLegalPP', { nama: $('f_m_pp_nama').value, alamat: $('f_m_pp_alamat').value, ktp: $('f_m_pp_ktp').value }).then(function (d) { toast('Data Pihak Pertama tersimpan.'); applyLegal(d); });
+  });
+};
+$$('#lgTabs [data-lt]').forEach(function (b) { b.onclick = function () { lgTab = b.getAttribute('data-lt'); renderLegal(); }; });
+
 /* ====================== PENGGUNA & AKSES ====================== */
-var ACC_PAGES = ['dash', 'kal', 'tugas', 'catat', 'bukti', 'jalan', 'pbb', 'penyewa', 'kos', 'tanah', 'cek', 'kontak', 'set'];
-var ACC_SHORT = { dash: 'Dashboard', kal: 'Kalender', tugas: 'Tugas', catat: 'Catat bayar', bukti: 'Riwayat bayar', jalan: 'Perjalanan', pbb: 'PBB', penyewa: 'Penyewa', kos: 'Kos & Apt', tanah: 'Data tanah', cek: 'Cek tanah', kontak: 'Kontak', set: 'Pengaturan' };
+var ACC_PAGES = ['dash', 'kal', 'tugas', 'catat', 'bukti', 'jalan', 'pbb', 'penyewa', 'kos', 'tanah', 'cek', 'kontak', 'legal', 'set'];
+var ACC_SHORT = { dash: 'Dashboard', kal: 'Kalender', tugas: 'Tugas', catat: 'Catat bayar', bukti: 'Riwayat bayar', jalan: 'Perjalanan', pbb: 'PBB', penyewa: 'Penyewa', kos: 'Kos & Apt', tanah: 'Data tanah', cek: 'Cek tanah', kontak: 'Kontak', legal: 'Legal', set: 'Pengaturan' };
 var TEMPLATES = {
-  'Staf keuangan': { dash: 'L', kal: 'L', tugas: 'U', catat: 'U', bukti: 'U', jalan: 'U', pbb: 'U', penyewa: 'U', kos: 'U', tanah: 'L', cek: 'L', kontak: 'L', set: '-' },
-  'Staf tanah': { dash: '-', kal: '-', tugas: 'U', catat: '-', bukti: '-', jalan: 'U', pbb: 'L', penyewa: '-', kos: '-', tanah: 'U', cek: 'U', kontak: 'U', set: '-' },
-  'Manajemen': { dash: 'L', kal: 'L', tugas: 'L', catat: '-', bukti: 'L', jalan: 'U', pbb: 'L', penyewa: 'L', kos: 'L', tanah: 'L', cek: 'L', kontak: 'L', set: '-' },
-  'Semua (ubah)': { dash: 'U', kal: 'U', tugas: 'U', catat: 'U', bukti: 'U', jalan: 'U', pbb: 'U', penyewa: 'U', kos: 'U', tanah: 'U', cek: 'U', kontak: 'U', set: 'L' },
-  'Tidak ada': { dash: '-', kal: '-', tugas: '-', catat: '-', bukti: '-', jalan: '-', pbb: '-', penyewa: '-', kos: '-', tanah: '-', cek: '-', kontak: '-', set: '-' }
+  'Staf keuangan': { dash: 'L', kal: 'L', tugas: 'U', catat: 'U', bukti: 'U', jalan: 'U', pbb: 'U', penyewa: 'U', kos: 'U', tanah: 'L', cek: 'L', kontak: 'L', legal: '-', set: '-' },
+  'Staf tanah': { dash: '-', kal: '-', tugas: 'U', catat: '-', bukti: '-', jalan: 'U', pbb: 'L', penyewa: '-', kos: '-', tanah: 'U', cek: 'U', kontak: 'U', legal: '-', set: '-' },
+  'Manajemen': { dash: 'L', kal: 'L', tugas: 'L', catat: '-', bukti: 'L', jalan: 'U', pbb: 'L', penyewa: 'L', kos: 'L', tanah: 'L', cek: 'L', kontak: 'L', legal: '-', set: '-' },
+  'Semua (ubah)': { dash: 'U', kal: 'U', tugas: 'U', catat: 'U', bukti: 'U', jalan: 'U', pbb: 'U', penyewa: 'U', kos: 'U', tanah: 'U', cek: 'U', kontak: 'U', legal: 'U', set: 'L' },
+  'Tidak ada': { dash: '-', kal: '-', tugas: '-', catat: '-', bukti: '-', jalan: '-', pbb: '-', penyewa: '-', kos: '-', tanah: '-', cek: '-', kontak: '-', legal: '-', set: '-' }
 };
 var newUserRow = false;
 var userDrafts = {};   // unsaved changes per user, kept when the list redraws (after another card is saved or data refreshes)
@@ -5796,6 +6036,8 @@ function loadKos() {
 }
 function applyKos(d) {
   ksData = d; cacheWrite('getKos', d);
+  // red = really late. Yearly / 6-monthly tenants get a red alarm before the due date; on this page that is "due soon" (orange)
+  d.rooms.forEach(function (r) { if (r.lvl === 'telat' && !/^Telat|lalu$/.test(r.st || '')) r.lvl = 'segera'; });
   $('ksManage').hidden = !d.canManage;
   if (!ksProp || !d.props.some(function (p) { return p.nama === ksProp; })) ksProp = d.props.length ? d.props[0].nama : null;
   var telat = d.rooms.filter(function (r) { return r.lvl === 'telat'; }).length;
@@ -7334,19 +7576,22 @@ function openPy(p) {
   body.appendChild(head);
   body.appendChild(el('h3', 'tn-h3', 'Data penyewa'));
   var f = el('div', '');
-  f.appendChild(fieldBox('py_nama', 'Nama', inp('text', p.nama, { maxlength: 120, placeholder: 'Nama orang atau perusahaan' })));
+  f.appendChild(fieldBox('py_nama', 'Nama panggilan', inp('text', p.nama, { maxlength: 120, placeholder: 'Nama yang biasa dipakai, atau nama perusahaan' }), 'Nama ini yang tampil di semua halaman.'));
+  f.appendChild(fieldBox('py_nktp', 'Nama sesuai KTP', inp('text', p.namaKtp || '', { maxlength: 80, placeholder: 'Persis seperti di KTP' }), 'Dipakai di surat perjanjian dan surat lain. Kosongkan kalau sama dengan nama panggilan.'));
+  var ta = document.createElement('textarea'); ta.rows = 2; ta.maxLength = 300; ta.value = p.alamat || ''; ta.placeholder = 'Alamat lengkap seperti di KTP (RT/RW, kelurahan, kecamatan, kota)';
+  f.appendChild(fieldBox('py_alamat', 'Alamat sesuai KTP', ta));
   var r1 = el('div', 'row'); r1.appendChild(idField(p.jenis, p.idn)); r1.appendChild(fieldBox('py_wa', 'No WhatsApp', inp('tel', p.wa, { placeholder: '08…', maxlength: 60 }))); f.appendChild(r1);
   f.appendChild(fieldBox('py_milik', 'Nomor WA milik siapa? (kalau bukan nomornya sendiri)', inp('text', p.milik, { maxlength: 80, placeholder: 'Contoh: Bu Nia (agen), Bu Bella, anaknya' }), 'Kosongkan kalau nomor milik penyewa sendiri.'));
   f.appendChild(fieldBox('py_cat', 'Catatan', inp('text', p.cat, { maxlength: 500, placeholder: 'Opsional' })));
   if (p.lama) f.appendChild(el('p', 'hint', 'Nama di data lama: ' + p.lama));
-  if (!can) $$('input,select', f).forEach(function (i) { i.disabled = true; });
+  if (!can) $$('input,select,textarea', f).forEach(function (i) { i.disabled = true; });
   body.appendChild(f);
   var err = el('p', 'msg err'); err.hidden = true; body.appendChild(err);
   if (can) {
     var acts = el('div', 'tn-actions');
     var sv = btnEl(isNew ? 'Simpan penyewa baru' : 'Simpan', '', function () {
       err.hidden = true; sv.disabled = true; sv.textContent = 'Menyimpan…';
-      call('savePenyewa', { id: p.id, nama: $('f_py_nama').value, jenis: $('f_idJenis').value, idn: $('f_ktp').value, wa: $('f_py_wa').value, milik: $('f_py_milik').value, cat: $('f_py_cat').value })
+      call('savePenyewa', { id: p.id, nama: $('f_py_nama').value, jenis: $('f_idJenis').value, idn: $('f_ktp').value, wa: $('f_py_wa').value, milik: $('f_py_milik').value, cat: $('f_py_cat').value, namaKtp: $('f_py_nktp').value, alamat: $('f_py_alamat').value })
         .then(function (r) { toast(isNew ? 'Penyewa baru tersimpan (' + r.id + ').' : 'Data penyewa tersimpan.'); pyMode = 'view'; pyPendingId = r.id; return refreshSewa(); })
         .catch(function (e) { sv.disabled = false; sv.textContent = isNew ? 'Simpan penyewa baru' : 'Simpan'; err.textContent = errText(e); err.hidden = false; });
     });
