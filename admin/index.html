@@ -7338,7 +7338,7 @@ function loadReport(force) {
   $('repPSub').hidden = !pj; $('repPMonth').hidden = !(pj && repPSub === 'm');
   $('repMonth').hidden = repMode !== 'm'; $('repYear').hidden = repMode !== 'y'; $('repRange').hidden = !rng; $('repBon').hidden = repMode === 'y' || pj;
   $('repH1').textContent = pj ? 'Proyeksi pemasukan' : 'Laporan pemasukan';
-  $('repSub').textContent = pj ? 'Unit-unit yang akan bayar di bulan atau tanggal itu (menurut jatuh tempo), dan totalnya.' : 'Hanya uang yang masuk di bulan itu (menurut Tanggal Bayar). Periksa dulu, lalu unduh PDF.';
+  $('repSub').textContent = pj ? 'Perkiraan seluruh pemasukan sewa di bulan atau tanggal itu: semua unit yang jatuh tempo, sudah bayar maupun belum, dan totalnya.' : 'Hanya uang yang masuk di bulan itu (menurut Tanggal Bayar). Periksa dulu, lalu unduh PDF.';
   if (rng && repRangeFor !== (pj ? 'p' : 'r')) {   // sensible default range: this month so far (laporan) or the rest of this month (proyeksi)
     var t0 = today0(); repRangeFor = pj ? 'p' : 'r';
     $('repFrom').value = iso(pj ? t0 : new Date(t0.getFullYear(), t0.getMonth(), 1)); $('repTo').value = iso(pj ? new Date(t0.getFullYear(), t0.getMonth() + 1, 0) : t0);
