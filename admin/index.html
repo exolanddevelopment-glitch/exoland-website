@@ -1068,6 +1068,8 @@
               <button type="button" data-alarm="tahunan" class="on">Tahunan<span class="cnt" hidden></span></button>
               <button type="button" data-alarm="enam">6 Bulan<span class="cnt" hidden></span></button>
               <button type="button" data-alarm="bulanan">Bulanan<span class="cnt" hidden></span></button>
+              <button type="button" data-alarm="cianjur">Cianjur<span class="cnt" hidden></span></button>
+              <button type="button" data-alarm="sukabumi">Sukabumi<span class="cnt" hidden></span></button>
               <button type="button" data-alarm="tugas">Tugas<span class="cnt" hidden></span></button>
             </div>
           </div>
@@ -3649,7 +3651,9 @@ function alarmList(tab, t) {
       .sort(function (a, b) { return a.l.days - b.l.days; });
   }
   var rank = { red: 0, orange: 1, white: 3, grey: 2 };
-  return dashData.tenants.filter(function (x) { return cycleCat(x) === tab; }).map(function (x) { return { x: x, l: dueLevel(x, t) }; })
+  // Cianjur and Sukabumi (mostly farmers) have their own lists, whatever their cycle; the cycle lists hold everyone else
+  var byCity = tab === 'cianjur' || tab === 'sukabumi';
+  return dashData.tenants.filter(function (x) { return byCity ? x.grp === tab : !x.grp && cycleCat(x) === tab; }).map(function (x) { return { x: x, l: dueLevel(x, t) }; })
     .sort(function (a, b) { return rank[a.l.lv] - rank[b.l.lv] || a.l.days - b.l.days; });
 }
 function renderAlarm() {
@@ -3663,12 +3667,14 @@ function renderAlarm() {
   });
   var list = alarmList(alarmTab, t), box = $('alarmBox');
   box.innerHTML = '';
-  var hints = { tahunan: 'Tahunan, beberapa tahun sekali, dan sekali bayar. Oranye 3 bulan sebelum jatuh tempo, merah 1 bulan sebelum, sampai dibayar.',
+  var hints = { tahunan: 'Tahunan, beberapa tahun sekali, dan sekali bayar (tanpa Cianjur & Sukabumi). Oranye 3 bulan sebelum jatuh tempo, merah 1 bulan sebelum, sampai dibayar.',
     enam: 'Siklus 6 dan 3 bulan. Oranye 1 bulan sebelum, merah 1 minggu sebelum, sampai dibayar.',
     bulanan: 'Oranye 3 hari sebelum, merah mulai hari jatuh tempo, sampai dibayar.',
+    cianjur: 'Semua penyewa di Cianjur (Kota di Data tanah), apa pun siklusnya. Warna mengikuti siklus masing-masing.',
+    sukabumi: 'Semua penyewa di Sukabumi (Kota di Data tanah), apa pun siklusnya. Warna mengikuti siklus masing-masing.',
     tugas: 'Tugas yang belum selesai. Merah = lewat deadline, oranye = 3 hari lagi.' };
   $('alarmHint').textContent = hints[alarmTab];
-  if (!list.length) { emptyBox(box, alarmTab === 'tugas' ? 'Tidak ada tugas terbuka.' : 'Tidak ada penyewa aktif dengan siklus ini.'); return; }
+  if (!list.length) { emptyBox(box, alarmTab === 'tugas' ? 'Tidak ada tugas terbuka.' : alarmTab === 'cianjur' || alarmTab === 'sukabumi' ? 'Tidak ada penyewa aktif di ' + cap(alarmTab) + '. (Butuh versi engine terbaru.)' : 'Tidak ada penyewa aktif dengan siklus ini.'); return; }
   if (alarmTab === 'tugas') {
     box.appendChild(table(['No', 'Tugas', 'Untuk', 'Deadline', 'Prioritas', 'Status'], list.map(function (r, i) {
       return [i + 1, r.k.judul, personName(r.k.ke), { t: r.k.deadline ? dmy(parseIso(r.k.deadline)) : '-', cls: 'nowrap num' },
