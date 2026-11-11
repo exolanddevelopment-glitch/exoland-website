@@ -386,6 +386,8 @@
   .st.grey { background:var(--subtle); color:var(--muted); border:1px solid var(--line); }
   :root[data-theme="dark"] .st.orange { background:#4a3410; color:#fcd38d; }
   :root[data-theme="dark"] .st.red { background:#4c1d1d; color:#fca5a5; }
+  .js-cicil { grid-column:1 / -1; display:grid; gap:8px; margin-top:8px; padding-top:8px; border-top:1px dashed var(--line); }
+  .js-cline { display:flex; gap:8px; align-items:center; flex-wrap:wrap; } .js-cline input { width:auto; flex:1 1 140px; }
   .mini-btn { border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:8px; padding:5px 10px; font-size:12.5px; font-weight:600; cursor:pointer; white-space:nowrap; }
   .mini-btn:hover { border-color:var(--ink); }
   .mini-btn.dark { background:var(--btn); color:var(--btn-ink); border-color:var(--btn); }
@@ -8453,6 +8455,7 @@ function knEdit(k, preset) {
       if (!r.locked) { var x = el('button', 'js-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Hapus baris'); x.onclick = function () { if (r.lunas) { setLunas(''); return; } d.touched = true; d.rows.splice(i, 1); drawSched(); }; row.appendChild(x); }
       else row.appendChild(el('span', '', ''));
       var dt = el('div', 'js-dates muted'); row.appendChild(dt); r._dt = dt;
+      if (r.locked && r.id && r.sisa > 0) row.appendChild(cicilBox(r));
       box.appendChild(row);
     });
     if (!shownNo) box.appendChild(el('div', 'muted', 'Belum ada tagihan. Pakai "Isi cepat" atau "+ Tambah tagihan".'));
@@ -8470,6 +8473,53 @@ function knEdit(k, preset) {
     var sum = el('div', 'js-sum'); box.appendChild(sum); d._sum = sum;
     sched.appendChild(box);
     drawDates(); drawSum();
+  }
+  /* A partly paid bill (locked): split what is left into cicilan, each with its own due date. Saved right away. */
+  function cicilBox(r) {
+    var w = el('div', 'js-cicil');
+    if (!r._cc) {
+      var ob = el('button', 'mini-btn', 'Bagi sisa ' + rp(r.sisa) + ' jadi cicilan'); ob.type = 'button';
+      ob.onclick = function () { var h = Math.floor(r.sisa / 2); r._cc = [{ tgl: '', jml: h }, { tgl: '', jml: r.sisa - h }]; drawSched(); };
+      w.appendChild(ob); return w;
+    }
+    w.appendChild(el('div', 'muted', 'Sudah dibayar ' + rp(r.bayar || 0) + '. Bagi sisa ' + rp(r.sisa) + ': isi tanggal jatuh tempo dan jumlah tiap cicilan.'));
+    var tot = el('div', 'muted');
+    function drawTot() { var t = r._cc.reduce(function (a, x) { return a + (x.jml || 0); }, 0); tot.textContent = 'Total cicilan ' + rp(t) + (t === r.sisa ? ' ✓ pas dengan sisa' : ' · harus ' + rp(r.sisa) + ' (selisih ' + rp(r.sisa - t) + ')'); tot.style.color = t === r.sisa ? 'var(--ok)' : 'var(--err)'; }
+    r._cc.forEach(function (c, i) {
+      var line = el('div', 'js-cline');
+      line.appendChild(el('span', 'muted', 'Cicilan ' + (i + 1)));
+      var tI = inp('date', c.tgl, { 'aria-label': 'Jatuh tempo cicilan ' + (i + 1) }); tI.onchange = function () { c.tgl = tI.value; };
+      var jI = inp('text', c.jml ? Number(c.jml).toLocaleString('id-ID') : '', { inputmode: 'numeric', class: 'num', placeholder: 'Rp', 'aria-label': 'Jumlah cicilan ' + (i + 1) });
+      jI.oninput = function () { c.jml = num(jI.value); drawTot(); }; jI.onblur = function () { jI.value = c.jml ? Number(c.jml).toLocaleString('id-ID') : ''; };
+      line.appendChild(tI); line.appendChild(jI);
+      if (r._cc.length > 1) { var x = el('button', 'js-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Hapus cicilan'); x.onclick = function () { r._cc.splice(i, 1); drawSched(); }; line.appendChild(x); }
+      w.appendChild(line);
+    });
+    w.appendChild(tot); drawTot();
+    var bar = el('div', 'js-tools');
+    bar.appendChild(btnEl('+ Cicilan', 'sec', function () { r._cc.push({ tgl: '', jml: 0 }); drawSched(); }));
+    var go = btnEl('Simpan cicilan', '', function () {
+      var t = r._cc.reduce(function (a, x) { return a + (x.jml || 0); }, 0);
+      if (r._cc.some(function (x) { return !x.tgl; })) { toast('Isi tanggal jatuh tempo semua cicilan.'); return; }
+      if (t !== r.sisa) { toast('Total cicilan harus ' + rp(r.sisa) + '.'); return; }
+      go.disabled = true; go.textContent = 'Menyimpan…';
+      call('splitBill', { id: r.id, cicilan: r._cc }).then(function () {
+        toast('Cicilan tersimpan.');
+        return knLoadBills(k.id).then(function (g) {
+          if (knDraft !== d) return;
+          d.rows = g.bills.map(function (b) {
+            var A = parseIso(b.a), B = parseIso(b.b), du = durOf(A, B);
+            if (b.jml === null && !b.locked) { d._lunasId = b.id; return { id: b.id, lunas: true, a: b.a, b: b.b, jml: null, n: 1, u: 'tgl', end: b.b, tampil: 'Lunas' }; }
+            return { id: b.id, locked: b.locked, a: b.a, b: b.b, jml: b.jml, n: du.n, u: du.u, end: du.end, tampil: b.tampil, bayar: b.bayar, sisa: b.sisa };
+          });
+          render();
+        });
+      }).catch(function (e) { toast(errText(e)); go.disabled = false; go.textContent = 'Simpan cicilan'; });
+    });
+    bar.appendChild(go);
+    bar.appendChild(btnEl('Batal', 'sec', function () { r._cc = null; drawSched(); }));
+    w.appendChild(bar);
+    return w;
   }
   function drawDates() {
     d.rows.forEach(function (r) {
@@ -8499,7 +8549,7 @@ function knEdit(k, preset) {
       d.rows = g.bills.map(function (b) {
         var A = parseIso(b.a), B = parseIso(b.b), du = durOf(A, B);
         if (b.jml === null && !b.locked) { d._lunasId = b.id; return { id: b.id, lunas: true, a: b.a, b: b.b, jml: null, n: 1, u: 'tgl', end: b.b, tampil: 'Lunas' }; }   // "Sudah lunas" without a recorded payment: editable
-        return { id: b.id, locked: b.locked, a: b.a, b: b.b, jml: b.jml, n: du.n, u: du.u, end: du.end, tampil: b.tampil };
+        return { id: b.id, locked: b.locked, a: b.a, b: b.b, jml: b.jml, n: du.n, u: du.u, end: du.end, tampil: b.tampil, bayar: b.bayar, sisa: b.sisa };
       });
       render();
     }).catch(function (e) { emptyBox(sched, 'Gagal memuat tagihan: ' + errText(e)); });
