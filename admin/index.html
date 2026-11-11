@@ -2980,12 +2980,13 @@ function amountQ(q) {
   return null;
 }
 function renderPays() {
-  var q = $('bq').value.toLowerCase().trim(), amt = amountQ(q);
+  var q = $('bq').value.toLowerCase().trim(), amt = amountQ(q), kq = /\/\s*kwt/.test(q) ? q.replace(/\s+/g, '') : null;   // a kwitansi number: match it exactly, not word by word
   var rows = payments.filter(function (p) {
     if (filter === 'no' && (p.bukti.length || isVoid(p)) && p.id !== selId) return false;
     if (filter === 'unk' && (!isUnk(p) || isVoid(p)) && p.id !== selId) return false;
     if ((filter === 'batal') !== isVoid(p) && p.id !== selId) return false;   // cancelled ones only under Dibatalkan
     if (amt !== null && Number(p.jumlah) === amt) return true;
+    if (kq) return String(p.kwitansi || '').toLowerCase().indexOf(kq) >= 0;
     return !q || (p.nama + ' ' + p.inv + ' ' + p.unit + ' ' + p.id + ' ' + p.kwitansi + ' ' + (p.jenis || '') + ' ' + (p.ktr || '') + ' ' + (p.plots || []).join(' ')).elHas(q);
   });
   if (sortBy === 'unit' || sortBy === 'nama') rows.sort(function (a, b) { return sortKey(a).localeCompare(sortKey(b), 'id', { numeric: true }); });
@@ -3540,7 +3541,7 @@ function renderDash() {
   $('cekBadge').hidden = !(dashData.masalah > 0); $('cekBadge').textContent = dashData.masalah || '';
   renderOcc();
   renderIncome(w, t);
-  renderBills(w, t);
+  renderDashBills(w, t);
   renderAlarm();
 }
 
@@ -3611,7 +3612,7 @@ function drawChart(box, cur, prev, w) {
 }
 
 /* --- bills: what was due in the period, paid vs not paid --- */
-function renderBills(w, t) {
+function renderDashBills(w, t) {   // (was named like the Catat bill picker, which silently replaced it: the card stayed "–")
   var paid = 0, unpaid = 0, late = 0, nP = 0, nU = 0, nL = 0, noData = 0, nBad = 0;
   dashData.tenants.forEach(function (x) {
     var lunas = tenantLunas(x), mo = tm(x);
@@ -3818,6 +3819,7 @@ function openTask(k) {
   $('tJudul').value = k ? k.judul : ''; $('tIsi').value = k ? k.isi : '';
   sel.value = k ? k.ke : user; if (!sel.value && people[0]) sel.value = people[0].email;
   $('tDeadline').value = k ? k.deadline : iso(addDays(today0(), 3));
+  if (k) $('tDeadline').removeAttribute('min'); else $('tDeadline').setAttribute('min', iso(today0()));   // a new task cannot already be overdue
   $('tPrio').value = k ? k.prioritas : 'Sedang'; $('tStatus').value = k ? k.status : 'Belum mulai';
   $('taskInfo').textContent = k ? 'Dibuat oleh ' + personName(k.oleh) + ' (' + k.dibuat + ')' + (k.diubah ? ' · terakhir diubah ' + personName(k.ubahOleh) + ' (' + k.diubah + ')' : '') : '';
   var can = canEditTask(k);
@@ -3835,6 +3837,7 @@ $('taskSave').onclick = function () {
   var btn = this, p = { id: editTask ? editTask.id : '', judul: $('tJudul').value, isi: $('tIsi').value, ke: $('tKe').value, deadline: $('tDeadline').value, prioritas: $('tPrio').value, status: $('tStatus').value };
   if (p.judul.trim().length < 3) { $('taskErr').textContent = 'Judul tugas minimal 3 huruf.'; $('taskErr').hidden = false; return; }
   if (!p.deadline) { $('taskErr').textContent = 'Isi deadline.'; $('taskErr').hidden = false; return; }
+  if (!editTask && p.deadline < iso(today0())) { $('taskErr').textContent = 'Deadline sudah lewat. Pilih hari ini atau sesudahnya.'; $('taskErr').hidden = false; return; }
   btn.disabled = true; btn.textContent = 'Menyimpan…'; $('taskErr').hidden = true;
   call('saveTask', p).then(function (t) {
     var found = false; tasks = tasks.map(function (x) { if (x.id === t.id) { found = true; return t; } return x; }); if (!found) tasks.push(t);
@@ -4092,9 +4095,12 @@ function dmyify(i) {
     var dg = raw.replace(/\D/g, '').slice(0, 8), out = dg.slice(0, 2) + (dg.length > 2 ? '/' + dg.slice(2, 4) : '') + (dg.length > 4 ? '/' + dg.slice(4) : '');
     if (out !== raw) NATIVE_VAL.set.call(i, out);
   });
-  i.addEventListener('blur', function () { var raw = NATIVE_VAL.get.call(i); i.classList.toggle('bad', !!raw && !dmyToIso(raw)); });
+  // a typed date outside the allowed range (min / max of the box, e.g. a payment date in the future) is refused like an impossible date
+  function range(v) { var a = i.getAttribute('min'), b = i.getAttribute('max'); return !v ? '' : a && v < a ? 'Tanggal paling awal ' + isoToDmy(a) + '.' : b && v > b ? 'Tanggal paling akhir ' + isoToDmy(b) + '.' : ''; }
+  i.addEventListener('blur', function () { var raw = NATIVE_VAL.get.call(i), v = dmyToIso(raw); i.classList.toggle('bad', !!raw && (!v || !!range(v))); });
   i.addEventListener('change', function (e) {   // half-typed or impossible date: keep it red, don't pass it on as "empty"
-    var raw = NATIVE_VAL.get.call(i); if (raw && !dmyToIso(raw)) { e.stopImmediatePropagation(); i.classList.add('bad'); }
+    var raw = NATIVE_VAL.get.call(i), v = dmyToIso(raw), why = raw && (!v ? 'Tanggal tidak valid. Tulis dd/mm/yyyy.' : range(v));
+    if (why) { e.stopImmediatePropagation(); i.classList.add('bad'); i.title = why; try { toast(why); } catch (er) {} } else i.title = '';
   });
   i.addEventListener('click', function (e) {   // calendar icon area: open the browser's date picker
     if (e.offsetX < i.clientWidth - 40) return;
@@ -4102,7 +4108,7 @@ function dmyify(i) {
     // sits exactly on top of the visible box (invisible), so Chrome opens its calendar right under it
     var r = i.getBoundingClientRect();
     p.style.cssText = 'position:absolute;left:' + (r.left + window.scrollX) + 'px;top:' + (r.top + window.scrollY) + 'px;width:' + r.width + 'px;height:' + r.height + 'px;margin:0;opacity:0;border:0;padding:0;pointer-events:none;z-index:-1;box-sizing:border-box';
-    if (mn) p.min = mn; if (mx) p.max = mx; NATIVE_VAL.set.call(p, i.value || '');
+    mn = i.getAttribute('min'); mx = i.getAttribute('max'); if (mn) p.min = mn; if (mx) p.max = mx; NATIVE_VAL.set.call(p, i.value || '');
     document.body.appendChild(p);
     p.addEventListener('change', function () { i.value = NATIVE_VAL.get.call(p); i.dispatchEvent(new Event('input', { bubbles: true })); i.dispatchEvent(new Event('change', { bubbles: true })); });
     p.addEventListener('blur', function () { setTimeout(function () { p.remove(); }, 300); });
@@ -7609,7 +7615,11 @@ function openPy(p) {
   if (can) {
     var acts = el('div', 'tn-actions');
     var sv = btnEl(isNew ? 'Simpan penyewa baru' : 'Simpan', '', function () {
-      err.hidden = true; sv.disabled = true; sv.textContent = 'Menyimpan…';
+      err.hidden = true;
+      var nm = $('f_py_nama').value.trim().toLowerCase().replace(/\s+/g, ' ');
+      var same = isNew && nm && (syData ? syData.penyewa : []).filter(function (x) { return String(x.nama).trim().toLowerCase().replace(/\s+/g, ' ') === nm; });
+      if (same && same.length && !confirm('Sudah ada penyewa bernama "' + same[0].nama + '" (' + same.map(function (x) { return x.id; }).join(', ') + ').\n\nKalau orangnya sama, batalkan dan buka penyewa itu saja (tekan "+ Kontrak baru untuk orang ini").\n\nTetap buat penyewa baru?')) return;
+      sv.disabled = true; sv.textContent = 'Menyimpan…';
       call('savePenyewa', { id: p.id, nama: $('f_py_nama').value, jenis: $('f_idJenis').value, idn: $('f_ktp').value, wa: $('f_py_wa').value, milik: $('f_py_milik').value, cat: $('f_py_cat').value, namaKtp: $('f_py_nktp').value, alamat: $('f_py_alamat').value })
         .then(function (r) { toast(isNew ? 'Penyewa baru tersimpan (' + r.id + ').' : 'Data penyewa tersimpan.'); pyMode = 'view'; pyPendingId = r.id; return refreshSewa(); })
         .catch(function (e) { sv.disabled = false; sv.textContent = isNew ? 'Simpan penyewa baru' : 'Simpan'; err.textContent = errText(e); err.hidden = false; });
@@ -7959,7 +7969,15 @@ function knEdit(k, preset) {
   }
   function dl2opt(o, x) { o.label = x.harga ? rp(x.harga) + (x.siklus ? ' / ' + cycleWord(x.siklus) : '') : 'Kosong'; }
   uIn.addEventListener('change', function () {
-    var m = uIn.value.match(/(UNT-\d+)\s*$/); if (!m) return;
+    var m = uIn.value.match(/(UNT-\d+)\s*$/);
+    if (!m && uIn.value.trim()) {   // typed the code without picking from the list: find it among the units that can be chosen
+      var want = qNorm(uIn.value), ok = Array.prototype.map.call(udl.options, function (o) { return o.value; });
+      var hit = ok.filter(function (v) { return qNorm(v.replace(/\s+—\s+UNT-\d+$/, '')) === want; });
+      if (hit.length !== 1) hit = ok.filter(function (v) { return qNorm(v).indexOf(want) === 0; });
+      if (hit.length === 1) m = hit[0].match(/(UNT-\d+)\s*$/);
+      else { toast(hit.length ? 'Ada ' + hit.length + ' unit yang cocok. Pilih salah satu dari daftar.' : 'Unit "' + uIn.value.trim() + '" tidak ada, atau sedang disewa. Hanya unit Kosong yang bisa dipilih.'); return; }
+    }
+    if (!m) return;
     if (d.units.indexOf(m[1]) < 0) d.units.push(m[1]);
     var u = unitInfo(m[1]); if (isNew && !d.harga && u.harga) { d.harga = u.harga; $('f_kn_harga').value = u.harga.toLocaleString('id-ID'); }
     uIn.value = ''; drawUnits(); setTimeout(function () { uIn.focus(); }, 0);
@@ -8167,6 +8185,7 @@ function knEdit(k, preset) {
     if (!d.pny) { var m = pIn.value.match(/(PNY-\d+)\s*$/); d.pny = m ? m[1] : ''; }
     if (!d.pny) { err.textContent = 'Pilih penyewa dari daftar.'; err.hidden = false; return; }
     if (d.rows === null) { err.textContent = 'Tunggu, tagihan masih dimuat.'; err.hidden = false; return; }
+    if (!d.harga && !isGratis(d.siklus) && !isIrr(d.siklus) && !isGarap(d.siklus)) { err.textContent = 'Isi harga sewa per siklus.'; err.hidden = false; return; }
     knChain(d);
     var jad = isGratis(d.siklus) || isIrr(d.siklus) ? [] : d.rows.map(function (r) { return { id: r.id || '', a: r.A ? iso(r.A) : '', b: r.B ? iso(r.B) : '', jml: r.jml === null ? null : r.jml }; });
     sv.disabled = true; sv.textContent = 'Menyimpan…';
