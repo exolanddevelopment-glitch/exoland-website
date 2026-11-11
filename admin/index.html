@@ -834,6 +834,7 @@
   .jm-sum2 div { display:flex; justify-content:space-between; } .jm-sum2 .tot { font-weight:800; font-size:15px; color:var(--ok, #22a06b); } .jm-sum2 .tot.neg { color:var(--err, #d92d20); }
   .jm-tbl { width:100%; border-collapse:collapse; font-size:13.5px; margin:8px 0; } .jm-tbl td { padding:5px 0; border-bottom:1px solid var(--line); } .jm-tbl .r { text-align:right; white-space:nowrap; } .jm-tbl tr.tot td { font-weight:800; border-bottom:0; }
   #jmBody > .btn { margin-top:12px; }
+  .who-top .who-name { font-weight:700; font-size:15px; padding:6px 9px; max-width:100%; }
   .fit { overflow:hidden; align-items:stretch !important; }
   .fit > .tn-listcol, .fit > .bukti-listcol { display:flex; flex-direction:column; min-height:0; }
   .fit #unList, .fit #tnList, .fit #payList, .fit #tdList, .fit #jlList, .fit #ckList, .fit #pbList, .fit #ksGrid, .fit #ktList, .fit #pyList, .fit #knList { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; }
@@ -6077,7 +6078,11 @@ function renderUsers(d) {
       em.oninput = function () { cur.email = em.value; }; nm.oninput = function () { cur.nama = nm.value; }; pr.oninput = function () { cur.peran = pr.value; };
       who.appendChild(em); who.appendChild(nm); who.appendChild(pr);
     } else {
-      var top = el('div', 'who-top'); top.appendChild(el('b', '', u.nama || u.email));
+      var top = el('div', 'who-top');
+      if (edit) {   // full name, as it should appear on kwitansi, bon and letters
+        var nm2 = inp('text', cur.nama, { maxlength: 80, placeholder: 'Nama lengkap', 'aria-label': 'Nama ' + u.email }); nm2.className = 'who-name';
+        nm2.oninput = function () { cur.nama = nm2.value; dirty(); }; top.appendChild(nm2);
+      } else top.appendChild(el('b', '', u.nama || u.email));
       if (u.owner) top.appendChild(el('span', 'owner', 'Pemilik'));
       else if (!u.aktif) top.appendChild(el('span', 'chip', 'Nonaktif'));
       else if (u.peran && !edit) top.appendChild(el('span', 'chip', u.peran));
@@ -6085,7 +6090,14 @@ function renderUsers(d) {
       if (!u.owner && edit) { var pr2 = inp('text', cur.peran, { placeholder: 'Label peran (opsional)', 'aria-label': 'Peran ' + u.nama }); pr2.oninput = function () { cur.peran = pr2.value; dirty(); }; who.appendChild(pr2); }
     }
     card.appendChild(who);
-    if (u.owner) { card.appendChild(el('div', 'muted owner-note', 'Semua halaman dan semua tindakan, termasuk mengatur pengguna. Tidak bisa diubah.')); box.appendChild(card); return; }
+    if (u.owner) {
+      var on = el('div', 'muted owner-note', 'Semua halaman dan semua tindakan, termasuk mengatur pengguna. Akses tidak bisa diubah, hanya nama.');
+      if (edit) { var of = el('div', 'ufoot'); of.appendChild(el('span', 'grow')); var osv = el('button', 'mini-btn dark', 'Simpan nama'); osv.type = 'button'; osv.disabled = !draft;
+        osv.onclick = function () { osv.disabled = true; call('setAccess', cur).then(function (r) { delete userDrafts[u.email]; setCache.users.users = r.users; renderUsers(setCache.users); toast('Nama tersimpan. Muat ulang halaman supaya nama di pojok kiri bawah ikut berubah.'); }).catch(function (e) { osv.disabled = false; toast(errText(e)); }); };
+        of.appendChild(osv); var ow = el('div', 'uright'); ow.appendChild(on); ow.appendChild(of); card.appendChild(ow); saveBtn = osv; }
+      else card.appendChild(on);
+      box.appendChild(card); return;
+    }
     var right = el('div', 'uright');
     var grid = el('div', 'pgrid');
     ACC_PAGES.forEach(function (p) { var c = el('div', 'pcell'); c.appendChild(el('span', '', ACC_SHORT[p])); c.appendChild(lvlCtl(cur.perms[p] || '-', !edit, function (v) { cur.perms[p] = v; dirty(); })); grid.appendChild(c); });
