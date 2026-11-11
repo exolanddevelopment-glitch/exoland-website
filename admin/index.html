@@ -321,7 +321,7 @@
   .rp-foot { display:flex; gap:10px; align-items:center; max-width:var(--pw); margin-top:16px; flex-wrap:wrap; }
   .rp-foot .btn { width:auto; margin:0; padding:12px 20px; }
   .rp-list { max-width:var(--pw); margin-top:12px; } .rp-list td.b { font-weight:700; }
-  tr.rp-unk td { color:var(--err); } tr.rp-jam td { background:var(--subtle); }
+  tr.rp-unk td { color:var(--err); } tr.rp-jam td { background:var(--subtle); } tr.rp-est td { color:var(--muted); font-style:italic; } tr.rp-late td { color:var(--err); }
   .unk-bar { max-width:var(--pw); margin:0 0 14px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; } .unk-bar .link { color:inherit; font-weight:700; text-decoration:underline; }
   .pay.unk .t-name { color:var(--err); }
   .lz-more { padding:14px; text-align:center; color:var(--muted); font-size:13px; }
@@ -1870,12 +1870,13 @@
     <!-- ================= LAPORAN PEMASUKAN ================= -->
     <section id="view-laporan" hidden>
       <div class="page-head" style="max-width:var(--pw)">
-        <div><h1>Laporan pemasukan</h1><p>Hanya uang yang masuk di bulan itu (menurut Tanggal Bayar). Periksa dulu, lalu unduh PDF.</p></div>
+        <div><h1 id="repH1">Laporan pemasukan</h1><p id="repSub">Hanya uang yang masuk di bulan itu (menurut Tanggal Bayar). Periksa dulu, lalu unduh PDF.</p></div>
         <div class="head-btns"><button class="btn" id="repBon" type="button" style="width:auto;margin:0;padding:11px 18px">Cetak bon putih</button><button class="btn sec" id="repReload" type="button" style="width:auto;margin:0;padding:11px 18px">Muat ulang</button><button class="btn sec" id="repBack" type="button" style="width:auto;margin:0;padding:11px 18px">← Riwayat pembayaran</button></div>
       </div>
       <div class="rp-top">
-        <div class="segs" id="repMode"><button type="button" data-rm="m" class="on">Bulanan</button><button type="button" data-rm="r">Pilih tanggal</button><button type="button" data-rm="y">Rekap tahunan</button></div>
-        <select id="repMonth" aria-label="Bulan"></select><select id="repYear" aria-label="Tahun" hidden></select><span class="rep-range" id="repRange" hidden><input id="repFrom" type="date" aria-label="Dari tanggal"><span>s/d</span><input id="repTo" type="date" aria-label="Sampai tanggal"><button class="btn" id="repGo" type="button">Tampilkan</button></span>
+        <div class="segs" id="repMode"><button type="button" data-rm="m" class="on">Bulanan</button><button type="button" data-rm="r">Pilih tanggal</button><button type="button" data-rm="y">Rekap tahunan</button><button type="button" data-rm="p">Proyeksi</button></div>
+        <div class="segs" id="repPSub" hidden><button type="button" data-ps="m" class="on">Per bulan</button><button type="button" data-ps="r">Pilih tanggal</button></div>
+        <select id="repPMonth" aria-label="Bulan proyeksi" hidden></select><select id="repMonth" aria-label="Bulan"></select><select id="repYear" aria-label="Tahun" hidden></select><span class="rep-range" id="repRange" hidden><input id="repFrom" type="date" aria-label="Dari tanggal"><span>s/d</span><input id="repTo" type="date" aria-label="Sampai tanggal"><button class="btn" id="repGo" type="button">Tampilkan</button></span>
         <span class="muted" id="repInfo"></span>
       </div>
       <div id="repBody"><div class="empty">Memuat…</div></div>
@@ -7315,7 +7316,7 @@ function reportModal(t) {
 
 /* ====================== LAPORAN PEMASUKAN (bulanan + rekap tahunan), PDF dibuat di browser ====================== */
 var BULAN_L = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-var repMode = 'm', repYMode = 'ringkas', repCache = {}, repData = null, repRows = false, repSeq = 0;
+var repRangeFor = '', repMode = 'm', repPSub = 'm', repYMode = 'ringkas', repCache = {}, repData = null, repRows = false, repSeq = 0;
 function repSecName(n) { return n; }
 function repLabelBulan(y, m) { return BULAN_L[m] + ' ' + y; }
 function repFillPickers() {
@@ -7323,29 +7324,42 @@ function repFillPickers() {
   if (!ms.options.length) {
     for (var k = 0; k < 36; k++) { var d = new Date(now.getFullYear(), now.getMonth() - k, 1), o = el('option', '', repLabelBulan(d.getFullYear(), d.getMonth())); o.value = d.getFullYear() + '-' + d.getMonth(); ms.appendChild(o); }
     for (var y = now.getFullYear(); y >= now.getFullYear() - 3; y--) { var oy = el('option', '', String(y)); oy.value = y; ys.appendChild(oy); }
+    var pm = $('repPMonth');   // Proyeksi: this month first, then the next 12, then the last 3
+    for (var q = 0; q <= 12; q++) { var dq = new Date(now.getFullYear(), now.getMonth() + q, 1), oq = el('option', '', repLabelBulan(dq.getFullYear(), dq.getMonth())); oq.value = dq.getFullYear() + '-' + dq.getMonth(); pm.appendChild(oq); }
+    for (var q2 = 1; q2 <= 3; q2++) { var dp = new Date(now.getFullYear(), now.getMonth() - q2, 1), op = el('option', '', repLabelBulan(dp.getFullYear(), dp.getMonth()) + ' (lalu)'); op.value = dp.getFullYear() + '-' + dp.getMonth(); pm.appendChild(op); }
   }
 }
 function openReport() { show('laporan'); }
 function loadReport(force) {
   repFillPickers();
   $$('#repMode [data-rm]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-rm') === repMode); });
-  $('repMonth').hidden = repMode !== 'm'; $('repYear').hidden = repMode !== 'y'; $('repRange').hidden = repMode !== 'r'; $('repBon').hidden = repMode === 'y';
-  if (repMode === 'r' && !$('repFrom').value) { var t0 = today0(); $('repFrom').value = iso(new Date(t0.getFullYear(), t0.getMonth(), 1)); $('repTo').value = iso(t0); }
+  var pj = repMode === 'p', rng = repMode === 'r' || (pj && repPSub === 'r');
+  $$('#repPSub [data-ps]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-ps') === repPSub); });
+  $('repPSub').hidden = !pj; $('repPMonth').hidden = !(pj && repPSub === 'm');
+  $('repMonth').hidden = repMode !== 'm'; $('repYear').hidden = repMode !== 'y'; $('repRange').hidden = !rng; $('repBon').hidden = repMode === 'y' || pj;
+  $('repH1').textContent = pj ? 'Proyeksi pemasukan' : 'Laporan pemasukan';
+  $('repSub').textContent = pj ? 'Perkiraan uang yang akan masuk (menurut jatuh tempo): sisa tagihan yang belum dibayar + periode yang belum ditagih (*). Tunggakan lama dipisah.' : 'Hanya uang yang masuk di bulan itu (menurut Tanggal Bayar). Periksa dulu, lalu unduh PDF.';
+  if (rng && repRangeFor !== (pj ? 'p' : 'r')) {   // sensible default range: this month so far (laporan) or the rest of this month (proyeksi)
+    var t0 = today0(); repRangeFor = pj ? 'p' : 'r';
+    $('repFrom').value = iso(pj ? t0 : new Date(t0.getFullYear(), t0.getMonth(), 1)); $('repTo').value = iso(pj ? new Date(t0.getFullYear(), t0.getMonth() + 1, 0) : t0);
+  }
   if (lv('bukti') !== 'U') { emptyBox($('repBody'), 'Laporan hanya untuk yang punya akses "Ubah" di Riwayat pembayaran.'); return; }
-  var arg = repMode === 'm' ? { y: +$('repMonth').value.split('-')[0], m: +$('repMonth').value.split('-')[1] } : repMode === 'r' ? { from: $('repFrom').value, to: $('repTo').value } : { y: +$('repYear').value, m: -1 };
-  if (repMode === 'r') {
+  var mv = (pj ? $('repPMonth') : $('repMonth')).value.split('-');
+  var arg = rng ? { from: $('repFrom').value, to: $('repTo').value } : repMode === 'm' || pj ? { y: +mv[0], m: +mv[1] } : { y: +$('repYear').value, m: -1 };
+  if (rng) {
     if (!arg.from || !arg.to) { emptyBox($('repBody'), 'Isi tanggal dari dan sampai, lalu tekan Tampilkan.'); return; }
     if (arg.to < arg.from) { emptyBox($('repBody'), 'Tanggal sampai sebelum tanggal dari.'); return; }
   }
-  var key = repMode === 'r' ? 'r_' + arg.from + '_' + arg.to : arg.y + '_' + arg.m, seq = ++repSeq;
+  var fn = pj ? 'getProjectionReport' : 'getIncomeReport';
+  var key = (pj ? 'p_' : '') + (rng ? 'r_' + arg.from + '_' + arg.to : arg.y + '_' + arg.m), seq = ++repSeq;
   if (repCache[key] && !force) { repData = repCache[key]; renderReport(); return; }
   emptyBox($('repBody'), 'Menyusun laporan…'); $('repInfo').textContent = '';
-  syncing(1, 'getIncomeReport');
-  call('getIncomeReport', arg).then(function (d) {
-    syncing(-1, 'getIncomeReport');
+  syncing(1, fn);
+  call(fn, arg).then(function (d) {
+    syncing(-1, fn);
     repCache[key] = d; if (seq !== repSeq) return;
     repData = d; renderReport();
-  }).catch(function (e) { syncing(-1, 'getIncomeReport'); if (seq === repSeq) emptyBox($('repBody'), 'Gagal menyusun laporan: ' + errText(e)); });
+  }).catch(function (e) { syncing(-1, fn); if (seq === repSeq) emptyBox($('repBody'), 'Gagal menyusun ' + (pj ? 'proyeksi' : 'laporan') + ': ' + errText(e)); });
 }
 function repLainTotal(t) { return Object.keys(t.lain).reduce(function (a, k) { return a + t.lain[k]; }, 0); }
 function repCard(s, sub) {
@@ -7362,6 +7376,7 @@ function repCard(s, sub) {
 }
 function renderReport() {
   var d = repData, box = $('repBody'); box.innerHTML = '';
+  if (d.month && d.month.proj) return renderProj(d, box);
   if (d.month) return renderReportMonth(d, box);
   // yearly
   var tot = { sewa: 0, jaminan: 0, lain: 0, n: 0 };
@@ -7428,9 +7443,64 @@ function renderReportMonth(d, box) {
     box.appendChild(w);
   });
 }
+/* Proyeksi pemasukan on screen: same look as the monthly report; the rows show Jatuh tempo instead of Tgl Bayar. */
+function repProjCard(s, sub) {
+  var t = s.totals, c = el('div', 'card rp-sec');
+  var h = el('h3', '', s.nama); h.appendChild(el('span', 'st white', t.n + ' tagihan')); c.appendChild(h);
+  c.appendChild(el('div', 'muted', sub));
+  c.appendChild(el('div', 'muted rp-lbl', 'Perkiraan uang masuk'));
+  c.appendChild(el('div', 'big num', rp(t.sewa)));
+  var kv = el('div', 'rp-kv'); kv.appendChild(el('span', 'rp-out', 'Rincian'));
+  [['Sudah ditagih', t.tagihan], ['Perkiraan (*)', t.est]].forEach(function (x) { kv.appendChild(el('span', '', x[0])); kv.appendChild(el('b', 'num', rp(x[1]))); });
+  c.appendChild(kv);
+  return c;
+}
+function repProjTable(box, s, title, late) {
+  box.appendChild(el('h3', 'tn-h3', title));
+  var rows = [], cls = [];
+  s.entries.forEach(function (e, no) {
+    e.parts.forEach(function (it) {
+      it.lines.forEach(function (ln, li) {
+        var head = li === 0;
+        rows.push([head ? String(no + 1) : '', head ? dmy(parseIso(e.tgl)) + (e.telat ? ' (telat ' + e.telat + ' hr)' : '') : '', head ? it.inv : '', head ? it.unit : '', head ? it.alamat : '', head ? it.nama : '', ln.periode, { t: Number(ln.nominal).toLocaleString('id-ID'), cls: 'r num nowrap' }]);
+        cls.push(late || e.telat ? 'rp-late' : it.est ? 'rp-est' : '');
+      });
+    });
+  });
+  var w = el('div', 'tbl-wrap rp-list');
+  w.appendChild(table(['No', 'Jatuh Tempo', 'Inventaris', 'Unit', 'Alamat', 'Nama', 'Periode', { t: 'Nominal', cls: 'r' }], rows, { rowCls: function (i) { return cls[i]; } }));
+  box.appendChild(w);
+}
+function renderProj(d, box) {
+  var mr = d.month, lbl = mr.label || repLabelBulan(mr.y, mr.m), tl = mr.telat || { sections: [], grand: { sewa: 0, n: 0 } };
+  $('repInfo').textContent = mr.nPay + ' tagihan/periode · disusun ' + d.made;
+  var g = el('div', 'rp-grid');
+  mr.sections.forEach(function (s) { g.appendChild(repProjCard(s, 'Jatuh tempo ' + lbl)); });
+  box.appendChild(g);
+  var chk = el('div', 'card rp-warn'); chk.appendChild(el('b', '', 'Periksa sebelum mengunduh'));
+  if (!mr.nPay) chk.appendChild(el('div', 'msg warn', '● Tidak ada tagihan atau periode sewa yang jatuh tempo ' + (mr.label ? 'di rentang ini' : 'di ' + lbl) + '.'));
+  if (tl.grand.sewa) chk.appendChild(el('div', 'msg err', '● Tunggakan lama (lewat jatuh tempo sebelum ' + (mr.label ? 'tanggal dari' : lbl) + '): ' + tl.grand.n + ' tagihan = ' + rp(tl.grand.sewa) + '. Tidak dihitung di total, dicetak terpisah.'));
+  if (mr.noBill && mr.noBill.length) chk.appendChild(el('div', 'msg warn', '● ' + mr.noBill.length + ' kontrak punya periode yang sudah lewat tapi belum ada tagihannya (tidak dihitung): ' + mr.noBill.slice(0, 4).join('; ') + (mr.noBill.length > 4 ? '; …' : '') + '. Cek di halaman Kontrak.'));
+  if (mr.noAddr && mr.noAddr.length) chk.appendChild(el('div', 'msg warn', '● Alamat kosong untuk ' + mr.noAddr.length + ' inventaris (isi Alamat atau Kelurahan di Data tanah): ' + mr.noAddr.slice(0, 6).join(', ') + (mr.noAddr.length > 6 ? ', …' : '')));
+  var gr = mr.grand;
+  chk.appendChild(el('div', 'msg okmsg', '✓ ' + mr.nPay + ' tagihan/periode = ' + rp(gr.sewa) + ': sudah ditagih ' + rp(gr.tagihan) + ', perkiraan (*) ' + rp(gr.est) + '.'));
+  chk.appendChild(el('div', 'hint', '* Belum ada tagihan untuk periode itu: dihitung dari harga kontrak. Tagihan yang sudah dibayar sebagian dihitung sisanya. Kontrak gratis dan "tidak tetap" tidak dihitung.'));
+  box.appendChild(chk);
+  var foot = el('div', 'rp-foot');
+  foot.appendChild(btnEl('⬇ Unduh PDF ' + lbl, '', function () { repDownload(this); }));
+  foot.appendChild(btnEl('Lihat dulu', 'sec', function () { repPreview(this); }));
+  foot.appendChild(btnEl(repRows ? 'Sembunyikan baris' : 'Lihat semua baris', 'sec', function () { repRows = !repRows; renderReport(); }));
+  var gt = el('span', 'muted'); gt.appendChild(document.createTextNode('Grand total proyeksi: ')); gt.appendChild(el('b', '', rp(gr.sewa))); if (tl.grand.sewa) gt.appendChild(document.createTextNode(' · tunggakan ' + rp(tl.grand.sewa) + ' (dipisah)')); foot.appendChild(gt);
+  box.appendChild(foot);
+  if (repRows) {
+    mr.sections.forEach(function (s) { if (s.entries.length) repProjTable(box, s, s.nama, false); });
+    tl.sections.forEach(function (s) { repProjTable(box, s, 'Tunggakan · ' + s.nama, true); });
+  }
+}
 /* ---------- PDF ---------- */
 var RP_X = 8, RP_W0 = [9, 13, 25, 17, 39, 44, 25, 22], RP_W = RP_W0.slice(), RP_FS = 7.5, RP_LH = 3.3, RP_PAD = 0.9, RP_TOP = 8, RP_BOTTOM = 286, RP_FULLW = 194;
 var YELLOW = [255, 255, 0];
+var RP_HEAD0 = ['No', 'Tgl Bayar', 'No Inventaris', 'No Unit', 'Alamat', 'Nama Penyewa', 'Periode', 'Nominal'], RP_HEAD = RP_HEAD0;
 function rpMoney(n) { return (n < 0 ? '-' : '') + Math.abs(Math.round(n)).toLocaleString('id-ID'); }
 /* Paper saving: Umum first (it runs over several pages). After it, each next section (Meikarta, then the kos) is kept in one piece:
  * it goes under the previous one when it fits in the space left on that page, otherwise it starts on the next page.
@@ -7442,7 +7512,7 @@ function repBar(pdf, y, txt, size) {
 }
 function repColHead(pdf, y) {
   var x = RP_X;
-  ['No', 'Tgl Bayar', 'No Inventaris', 'No Unit', 'Alamat', 'Nama Penyewa', 'Periode', 'Nominal'].forEach(function (h, i) {
+  RP_HEAD.forEach(function (h, i) {
     pdf.rect(x, y, RP_W[i], 4.8, YELLOW, [0, 0, 0], 0.2); pdf.text(x + RP_W[i] / 2, y + 3.3, h, { size: RP_FS, style: 'b', align: 'center' }); x += RP_W[i];
   });
   return y + 4.8;
@@ -7473,19 +7543,25 @@ function repPdfRow(pdf, y, cells, o) {
 }
 function repRowH(pdf, cells, bold, label) { if (label !== undefined) return RP_LH + RP_PAD; return Math.max.apply(null, cells.map(function (c, i) { return pdf.wrap(c == null ? '' : String(c), RP_FS, bold ? 'b' : '', RP_W[i] - 2).length; })) * RP_LH + RP_PAD; }
 /** The rows of one section, ready to draw: [{cells, fill, color, bold, from, fillCols, gap}] (entries kept together by .entry index). */
-function repSectionRows(s) {
-  var out = [], no = 0;
+function repSectionRows(s, late) {
+  var out = [], no = 0, pj = !!(repData && repData.month && repData.month.proj);
   s.entries.forEach(function (e, ei) {
     no++;
     e.parts.forEach(function (it, pi) {
       it.lines.forEach(function (ln, li) {
         var first = pi === 0 && li === 0, head = li === 0;
         out.push({ entry: ei, cells: [first ? String(no) : '', first ? dmy(parseIso(e.tgl)).slice(0, 5) : '', head ? (it.unk ? '' : it.inv) : '', head ? it.unit : '', head ? (it.unk ? '?' : it.alamat) : '', head ? it.nama : '', ln.periode, rpMoney(ln.nominal)],
-          fill: it.kind === 'jaminan' ? [217, 217, 217] : null, color: it.unk ? [208, 0, 0] : null });
+          fill: it.kind === 'jaminan' ? [217, 217, 217] : null, color: it.unk || late || e.telat ? [208, 0, 0] : it.est ? [105, 105, 105] : null });
       });
     });
   });
-  var t = s.totals, sum = [['TOTAL', t.total, true], ['JAMINAN', -t.jaminan]];
+  var t = s.totals;
+  if (pj) {
+    var ps = late ? [['TOTAL TUNGGAKAN ' + s.nama.toUpperCase(), t.sewa, true]] : [['SUDAH DITAGIH', t.tagihan], ['PERKIRAAN (*)', t.est], ['TOTAL PROYEKSI ' + s.nama.toUpperCase(), t.sewa, true]];
+    ps.forEach(function (r, i) { out.push({ entry: 'sum', gap: i === 0 ? 1.2 : 0, cells: ['', '', '', '', '', '', '', rpMoney(r[1])], label: r[0], bold: !!r[2] }); });
+    return out;
+  }
+  var sum = [['TOTAL', t.total, true], ['JAMINAN', -t.jaminan]];
   if (t.denda) sum.push(['DENDA', -t.denda]);
   Object.keys(t.lain).forEach(function (k) { sum.push([k, -t.lain[k]]); });
   sum.push(['TOTAL SEWA ' + s.nama.toUpperCase(), t.sewa, true]);
@@ -7494,7 +7570,7 @@ function repSectionRows(s) {
 }
 /** Column widths fitted to this report's text, so a row stays on one line (same font size): short columns shrink, the room goes to Alamat and Nama. */
 function repFitCols(pdf, rows) {
-  var heads = ['No', 'Tgl Bayar', 'No Inventaris', 'No Unit', 'Alamat', 'Nama Penyewa', 'Periode', 'Nominal'], min = [7, 11, 15, 10, 22, 22, 14, 16];
+  var heads = RP_HEAD, min = [7, 11, 15, 10, 22, 22, 14, 16];
   var need = heads.map(function (h, i) { return Math.max(min[i], pdf.w(h, RP_FS, 'b') + 2.4); });
   rows.forEach(function (r) { if (r.label !== undefined) return; r.cells.forEach(function (c, i) { if (c) need[i] = Math.max(need[i], pdf.w(String(c), RP_FS, r.bold ? 'b' : '') + 2.4); }); });
   var lab = 0; rows.forEach(function (r) { if (r.label !== undefined) lab = Math.max(lab, pdf.w(r.label, RP_FS, 'b') + 2.4); });
@@ -7508,14 +7584,15 @@ function repFitCols(pdf, rows) {
   RP_W = need;
 }
 function repPdfMonth(pdf, mr) {
-  var lbl = (mr.label || BULAN_L[mr.m] + ' ' + mr.y).toUpperCase(), y = 0, pageNo = 0;
-  var secs = mr.sections.filter(function (s) { return s.entries.length; });
-  function newPage() { pdf.page(); pageNo++; y = repBar(pdf, RP_TOP, 'PEMASUKAN SEWA ' + (mr.label ? 'TANGGAL ' : 'BULAN ') + lbl, 9.5) + 1.5; }
+  var lbl = (mr.label || BULAN_L[mr.m] + ' ' + mr.y).toUpperCase(), y = 0, pageNo = 0, pj = !!mr.proj;
+  var secs = mr.sections.filter(function (s) { return s.entries.length; }).map(function (s) { return { s: s, late: false }; });
+  if (pj && mr.telat) mr.telat.sections.forEach(function (s) { secs.push({ s: s, late: true }); });
+  function newPage() { pdf.page(); pageNo++; y = repBar(pdf, RP_TOP, (pj ? 'PROYEKSI PEMASUKAN SEWA ' : 'PEMASUKAN SEWA ') + (mr.label ? 'TANGGAL ' : 'BULAN ') + lbl, 9.5) + 1.5; }
   function rowsH(rows) { return rows.reduce(function (a, r) { return a + (r.gap || 0) + repRowH(pdf, r.cells, r.bold, r.label); }, 0); }
-  if (!repPdfMonth.fixed) repFitCols(pdf, secs.reduce(function (a, s) { return a.concat(repSectionRows(s)); }, []));  // one set of widths for every table in the file
+  if (!repPdfMonth.fixed) repFitCols(pdf, secs.reduce(function (a, x) { return a.concat(repSectionRows(x.s, x.late)); }, []));  // one set of widths for every table in the file
   newPage();
-  secs.forEach(function (s, si) {
-    var rows = repSectionRows(s), secTitle = s.nama.toUpperCase();
+  secs.forEach(function (x, si) {
+    var s = x.s, rows = repSectionRows(s, x.late), secTitle = (x.late ? 'TUNGGAKAN (LEWAT JATUH TEMPO, DI LUAR TOTAL) · ' : '') + s.nama.toUpperCase();
     var whole = 5.6 + 4.8 + rowsH(rows) + 3;
     // Umum (first) starts right away and flows over pages; the next sections stay in one piece when they fit on one page
     if (si > 0) { if (y + whole > RP_BOTTOM && whole <= RP_BOTTOM - RP_TOP - 8) newPage(); else y += 3; }
@@ -7530,16 +7607,23 @@ function repPdfMonth(pdf, mr) {
     }
   });
   // month summary at the end, in one piece
-  var g = mr.grand, sumRows = mr.sections.map(function (s) { return { cells: ['', '', '', '', '', '', '', rpMoney(s.totals.sewa)], label: s.nama + ' (' + s.totals.n + ' bayar) · sewa + DP' }; });
-  var tail = [['GRAND TOTAL SEWA', g.sewa, true], ['JAMINAN', g.jaminan]];
-  if (g.denda) tail.push(['DENDA', g.denda]);
-  Object.keys(g.lain).forEach(function (k) { tail.push([k, g.lain[k]]); });
+  var g = mr.grand, sumRows = mr.sections.map(function (s) { return { cells: ['', '', '', '', '', '', '', rpMoney(s.totals.sewa)], label: s.nama + ' (' + s.totals.n + (pj ? ' tagihan) · proyeksi' : ' bayar) · sewa + DP') }; });
+  var tail;
+  if (pj) {
+    tail = [['GRAND TOTAL PROYEKSI', g.sewa, true], ['Sudah ditagih', g.tagihan], ['Perkiraan (*)', g.est]];
+    if (mr.telat && mr.telat.grand.sewa) tail.push(['Tunggakan lama (di luar total)', mr.telat.grand.sewa]);
+  } else {
+    tail = [['GRAND TOTAL SEWA', g.sewa, true], ['JAMINAN', g.jaminan]];
+    if (g.denda) tail.push(['DENDA', g.denda]);
+    Object.keys(g.lain).forEach(function (k) { tail.push([k, g.lain[k]]); });
+  }
   tail.forEach(function (r, i) { sumRows.push({ gap: i === 0 ? 1.2 : 0, cells: ['', '', '', '', '', '', '', rpMoney(r[1])], label: r[0], bold: !!r[2] }); });
   var needS = 5.6 + rowsH(sumRows) + 3;
-  if (!secs.length) { pdf.text(RP_X, y + 6, 'Belum ada pembayaran tercatat dengan tanggal bayar di bulan ini.', { size: 9, style: 'i' }); y += 10; }
+  if (!secs.length) { pdf.text(RP_X, y + 6, pj ? 'Tidak ada tagihan atau periode sewa yang jatuh tempo di rentang ini.' : 'Belum ada pembayaran tercatat dengan tanggal bayar di bulan ini.', { size: 9, style: 'i' }); y += 10; }
   if (y + needS > RP_BOTTOM) newPage(); else y += 4;
-  y = repBar(pdf, y, 'RINGKASAN ' + lbl);
+  y = repBar(pdf, y, 'RINGKASAN ' + (pj ? 'PROYEKSI ' : '') + lbl);
   sumRows.forEach(function (r) { y += r.gap || 0; y = repPdfRow(pdf, y, r.cells, r); });
+  if (pj && y + 8 <= RP_BOTTOM) pdf.text(RP_X, y + 5, '* Belum ada tagihan untuk periode ini: dihitung dari harga kontrak. Tagihan yang sudah dibayar sebagian dihitung sisanya. Abu-abu = perkiraan, merah = sudah lewat jatuh tempo.', { size: 7, style: 'i', color: [90, 90, 90] });
 }
 function repPdfYear(pdf, d) {
   var names = d.months[0].sections.map(function (s) { return s.nama; });
@@ -7566,6 +7650,7 @@ function repPdfYear(pdf, d) {
 }
 function repMakePdf() {
   var d = repData, pdf = new MiniPdf(); RP_W = RP_W0.slice();
+  RP_HEAD = d.month && d.month.proj ? ['No', 'Jatuh Tempo', 'No Inventaris', 'No Unit', 'Alamat', 'Nama Penyewa', 'Periode', 'Nominal'] : RP_HEAD0;
   if (d.month) repPdfMonth(pdf, d.month);
   else {
     repPdfYear(pdf, d);
@@ -7583,7 +7668,7 @@ function repMakePdf() {
   });
   return pdf.blob();
 }
-function repFileName() { var d = repData; return d.month ? 'Laporan pemasukan ' + (d.month.label ? d.month.label.replace(/\//g, '-') : repLabelBulan(d.month.y, d.month.m)) + '.pdf' : 'Rekap pemasukan ' + d.y + (repYMode === 'lengkap' ? ' (lengkap)' : '') + '.pdf'; }
+function repFileName() { var d = repData; return d.month ? (d.month.proj ? 'Proyeksi pemasukan ' : 'Laporan pemasukan ') + (d.month.label ? d.month.label.replace(/\//g, '-') : repLabelBulan(d.month.y, d.month.m)) + '.pdf' : 'Rekap pemasukan ' + d.y + (repYMode === 'lengkap' ? ' (lengkap)' : '') + '.pdf'; }
 function repDownload(btn) {
   var label = btn.textContent; btn.disabled = true; btn.textContent = 'Membuat PDF…';
   setTimeout(function () {
@@ -7611,6 +7696,8 @@ function repPreview(btn) {
 }
 $$('#repMode [data-rm]').forEach(function (b) { b.onclick = function () { repMode = b.getAttribute('data-rm'); loadReport(); }; });
 $('repMonth').onchange = function () { repRows = false; loadReport(); };
+$('repPMonth').onchange = function () { repRows = false; loadReport(); };
+$$('#repPSub [data-ps]').forEach(function (b) { b.onclick = function () { repPSub = b.getAttribute('data-ps'); repRows = false; loadReport(); }; });
 $('repGo').onclick = function () { repRows = false; loadReport(); };
 $('repYear').onchange = function () { loadReport(); };
 $('repBack').onclick = function () { show('bukti'); };
