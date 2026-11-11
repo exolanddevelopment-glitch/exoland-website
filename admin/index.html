@@ -5843,19 +5843,26 @@ $$('#lgTabs [data-lt]').forEach(function (b) { b.onclick = function () { lgTab =
  * Steps: unit checked (deductions + at least 3 photos) → Pemilik approves → Bon Pengambilan Uang (A5 PDF) to the bendahara →
  * transfer proof uploaded → Selesai. */
 var jmData = null, jmSel = '', jmFilter = 'aktif';
-var JM_ST = { diajukan: ['blue', 'Menunggu persetujuan'], proses: ['orange', 'Kontrak selesai · belum dikembalikan'], disetujui: ['orange', 'Disetujui · tunggu transfer'], dipegang: ['grey', 'Dipegang'], selesai: ['white', 'Selesai'] };
+var JM_ST = { diajukan: ['blue', 'Menunggu persetujuan'], proses: ['orange', 'Kontrak berakhir · belum dikembalikan'], disetujui: ['orange', 'Disetujui · tunggu transfer'], dipegang: ['grey', 'Dipegang'], selesai: ['white', 'Selesai'] };
 function loadJaminan() {
   if (!jmData) emptyBox($('jmList'), 'Memuat…');
   return call('getJaminan').then(applyJaminan).catch(function (e) { emptyBox($('jmList'), 'Gagal memuat: ' + errText(e)); });
 }
 function applyJaminan(d) { jmData = d; renderJaminan(); }
+// contract state in words: ended (status Selesai), expired (end date passed but still "Aktif" in the system), or running
+function jmKon(x) {
+  var d = x.selesaiKontrak ? dmy(parseIso(x.selesaiKontrak)) : '';
+  if (x.kontrak !== 'Aktif') return { k: 'selesai', t: 'kontrak selesai' + (d ? ' ' + d : '') };
+  if (x.selesaiKontrak && x.selesaiKontrak < jmData.today) return { k: 'habis', t: 'kontrak habis ' + d + ' (status masih Aktif, belum diperpanjang / diakhiri)' };
+  return { k: 'aktif', t: 'masih sewa' + (d ? ' s/d ' + d : '') };
+}
 function jmKembali(x) { var r = x.req; return r ? r.kembali : x.jaminan; }
 function renderJaminan() {
   var d = jmData; if (!d) return;
   var held = d.list.filter(function (x) { return x.st !== 'selesai'; }), mo = d.today.slice(0, 7);
   var c = $('jmCards'); c.innerHTML = '';
   [['aktif', 'kurang', 'Jaminan dipegang', rpShort(held.reduce(function (a, x) { return a + x.jaminan; }, 0)), held.length + ' kontrak'],
-   ['proses', 'error', 'Perlu diproses', d.list.filter(function (x) { return x.st === 'proses'; }).length, 'kontrak selesai, belum dikembalikan'],
+   ['proses', 'error', 'Perlu diproses', d.list.filter(function (x) { return x.st === 'proses'; }).length, 'kontrak berakhir, belum dikembalikan'],
    ['diajukan', '', 'Menunggu persetujuan', d.list.filter(function (x) { return x.st === 'diajukan'; }).length, d.canApprove ? 'perlu persetujuan Anda' : 'oleh penyetuju'],
    ['selesai', 'ok', 'Dikembalikan bulan ini', rpShort(d.list.filter(function (x) { return x.st === 'selesai' && String(x.req.selesai).slice(0, 7) === mo; }).reduce(function (a, x) { return a + Math.max(0, x.req.kembali); }, 0)), 'sudah ditransfer']].forEach(function (k) {
     var b = el('button', 'hc ' + k[1]); b.type = 'button'; b.appendChild(el('span', '', k[2])); b.appendChild(el('b', '', String(k[3]))); b.appendChild(el('small', '', k[4]));
@@ -5872,7 +5879,7 @@ function renderJaminan() {
   rows.forEach(function (x) {
     var b = el('button', 'pay' + (x.ktr === jmSel ? ' sel' : '')); b.type = 'button';
     var l = el('div', 'pay-main'); l.appendChild(el('b', '', x.nama + ' · ' + x.unit));
-    l.appendChild(el('small', '', x.ktr + ' · jaminan ' + rp(x.jaminan) + (x.kontrak !== 'Aktif' ? ' · kontrak selesai ' + (x.selesaiKontrak ? dmy(parseIso(x.selesaiKontrak)) : '') : ' · masih sewa') + (x.st === 'selesai' ? ' · dikembalikan ' + rp(Math.max(0, x.req.kembali)) : '')));
+    l.appendChild(el('small', '', x.ktr + ' · jaminan ' + rp(x.jaminan) + ' · ' + jmKon(x).t + (x.st === 'selesai' ? ' · dikembalikan ' + rp(Math.max(0, x.req.kembali)) : '')));
     b.appendChild(l); var s = JM_ST[x.st]; b.appendChild(el('span', 'st ' + s[0], s[1]));
     b.onclick = function () { jmSel = x.ktr; renderJaminan(); phoneTop(); }; box.appendChild(b);
   });
@@ -5889,7 +5896,7 @@ function renderJmDetail() {
   ['Jaminan dicatat', 'Unit dicek & diajukan', 'Disetujui Pemilik', 'Bon & transfer', 'Selesai'].forEach(function (t, i) { steps.appendChild(el('div', i < at ? 'd' : i === at ? 'c' : '', (i < at ? '✓ ' : '') + t)); });
   body.appendChild(steps);
   body.appendChild(kvGrid([['Uang jaminan', rp(x.jaminan)], ['Dicatat', (x.tglJaminan ? dmy(parseIso(x.tglJaminan)) : '-') + (x.kwt.length ? ' · ' + x.kwt.join(', ') : '')],
-    ['Kontrak', x.kontrak === 'Aktif' ? 'Masih aktif' + (x.selesaiKontrak ? ' s/d ' + dmy(parseIso(x.selesaiKontrak)) : '') : x.kontrak + (x.selesaiKontrak ? ' · ' + dmy(parseIso(x.selesaiKontrak)) : '')]]));
+    ['Kontrak', cap(jmKon(x).t)]]));
   x.ditolak.forEach(function (t) { body.appendChild(el('p', 'msg warn', 'Pengajuan ' + t.id + ' ditolak ' + t.putusOleh + ': ' + t.alasan)); });
   if (!r) { if (d.canEdit) body.appendChild(jmForm(x)); else body.appendChild(el('p', 'hint', 'Untuk mengajukan pengembalian perlu akses Ubah di Riwayat bayar.')); return; }
   // a request exists: summary
@@ -5950,7 +5957,9 @@ function jmlModal(t, s, build, okTxt, onOk) { jlModal(t, s, build, okTxt, onOk);
 function jmForm(x) {
   var f = el('div', 'jm-form');
   f.appendChild(el('b', 'jm-ft', 'Pengambilan Jaminan'));
-  if (x.kontrak === 'Aktif') f.appendChild(el('p', 'msg warn', 'Kontrak ini masih aktif. Ajukan hanya kalau penyewa memang sudah keluar.'));
+  var ks = jmKon(x).k;
+  if (ks === 'aktif') f.appendChild(el('p', 'msg warn', 'Kontrak ini masih berjalan. Ajukan hanya kalau penyewa memang sudah keluar.'));
+  if (ks === 'habis') f.appendChild(el('p', 'msg warn', 'Masa kontrak sudah habis, tapi di sistem statusnya masih Aktif. Kalau penyewa masih tinggal (diperpanjang), jangan ajukan: perpanjang dulu kontraknya di Sewa → Kontrak. Kalau sudah keluar, silakan ajukan.'));
   f.appendChild(el('label', 'jm-l', 'Potongan (kerusakan, tagihan, listrik, kebersihan…). Kosongkan kalau tidak ada.'));
   var list = el('div', 'jm-ded'); f.appendChild(list);
   var sum = el('div', 'jm-sum2');
