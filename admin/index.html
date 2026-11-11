@@ -817,6 +817,23 @@
   .lg-acts { display:flex; flex-direction:column; gap:6px; flex:none; }
   .lg-acts .btn { width:auto; margin:0; padding:7px 12px; font-size:12.5px; }
   .lg-soon h3 { margin:0 0 8px; } .lg-soon p { margin:10px 0 0; }
+  .jm-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,460px); gap:16px; align-items:start; max-width:var(--pw); }
+  @media (max-width:1100px) { .jm-grid { grid-template-columns:1fr; } #view-jaminan.detail-open .jm-left, #view-jaminan.detail-open .health { display:none; } }
+  #jmList .pay { display:flex; justify-content:space-between; align-items:center; gap:10px; width:100%; text-align:left; }
+  #jmList .pay small { display:block; color:var(--muted); font-size:12px; margin-top:3px; }
+  #jmList .pay .st { flex:none; max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .jm-h { display:flex; justify-content:space-between; align-items:center; gap:10px; } .jm-h h2 { margin:0; font-size:20px; }
+  .jm-steps { display:flex; gap:5px; margin:12px 0; } .jm-steps div { flex:1; font-size:11px; text-align:center; padding:6px 4px; border-radius:8px; background:var(--surface-2, rgba(127,127,127,.12)); color:var(--muted); }
+  .jm-steps .d { color:var(--ok, #22a06b); font-weight:600; } .jm-steps .c { outline:1.5px solid var(--accent, #8b5cf6); color:var(--ink); font-weight:700; }
+  .jm-form, .jm-sum, .jm-done { border-top:1px solid var(--line); margin-top:14px; padding-top:12px; }
+  .jm-ft { font-size:15px; display:block; margin-bottom:6px; } .jm-l { display:block; font-size:12.5px; font-weight:600; margin:8px 0 6px; }
+  .jm-ded-row { display:grid; grid-template-columns:minmax(0,1fr) 130px 30px; gap:6px; margin-bottom:6px; }
+  .jm-x { border:0; background:none; color:var(--err, #d92d20); font-size:15px; cursor:pointer; }
+  .jm-add { display:inline-block; font-size:13px; margin:2px 0 10px; }
+  .jm-sum2 { border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:13.5px; display:grid; gap:4px; }
+  .jm-sum2 div { display:flex; justify-content:space-between; } .jm-sum2 .tot { font-weight:800; font-size:15px; color:var(--ok, #22a06b); } .jm-sum2 .tot.neg { color:var(--err, #d92d20); }
+  .jm-tbl { width:100%; border-collapse:collapse; font-size:13.5px; margin:8px 0; } .jm-tbl td { padding:5px 0; border-bottom:1px solid var(--line); } .jm-tbl .r { text-align:right; white-space:nowrap; } .jm-tbl tr.tot td { font-weight:800; border-bottom:0; }
+  #jmBody > .btn { margin-top:12px; }
   .fit { overflow:hidden; align-items:stretch !important; }
   .fit > .tn-listcol, .fit > .bukti-listcol { display:flex; flex-direction:column; min-height:0; }
   .fit #unList, .fit #tnList, .fit #payList, .fit #tdList, .fit #jlList, .fit #ckList, .fit #pbList, .fit #ksGrid, .fit #ktList, .fit #pyList, .fit #knList { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; }
@@ -1018,7 +1035,7 @@
   <main class="main">
     <div class="ptabs" id="ptabs" hidden>
       <div data-pgroup="agenda"><button type="button" data-view="kal">Kalender</button><button type="button" data-view="tugas">Tugas <span class="badge" data-task-badge hidden></span></button></div>
-      <div data-pgroup="bayar"><button type="button" data-view="catat">Catat</button><button type="button" data-view="bukti">Riwayat <span class="badge" data-badge hidden></span></button><button type="button" data-view="laporan">Laporan</button></div>
+      <div data-pgroup="bayar"><button type="button" data-view="catat">Catat</button><button type="button" data-view="bukti">Riwayat <span class="badge" data-badge hidden></span></button><button type="button" data-view="jaminan">Jaminan</button><button type="button" data-view="laporan">Laporan</button></div>
       <div data-pgroup="tanah"><button type="button" data-view="tanah">Data tanah <span class="badge" data-td-badge hidden></span></button><button type="button" data-view="cek">Pengecekan <span class="badge" data-cek-badge hidden></span></button></div>
       <div data-pgroup="sewa"><button type="button" data-view="penyewa" data-v1>Penyewa <span class="badge" data-tn-badge hidden></span></button><button type="button" data-view="pny" data-v2 hidden>Penyewa</button><button type="button" data-view="kon" data-v2 hidden>Kontrak <span class="badge" data-kn-badge hidden></span></button><button type="button" data-view="unit">Unit</button><button type="button" data-view="kos">Kos &amp; Apartemen <span class="badge" data-kos-badge hidden></span></button><button type="button" data-view="kebun" data-v2 hidden>Kebun / Sawah <span class="badge" data-kb-badge hidden></span></button></div>
     </div>
@@ -1329,6 +1346,20 @@
             </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- ================= UANG JAMINAN ================= -->
+    <section id="view-jaminan" hidden>
+      <div class="page-head" style="max-width:var(--pw)"><div><h1>Uang Jaminan</h1><p>Deposit yang sudah dicatat, per kontrak. Saat penyewa keluar: cek unit (foto), potong kalau ada kerusakan atau tagihan, minta persetujuan Pemilik, lalu kembalikan sisanya.</p></div></div>
+      <div class="health" id="jmCards"></div>
+      <div class="jm-grid">
+        <div class="card jm-left">
+          <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="jmQ" type="search" placeholder="Cari nama, unit, KTR"></div>
+          <div class="segs" id="jmSegs" style="margin:10px 0"><button type="button" data-jf="aktif" class="on">Belum selesai</button><button type="button" data-jf="proses">Perlu diproses</button><button type="button" data-jf="diajukan">Menunggu persetujuan</button><button type="button" data-jf="dipegang">Dipegang</button><button type="button" data-jf="selesai">Selesai</button><button type="button" data-jf="semua">Semua</button></div>
+          <div class="pay-list" id="jmList"></div>
+        </div>
+        <div class="card" id="jmBody"></div>
       </div>
     </section>
 
@@ -2180,6 +2211,7 @@ function refreshView(wrote) {
     else if (v === 'cek') loadChecks();
     else if (v === 'kontak') loadContacts();
     else if (v === 'legal') loadLegal();
+    else if (v === 'jaminan') loadJaminan();
     else if (v === 'penyewa') loadTenantsPage();
     else if (v === 'catat' && chosen && me.v2 && !$('chosenBox').hidden) renderBills();
   } catch (e) {}
@@ -2265,11 +2297,11 @@ $$('[data-theme-switch]').forEach(function (s) {
 applyTheme(document.documentElement.getAttribute('data-theme') || 'light');
 
 /* ---------- navigation ---------- */
-var VIEWS = ['dash', 'edai', 'kal', 'tugas', 'set', 'soon', 'catat', 'bukti', 'jalan', 'pbb', 'penyewa', 'pny', 'kon', 'unit', 'kos', 'tanah', 'cek', 'kontak', 'legal', 'laporan'];
+var VIEWS = ['dash', 'edai', 'kal', 'tugas', 'set', 'soon', 'catat', 'bukti', 'jalan', 'pbb', 'penyewa', 'pny', 'kon', 'unit', 'kos', 'tanah', 'cek', 'kontak', 'legal', 'laporan', 'jaminan'];
 var knKind = 'kontrak';   // the Kontrak page shows normal contracts; "kebun" = the Kebun / Sawah page (same page, garapan contracts)
 /* Menu groups: one menu item, its pages as tabs at the top of the page. */
-var GROUPS = { agenda: ['kal', 'tugas'], bayar: ['catat', 'bukti', 'laporan'], tanah: ['tanah', 'cek'], sewa: ['penyewa', 'unit', 'kos'] };
-var PERM_OF = { unit: 'penyewa', laporan: 'bukti', pny: 'penyewa', kon: 'penyewa', kebun: 'penyewa' };  // pages that use the access of another page
+var GROUPS = { agenda: ['kal', 'tugas'], bayar: ['catat', 'bukti', 'jaminan', 'laporan'], tanah: ['tanah', 'cek'], sewa: ['penyewa', 'unit', 'kos'] };
+var PERM_OF = { unit: 'penyewa', laporan: 'bukti', jaminan: 'bukti', pny: 'penyewa', kon: 'penyewa', kebun: 'penyewa' };  // pages that use the access of another page
 var lastTab = {};
 function permOf(v) { return PERM_OF[v] || v; }
 function groupOf(v) { for (var g in GROUPS) if (GROUPS[g].indexOf(v) >= 0) return g; return ''; }
@@ -2368,6 +2400,7 @@ function show(view) {
   if (view === 'edai') openEdai();
   if (view === 'kontak') loadContacts();
   if (view === 'legal') loadLegal();
+  if (view === 'jaminan') loadJaminan();
   if (view === 'laporan') loadReport();
   if (view === 'set') openSetTab(setTab);
   window.scrollTo(0, 0);
@@ -5805,6 +5838,192 @@ function lgPPModal(x) {
   });
 }
 $$('#lgTabs [data-lt]').forEach(function (b) { b.onclick = function () { lgTab = b.getAttribute('data-lt'); renderLegal(); }; });
+
+/* ====================== UANG JAMINAN: pengembalian ======================
+ * Steps: unit checked (deductions + at least 3 photos) → Pemilik approves → Bon Pengambilan Uang (A5 PDF) to the bendahara →
+ * transfer proof uploaded → Selesai. */
+var jmData = null, jmSel = '', jmFilter = 'aktif';
+var JM_ST = { diajukan: ['blue', 'Menunggu persetujuan'], proses: ['orange', 'Kontrak selesai · belum dikembalikan'], disetujui: ['orange', 'Disetujui · tunggu transfer'], dipegang: ['grey', 'Dipegang'], selesai: ['white', 'Selesai'] };
+function loadJaminan() {
+  if (!jmData) emptyBox($('jmList'), 'Memuat…');
+  return call('getJaminan').then(applyJaminan).catch(function (e) { emptyBox($('jmList'), 'Gagal memuat: ' + errText(e)); });
+}
+function applyJaminan(d) { jmData = d; renderJaminan(); }
+function jmKembali(x) { var r = x.req; return r ? r.kembali : x.jaminan; }
+function renderJaminan() {
+  var d = jmData; if (!d) return;
+  var held = d.list.filter(function (x) { return x.st !== 'selesai'; }), mo = d.today.slice(0, 7);
+  var c = $('jmCards'); c.innerHTML = '';
+  [['aktif', 'kurang', 'Jaminan dipegang', rpShort(held.reduce(function (a, x) { return a + x.jaminan; }, 0)), held.length + ' kontrak'],
+   ['proses', 'error', 'Perlu diproses', d.list.filter(function (x) { return x.st === 'proses'; }).length, 'kontrak selesai, belum dikembalikan'],
+   ['diajukan', '', 'Menunggu persetujuan', d.list.filter(function (x) { return x.st === 'diajukan'; }).length, d.canApprove ? 'perlu persetujuan Anda' : 'oleh Pemilik'],
+   ['selesai', 'ok', 'Dikembalikan bulan ini', rpShort(d.list.filter(function (x) { return x.st === 'selesai' && String(x.req.selesai).slice(0, 7) === mo; }).reduce(function (a, x) { return a + Math.max(0, x.req.kembali); }, 0)), 'sudah ditransfer']].forEach(function (k) {
+    var b = el('button', 'hc ' + k[1]); b.type = 'button'; b.appendChild(el('span', '', k[2])); b.appendChild(el('b', '', String(k[3]))); b.appendChild(el('small', '', k[4]));
+    b.onclick = function () { jmFilter = k[0]; renderJaminan(); }; c.appendChild(b);
+  });
+  $$('#jmSegs [data-jf]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-jf') === jmFilter); });
+  var q = ($('jmQ').value || '').trim().toLowerCase();
+  var rows = d.list.filter(function (x) {
+    if (jmFilter === 'aktif' ? x.st === 'selesai' : jmFilter !== 'semua' && (jmFilter === 'proses' ? x.st !== 'proses' && x.st !== 'disetujui' : x.st !== jmFilter)) return false;
+    return !q || (x.nama + ' ' + x.unit + ' ' + x.ktr + ' ' + (x.req ? x.req.id + ' ' + x.req.noBon : '')).toLowerCase().indexOf(q) >= 0;
+  });
+  var box = $('jmList'); box.innerHTML = '';
+  if (!rows.length) { emptyBox(box, d.list.length ? 'Tidak ada yang cocok.' : 'Belum ada uang jaminan yang dicatat. Catat dulu di Catat bayar → jenis "Uang jaminan".'); }
+  rows.forEach(function (x) {
+    var b = el('button', 'pay' + (x.ktr === jmSel ? ' sel' : '')); b.type = 'button';
+    var l = el('div', 'pay-main'); l.appendChild(el('b', '', x.nama + ' · ' + x.unit));
+    l.appendChild(el('small', '', x.ktr + ' · jaminan ' + rp(x.jaminan) + (x.kontrak !== 'Aktif' ? ' · kontrak selesai ' + (x.selesaiKontrak ? dmy(parseIso(x.selesaiKontrak)) : '') : ' · masih sewa') + (x.st === 'selesai' ? ' · dikembalikan ' + rp(Math.max(0, x.req.kembali)) : '')));
+    b.appendChild(l); var s = JM_ST[x.st]; b.appendChild(el('span', 'st ' + s[0], s[1]));
+    b.onclick = function () { jmSel = x.ktr; renderJaminan(); phoneTop(); }; box.appendChild(b);
+  });
+  renderJmDetail();
+}
+function renderJmDetail() {
+  var body = $('jmBody'), x = jmData && jmData.list.filter(function (y) { return y.ktr === jmSel; })[0];
+  body.innerHTML = ''; $('view-jaminan').classList.toggle('detail-open', !!x);
+  if (!x) { body.appendChild(el('p', 'muted', 'Pilih penyewa di daftar untuk melihat atau memproses uang jaminannya.')); return; }
+  var d = jmData, r = x.req;
+  var h = el('div', 'jm-h'); h.appendChild(el('h2', '', x.nama)); var s = JM_ST[x.st]; h.appendChild(el('span', 'st ' + s[0], s[1])); body.appendChild(h);
+  body.appendChild(el('p', 'muted', x.unit + ' · ' + x.ktr));
+  var steps = el('div', 'jm-steps'), at = { proses: 1, dipegang: 1, diajukan: 2, disetujui: 3, selesai: 5 }[x.st];
+  ['Jaminan dicatat', 'Unit dicek & diajukan', 'Disetujui Pemilik', 'Bon & transfer', 'Selesai'].forEach(function (t, i) { steps.appendChild(el('div', i < at ? 'd' : i === at ? 'c' : '', (i < at ? '✓ ' : '') + t)); });
+  body.appendChild(steps);
+  body.appendChild(kvGrid([['Uang jaminan', rp(x.jaminan)], ['Dicatat', (x.tglJaminan ? dmy(parseIso(x.tglJaminan)) : '-') + (x.kwt.length ? ' · ' + x.kwt.join(', ') : '')],
+    ['Kontrak', x.kontrak === 'Aktif' ? 'Masih aktif' + (x.selesaiKontrak ? ' s/d ' + dmy(parseIso(x.selesaiKontrak)) : '') : x.kontrak + (x.selesaiKontrak ? ' · ' + dmy(parseIso(x.selesaiKontrak)) : '')]]));
+  x.ditolak.forEach(function (t) { body.appendChild(el('p', 'msg warn', 'Pengajuan ' + t.id + ' ditolak ' + t.putusOleh + ': ' + t.alasan)); });
+  if (!r) { if (d.canEdit) body.appendChild(jmForm(x)); else body.appendChild(el('p', 'hint', 'Untuk mengajukan pengembalian perlu akses Ubah di Riwayat bayar.')); return; }
+  // a request exists: summary
+  var sum = el('div', 'jm-sum');
+  sum.appendChild(el('b', '', 'Pengajuan ' + r.id + (r.noBon ? ' · Bon ' + r.noBon : '')));
+  var t = el('table', 'jm-tbl'), add = function (a, b, cls) { var tr = el('tr', cls || ''); tr.appendChild(el('td', '', a)); tr.appendChild(el('td', 'r', b)); t.appendChild(tr); };
+  add('Uang jaminan', rp(r.jaminan)); r.potongan.forEach(function (p) { add('Potongan: ' + p.ket, '− ' + rp(p.jml)); });
+  add(r.kembali >= 0 ? 'Dikembalikan ke penyewa' : 'Penyewa masih kurang', rp(Math.abs(r.kembali)), 'tot'); sum.appendChild(t);
+  sum.appendChild(kvGrid([['Tanggal cek', r.tglCek ? dmy(parseIso(r.tglCek)) : '-'], r.kembali > 0 ? ['Dikembalikan lewat', r.metode + (r.rek ? ' · ' + r.rek : '')] : null,
+    ['Diajukan', r.oleh + ', ' + dmy(parseIso(r.diajukan.slice(0, 10)))], r.putusOleh ? ['Disetujui', r.putusOleh + ', ' + dmy(parseIso(r.diputuskan.slice(0, 10)))] : null,
+    r.catatan ? ['Catatan', r.catatan] : null, r.selesaiOleh ? ['Selesai', r.selesaiOleh + ', ' + dmy(parseIso(r.selesai.slice(0, 10)))] : null]));
+  var links = el('div', 'small');
+  if (r.foto.length) { var lf = el('a', '', 'Lihat ' + r.foto.length + ' foto unit'); lf.href = '#'; lf.onclick = function (e) { e.preventDefault(); openGallery(r.foto.map(function (f, i) { return { id: f.id, ctx: 'jaminan', cap: 'Foto unit ' + (i + 1) }; }), 0, x.nama + ' · ' + x.unit); }; links.appendChild(lf); }
+  if (r.bukti) { var m = r.bukti.match(/[-\w]{25,}/); if (m) { links.appendChild(document.createTextNode(' · ')); var lb = el('a', '', 'Lihat bukti pengembalian'); lb.href = '#'; lb.onclick = function (e) { e.preventDefault(); openGallery([{ id: m[0], ctx: 'jaminan', cap: 'Bukti pengembalian' }], 0, x.nama); }; links.appendChild(lb); } }
+  sum.appendChild(links); body.appendChild(sum);
+  var err = el('p', 'msg err'); err.hidden = true;
+  if (x.st === 'diajukan') {
+    if (d.canApprove) {
+      var acts = el('div', 'tn-actions');
+      var ok = btnEl('Setujui', '', function () { ok.disabled = true; call('putusJaminan', { id: r.id, setuju: true }).then(function (dd) { toast('Disetujui. Bon Pengambilan Uang bisa diunduh.'); applyJaminan(dd); }).catch(function (e) { ok.disabled = false; err.textContent = errText(e); err.hidden = false; }); });
+      var no = btnEl('Tolak', 'sec', function () {
+        jmlModal('Tolak pengajuan ' + r.id, x.nama + '. Pengaju bisa memperbaiki lalu mengajukan lagi.', function (b) { b.appendChild(fieldBox('m_jm_why', 'Alasan', inp('text', '', { maxlength: 300, placeholder: 'Misalnya: foto kurang jelas, potongan terlalu besar' }))); }, 'Tolak', function () {
+          return call('putusJaminan', { id: r.id, setuju: false, alasan: $('f_m_jm_why').value }).then(function (dd) { toast('Pengajuan ditolak.'); applyJaminan(dd); });
+        });
+      });
+      acts.appendChild(ok); acts.appendChild(no); body.appendChild(acts);
+    } else body.appendChild(el('p', 'hint', 'Menunggu persetujuan Pemilik.'));
+  }
+  if (x.st === 'disetujui' || x.st === 'selesai') {
+    var dl = btnEl('Unduh Bon Pengambilan Uang (A5)', x.st === 'selesai' ? 'sec' : '', function () { dl.disabled = true; jmBonPdf(x).catch(function (e) { toast(errText(e)); }).then(function () { dl.disabled = false; }); });
+    body.appendChild(dl);
+  }
+  if (x.st === 'disetujui') {
+    if (d.canEdit) {
+      var f = el('div', 'jm-done');
+      f.appendChild(el('b', '', 'Setelah uang dikembalikan'));
+      var fi = null;
+      if (r.kembali > 0) {
+        fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*,application/pdf'; fi.multiple = true;
+        f.appendChild(fieldBox('jm_bukti', r.metode === 'Tunai' ? 'Foto tanda terima uang tunai' : 'Bukti transfer', fi)); var fl = el('div', 'files'); f.appendChild(fl);
+        makeDrop(fi); fi.addEventListener('change', function () { listFiles(fi, fl); });
+      } else f.appendChild(el('p', 'hint', 'Tidak ada uang yang dikembalikan (potongan sama atau lebih besar dari jaminan).'));
+      var go = btnEl('Tandai selesai', '', function () {
+        err.hidden = true;
+        if (fi && !(fi.files || []).length) { err.textContent = 'Upload ' + (r.metode === 'Tunai' ? 'foto tanda terima' : 'bukti transfer') + ' dulu.'; err.hidden = false; return; }
+        go.disabled = true; go.textContent = 'Menyimpan…';
+        (fi ? readFiles(fi, { max: 1600 }) : Promise.resolve([])).then(function (fs) { return call('selesaiJaminan', { id: r.id, files: fs }); })
+          .then(function (dd) { toast('Pengembalian jaminan selesai.'); applyJaminan(dd); })
+          .catch(function (e) { go.disabled = false; go.textContent = 'Tandai selesai'; err.textContent = errText(e); err.hidden = false; });
+      });
+      f.appendChild(go); body.appendChild(f);
+    } else body.appendChild(el('p', 'hint', 'Menunggu bendahara mentransfer dan meng-upload bukti.'));
+  }
+  body.appendChild(err);
+}
+function jmlModal(t, s, build, okTxt, onOk) { jlModal(t, s, build, okTxt, onOk); }
+function jmForm(x) {
+  var f = el('div', 'jm-form');
+  f.appendChild(el('b', 'jm-ft', 'Pengambilan Jaminan'));
+  if (x.kontrak === 'Aktif') f.appendChild(el('p', 'msg warn', 'Kontrak ini masih aktif. Ajukan hanya kalau penyewa memang sudah keluar.'));
+  f.appendChild(el('label', 'jm-l', 'Potongan (kerusakan, tagihan, listrik, kebersihan…). Kosongkan kalau tidak ada.'));
+  var list = el('div', 'jm-ded'); f.appendChild(list);
+  var sum = el('div', 'jm-sum2');
+  function total() { var t = 0; $$('.jm-ded-row', list).forEach(function (r) { t += Number(r.querySelector('.j').value.replace(/\D/g, '')) || 0; }); return t; }
+  function redraw() {
+    var t = total(), k = x.jaminan - t; sum.innerHTML = '';
+    [['Uang jaminan', rp(x.jaminan)], ['Total potongan', '− ' + rp(t)], [k >= 0 ? 'Dikembalikan ke penyewa' : 'Penyewa masih kurang', rp(Math.abs(k))]].forEach(function (a, i) { var r = el('div', i === 2 ? 'tot' + (k < 0 ? ' neg' : '') : ''); r.appendChild(el('span', '', a[0])); r.appendChild(el('span', '', a[1])); sum.appendChild(r); });
+    rekBox.hidden = !(k > 0) || $('f_jm_met').value === 'Tunai'; metBox.hidden = !(k > 0);
+  }
+  function addRow() {
+    var r = el('div', 'jm-ded-row'), k = inp('text', '', { maxlength: 120, placeholder: 'Misalnya: kunci kamar hilang' }), j = lgMoney(0); k.className = 'k'; j.className = 'j'; j.placeholder = 'Jumlah';
+    var del = el('button', 'jm-x', '✕'); del.type = 'button'; del.title = 'Hapus'; del.onclick = function () { r.remove(); redraw(); };
+    j.addEventListener('input', redraw); r.appendChild(k); r.appendChild(j); r.appendChild(del); list.appendChild(r);
+  }
+  var addB = el('a', 'jm-add', '+ Tambah potongan'); addB.href = '#'; addB.onclick = function (e) { e.preventDefault(); addRow(); }; f.appendChild(addB);
+  f.appendChild(sum);
+  var row = el('div', 'row');
+  row.appendChild(fieldBox('jm_tgl', 'Tanggal cek unit', inp('date', jmData.today, { max: jmData.today })));
+  var ms = document.createElement('select'); ['Transfer', 'Tunai'].forEach(function (v) { var o = el('option', '', v); o.value = v; ms.appendChild(o); });
+  var metBox = fieldBox('jm_met', 'Dikembalikan lewat', ms); row.appendChild(metBox); f.appendChild(row);
+  var rekBox = fieldBox('jm_rek', 'Rekening tujuan', inp('text', '', { maxlength: 120, placeholder: 'Bank, nomor rekening, atas nama' })); f.appendChild(rekBox);
+  ms.onchange = redraw;
+  var fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*'; fi.multiple = true;
+  f.appendChild(fieldBox('jm_foto', 'Foto kondisi unit (minimal 3)', fi)); var fl = el('div', 'files'); f.appendChild(fl);
+  makeDrop(fi); fi.addEventListener('change', function () { listFiles(fi, fl); });
+  f.appendChild(fieldBox('jm_cat', 'Catatan (opsional)', inp('text', '', { maxlength: 500 })));
+  var err = el('p', 'msg err'); err.hidden = true; f.appendChild(err);
+  var go = btnEl('Ajukan pengambilan jaminan', '', function () {
+    err.hidden = true;
+    var pot = [], bad = '';
+    $$('.jm-ded-row', list).forEach(function (r, i) { var k = r.querySelector('.k').value.trim(), j = Number(r.querySelector('.j').value.replace(/\D/g, '')) || 0; if (!k && !j) return; if (k.length < 3) bad = bad || 'Potongan ' + (i + 1) + ': tulis keterangannya.'; if (!j) bad = bad || 'Potongan ' + (i + 1) + ': isi jumlahnya.'; pot.push({ ket: k, jml: j }); });
+    var n = (fi.files || []).length, k = x.jaminan - total(), met = ms.value, rek = $('f_jm_rek').value.trim();
+    bad = bad || (!$('f_jm_tgl').value ? 'Isi tanggal cek unit.' : n < 3 ? 'Upload minimal 3 foto kondisi unit.' : n > 15 ? 'Maksimal 15 foto.' : k > 0 && met === 'Transfer' && rek.length < 8 ? 'Isi rekening tujuan (bank, nomor rekening, atas nama).' : '');
+    if (bad) { err.textContent = bad; err.hidden = false; return; }
+    go.disabled = true; go.textContent = 'Mengirim foto…';
+    readFiles(fi, { max: 1600 }).then(function (fs) { go.textContent = 'Menyimpan…'; return call('ajukanJaminan', { ktr: x.ktr, potongan: pot, tgl: $('f_jm_tgl').value, metode: met, rek: rek, files: fs, catatan: $('f_jm_cat').value }); })
+      .then(function (dd) { toast('Diajukan. Menunggu persetujuan Pemilik.'); applyJaminan(dd); })
+      .catch(function (e) { go.disabled = false; go.textContent = 'Ajukan pengambilan jaminan'; err.textContent = errText(e); err.hidden = false; });
+  });
+  f.appendChild(go);
+  f.appendChild(el('p', 'hint', 'Setelah disetujui Pemilik: unduh Bon Pengambilan Uang, berikan ke bendahara, lalu upload bukti transfernya di sini.'));
+  setTimeout(redraw, 0);
+  return f;
+}
+/* Bon Pengambilan Uang: one bon on A5 sideways (half an A4). The box is only as tall as its lines. */
+var JM_BON_CSS = '#jmPrint{position:fixed;left:-30000px;top:0;z-index:-1}' +
+  '#jmPrint .pg{width:793.7px;height:559.4px;background:#fff;color:#111;box-sizing:border-box;padding:34px 38px;font-family:Arial,Helvetica,sans-serif}' +
+  '#jmPrint .box{border:1.4px solid #111}#jmPrint .hd{text-align:center;padding:9px 0 10px}#jmPrint .hd b{font-size:17px;display:block}#jmPrint .hd span{font-size:12px;font-weight:700;display:block;margin-top:3px}' +
+  '#jmPrint .meta{display:flex;justify-content:space-between;font-size:11px;padding:0 10px 5px}' +
+  '#jmPrint table{border-collapse:collapse;width:100%;font-size:11.5px}#jmPrint th{border-top:1.4px solid #111;border-bottom:1.4px solid #111;padding:3px 5px;font-size:12px}' +
+  '#jmPrint td{border-bottom:1px solid #111;padding:5px 6px;vertical-align:top}#jmPrint td+td,#jmPrint th+th{border-left:1.4px solid #111}' +
+  '#jmPrint .c{text-align:center;width:30px}#jmPrint .r{text-align:right;white-space:nowrap}#jmPrint tr.tot td{font-weight:700}' +
+  '#jmPrint .sig{display:flex;text-align:center;font-size:12px;font-weight:700;padding:10px 6px 12px}#jmPrint .sig div{flex:1;display:flex;flex-direction:column;justify-content:space-between;height:96px}#jmPrint .sig i{display:block;border-top:1px solid #555;margin:0 18px}';
+function jmBonPdf(x) {
+  var r = x.req, E = bonEsc;
+  if (!$('jmCss')) { var st = el('style'); st.id = 'jmCss'; st.textContent = JM_BON_CSS; document.head.appendChild(st); }
+  var host = $('jmPrint'); if (!host) { host = el('div'); host.id = 'jmPrint'; document.body.appendChild(host); }
+  var rows = '<tr><td class="c">1</td><td>Pengembalian uang jaminan · ' + E(x.nama) + '</td><td class="r">' + bonRp(r.jaminan) + '</td><td>' + E(x.unit + ' · ' + x.ktr) + '</td></tr>';
+  r.potongan.forEach(function (p, i) { rows += '<tr><td class="c">' + (i + 2) + '</td><td>Potongan: ' + E(p.ket) + '</td><td class="r">- ' + bonRp(p.jml) + '</td><td>' + (i === 0 && r.tglCek ? 'Dicek ' + dmy(parseIso(r.tglCek)) : '') + '</td></tr>'; });
+  rows += '<tr class="tot"><td class="c"></td><td>' + (r.kembali >= 0 ? 'DIKEMBALIKAN KE PENYEWA' : 'PENYEWA MASIH KURANG') + '</td><td class="r">' + bonRp(Math.abs(r.kembali)) + '</td><td>' + (r.kembali > 0 ? E(r.metode === 'Tunai' ? 'Tunai' : 'Transfer ' + r.rek) : '') + '</td></tr>';
+  var tgl = r.diputuskan ? dmy(parseIso(r.diputuskan.slice(0, 10))) : dmy(today0());
+  host.innerHTML = '<div class="pg"><div class="box"><div class="hd"><b>PENGAMBILAN UANG</b><span>PENGEMBALIAN JAMINAN</span></div>' +
+    '<div class="meta"><span>No. ' + E(r.noBon || r.id) + '</span><span>Jakarta, ' + tgl + '</span></div>' +
+    '<table><thead><tr><th class="c">No</th><th style="width:40%">Keperluan</th><th style="width:20%">Jumlah</th><th>Keterangan</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+    '<div class="sig"><div>Diajukan,<i></i></div><div>Diketahui,<i></i></div><div>Disetujui<i></i></div><div>Keuangan<i></i></div></div></div></div>';
+  var doc = new BonPdfDoc(419.53, 595.28);
+  return bonPdfPage(window, host.querySelector('.pg'), doc).then(function () {
+    var a = document.createElement('a'); a.href = URL.createObjectURL(doc.blob());
+    a.download = ('Bon Pengambilan Uang - ' + (r.noBon || r.id) + ' - ' + x.nama).replace(/[\/\\:*?"<>|]+/g, '-') + '.pdf';
+    document.body.appendChild(a); a.click(); setTimeout(function () { a.remove(); host.innerHTML = ''; }, 1500);
+  });
+}
+$$('#jmSegs [data-jf]').forEach(function (b) { b.onclick = function () { jmFilter = b.getAttribute('data-jf'); renderJaminan(); }; });
+$('jmQ').addEventListener('input', function () { renderJaminan(); });
 
 /* ====================== PENGGUNA & AKSES ====================== */
 var ACC_PAGES = ['dash', 'kal', 'tugas', 'catat', 'bukti', 'jalan', 'pbb', 'penyewa', 'kos', 'tanah', 'cek', 'kontak', 'legal', 'set'];
