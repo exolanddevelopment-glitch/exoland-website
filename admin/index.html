@@ -5856,7 +5856,7 @@ function renderJaminan() {
   var c = $('jmCards'); c.innerHTML = '';
   [['aktif', 'kurang', 'Jaminan dipegang', rpShort(held.reduce(function (a, x) { return a + x.jaminan; }, 0)), held.length + ' kontrak'],
    ['proses', 'error', 'Perlu diproses', d.list.filter(function (x) { return x.st === 'proses'; }).length, 'kontrak selesai, belum dikembalikan'],
-   ['diajukan', '', 'Menunggu persetujuan', d.list.filter(function (x) { return x.st === 'diajukan'; }).length, d.canApprove ? 'perlu persetujuan Anda' : 'oleh Pemilik'],
+   ['diajukan', '', 'Menunggu persetujuan', d.list.filter(function (x) { return x.st === 'diajukan'; }).length, d.canApprove ? 'perlu persetujuan Anda' : 'oleh penyetuju'],
    ['selesai', 'ok', 'Dikembalikan bulan ini', rpShort(d.list.filter(function (x) { return x.st === 'selesai' && String(x.req.selesai).slice(0, 7) === mo; }).reduce(function (a, x) { return a + Math.max(0, x.req.kembali); }, 0)), 'sudah ditransfer']].forEach(function (k) {
     var b = el('button', 'hc ' + k[1]); b.type = 'button'; b.appendChild(el('span', '', k[2])); b.appendChild(el('b', '', String(k[3]))); b.appendChild(el('small', '', k[4]));
     b.onclick = function () { jmFilter = k[0]; renderJaminan(); }; c.appendChild(b);
@@ -5907,7 +5907,8 @@ function renderJmDetail() {
   sum.appendChild(links); body.appendChild(sum);
   var err = el('p', 'msg err'); err.hidden = true;
   if (x.st === 'diajukan') {
-    if (d.canApprove) {
+    if (d.canApprove && !me.owner && r.oleh === d.me) body.appendChild(el('p', 'hint', 'Ini pengajuan Anda sendiri, jadi harus disetujui Pemilik atau penyetuju lain.'));
+    else if (d.canApprove) {
       var acts = el('div', 'tn-actions');
       var ok = btnEl('Setujui', '', function () { ok.disabled = true; call('putusJaminan', { id: r.id, setuju: true }).then(function (dd) { toast('Disetujui. Bon Pengambilan Uang bisa diunduh.'); applyJaminan(dd); }).catch(function (e) { ok.disabled = false; err.textContent = errText(e); err.hidden = false; }); });
       var no = btnEl('Tolak', 'sec', function () {
@@ -5916,7 +5917,7 @@ function renderJmDetail() {
         });
       });
       acts.appendChild(ok); acts.appendChild(no); body.appendChild(acts);
-    } else body.appendChild(el('p', 'hint', 'Menunggu persetujuan Pemilik.'));
+    } else body.appendChild(el('p', 'hint', 'Menunggu persetujuan Pemilik (atau yang diizinkan menyetujui pengembalian jaminan).'));
   }
   if (x.st === 'disetujui' || x.st === 'selesai') {
     var dl = btnEl('Unduh Bon Pengambilan Uang (A5)', x.st === 'selesai' ? 'sec' : '', function () { dl.disabled = true; jmBonPdf(x).catch(function (e) { toast(errText(e)); }).then(function () { dl.disabled = false; }); });
@@ -6055,7 +6056,7 @@ function renderUsers(d) {
   if (newUserRow) rows.unshift({ isNew: true, email: '', nama: '', peran: '', aktif: true, heavy: false, perms: Object.assign({}, TEMPLATES['Staf keuangan']) });
   rows.forEach(function (u) {
     var draft = !u.isNew && userDrafts[u.email];
-    var cur = draft || { email: u.email, nama: u.nama, peran: u.peran, aktif: u.aktif, heavy: u.heavy, approve: u.approve, perms: Object.assign({}, u.perms) };
+    var cur = draft || { email: u.email, nama: u.nama, peran: u.peran, aktif: u.aktif, heavy: u.heavy, approve: u.approve, jmn: u.jmn, perms: Object.assign({}, u.perms) };
     var card = el('div', 'ucard' + (cur.aktif ? '' : ' off') + (u.isNew || draft ? ' dirty' : ''));
     var saveBtn = null;
     function dirty() { if (saveBtn) saveBtn.disabled = false; card.classList.add('dirty'); if (!u.isNew) userDrafts[u.email] = cur; }
@@ -6084,6 +6085,8 @@ function renderUsers(d) {
     hl.appendChild(hc); hl.appendChild(document.createTextNode(' Boleh batal kwitansi & arsip')); foot.appendChild(hl);
     var al = el('label', 'mini-check'); var acx = document.createElement('input'); acx.type = 'checkbox'; acx.checked = !!cur.approve; acx.disabled = !edit; acx.onchange = function () { cur.approve = acx.checked; dirty(); };
     al.appendChild(acx); al.appendChild(document.createTextNode(' Boleh setujui klaim perjalanan')); foot.appendChild(al);
+    var jl = el('label', 'mini-check'); var jcx = document.createElement('input'); jcx.type = 'checkbox'; jcx.checked = !!cur.jmn; jcx.disabled = !edit; jcx.onchange = function () { cur.jmn = jcx.checked; dirty(); };
+    jl.appendChild(jcx); jl.appendChild(document.createTextNode(' Boleh setujui pengembalian jaminan')); foot.appendChild(jl);
     if (edit) {
       var ak = el('label', 'mini-check'); var ac = document.createElement('input'); ac.type = 'checkbox'; ac.checked = !!cur.aktif; ac.onchange = function () { cur.aktif = ac.checked; dirty(); };
       ak.appendChild(ac); ak.appendChild(document.createTextNode(' Aktif')); foot.appendChild(ak);
