@@ -3073,18 +3073,20 @@ function kwOf(p) {
 function bonEsc(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 function bonRp(n) { return Math.round(n || 0).toLocaleString('id-ID'); }
 function bonProofId(p) { var l = (p.bukti || [])[0] || ''; var m = l.match(/\/d\/([-\w]{20,})/) || l.match(/[?&]id=([-\w]{20,})/); return m ? m[1] : ''; }
+var bonLoc = {};   // inventaris -> [alamat, kelurahan, kecamatan, kota] (from Data tanah), filled by bonPrint
 function bonLines(p) {   // one row per item of the payment (a "bayar gabungan" has one per contract)
   var k = kwOf(p), unk = isUnk(p);
+  function loc(x) { var inv = x.plots && x.plots.length ? String(x.plots[0]).replace(/\s+\S+$/, '') : x.inv, a = bonLoc[x.inv] || bonLoc[inv]; return a ? a.join(', ') : ''; }
   function place(x) { return x.plots && x.plots.length > 1 ? x.plots.join(' + ') : (x.inv || '') + (x.unit ? ' ' + x.unit : ''); }
   if (unk) return [{ ket: 'Uang masuk, pengirim belum diketahui' + (p.ket ? ' · ' + p.ket : '') + (p.catatan ? ' · ' + p.catatan : ''), jml: k.jumlah }];
-  if (k.items && k.items.length) return k.items.map(function (it) { return { ket: place(it) + ' · Sewa ' + it.mulai + ' – ' + it.sd, jml: it.jumlah }; });
-  return [{ ket: place(k) + ' · ' + jenisText(k) + (isSewa(k) && k.mulai && k.mulai !== '-' ? ' ' + k.mulai + ' – ' + k.sd : ''), jml: k.jumlah }];
+  if (k.items && k.items.length) return k.items.map(function (it) { return { ket: place(it) + ' · Sewa ' + it.mulai + ' – ' + it.sd, loc: loc(it), jml: it.jumlah }; });
+  return [{ ket: place(k) + ' · ' + jenisText(k) + (isSewa(k) && k.mulai && k.mulai !== '-' ? ' ' + k.mulai + ' – ' + k.sd : ''), loc: loc(k), jml: k.jumlah }];
 }
 function bonHalf(p, img) {
   var k = kwOf(p), lines = bonLines(p), rows = '', unk = isUnk(p), cash = /cash|tunai|kas/i.test(p.metode || '');
   for (var i = 0; i < Math.max(3, lines.length); i++) {
     var L = lines[i];
-    rows += '<tr><td class="c">' + (L ? i + 1 : '&nbsp;') + '</td><td>' + (L ? bonEsc(L.ket) : '&nbsp;') + '</td><td class="r">' + (L ? bonRp(L.jml) : '') + '</td></tr>';
+    rows += '<tr><td class="c">' + (L ? i + 1 : '&nbsp;') + '</td><td>' + (L ? bonEsc(L.ket) + (L.loc ? '<br>' + bonEsc(L.loc) : '') : '&nbsp;') + '</td><td class="r">' + (L ? bonRp(L.jml) : '') + '</td></tr>';
   }
   var proof = img && /^data:/.test(img) ? '<div class="pbox"><img src="' + img + '" alt="Bukti transfer"><div class="tools"><button data-a="l" title="Putar kiri">⟲</button><button data-a="r" title="Putar kanan">⟳</button><button data-a="o" title="Perkecil">−</button><button data-a="i" title="Perbesar">+</button><button data-a="0" title="Kembalikan">↺</button></div></div>'
     : '<div class="ph">' + (img === 'pdf' ? '<b>BUKTI PDF</b><span>Bukti berupa PDF, lampirkan cetakannya.</span>' : img === 'err' ? '<b>BUKTI ADA</b><span>Tersimpan di Riwayat, tapi foto terlalu lama dimuat. Cetak bon ini sendiri dari Riwayat.</span>'
@@ -3280,8 +3282,11 @@ function bonPrint(list, title, w0) {
   if (!w) { toast('Jendela cetak diblokir browser. Izinkan pop-up untuk situs ini.'); return; }
   w.document.open(); w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>' + bonEsc(title) + '</title><style>' + BON_CSS + '</style></head><body><div class="bar" id="st">Menyiapkan ' + list.length + ' bon putih… memuat bukti transfer 0/' + list.length + '</div></body></html>');
   w.document.close();
-  var imgs = {}, done = 0, queue = list.slice(), running = 0;
-  return new Promise(function (resolve) {
+  var imgs = {}, done = 0, queue = list.slice(), running = 0, invs = {};
+  // address line under each item (Alamat, Kelurahan, Kecamatan, Kota from Data tanah); "-" for what is empty
+  list.forEach(function (p) { var k = kwOf(p); (k.items && k.items.length ? k.items : [k]).forEach(function (x) { if (x.inv) invs[x.inv] = 1; if (x.plots && x.plots.length) invs[String(x.plots[0]).replace(/\s+\S+$/, '')] = 1; }); });
+  var locJob = call('getInvLoc', { invs: Object.keys(invs) }).then(function (m) { bonLoc = m || {}; }).catch(function () { bonLoc = {}; });
+  return locJob.then(function () { return new Promise(function (resolve) {
     function next() {
       if (!queue.length) { if (!running) resolve(); return; }
       var p = queue.shift(), id = bonProofId(p); running++;
@@ -3290,7 +3295,7 @@ function bonPrint(list, title, w0) {
       job.then(function () { running--; done++; try { w.document.getElementById('st').textContent = 'Menyiapkan ' + list.length + ' bon putih… memuat bukti transfer ' + done + '/' + list.length; } catch (e) {} next(); });
     }
     for (var i = 0; i < 4; i++) next();
-  }).then(function () {
+  }); }).then(function () {
     var html = '<div class="bar"><b>' + bonEsc(title) + '</b> · ' + list.length + ' bon, ' + Math.ceil(list.length / 2) + ' lembar <span id="bonPaperLbl">A4</span><label style="display:inline-flex;align-items:center;gap:6px">Kertas <select id="bonPaper" style="font:inherit;padding:6px 8px"><option value="a4">A4 (21 × 29,7 cm)</option><option value="f4">F4 / Folio (21 × 33 cm)</option></select></label><button id="bonPrintBtn">Unduh PDF</button><button id="bonAutoRot" title="Foto yang melebar diputar supaya lebih besar">Putar otomatis foto lebar</button><span style="color:#555">Arahkan mouse ke foto: putar ⟲ ⟳, perbesar + −, geser dengan menarik.</span></div>';
     for (var i = 0; i < list.length; i += 2) {
       html += '<div class="page">' + bonHalf(list[i], imgs[list[i].id]) + (list[i + 1] ? '<div class="cut"><span>✂ potong di sini</span></div>' + bonHalf(list[i + 1], imgs[list[i + 1].id]) : '') + '</div>';
