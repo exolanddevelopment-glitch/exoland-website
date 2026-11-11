@@ -5853,8 +5853,9 @@ function applyJaminan(d) { jmData = d; renderJaminan(); }
 function jmKon(x) {
   var d = x.selesaiKontrak ? dmy(parseIso(x.selesaiKontrak)) : '';
   if (x.kontrak !== 'Aktif') return { k: 'selesai', t: 'kontrak selesai' + (d ? ' ' + d : '') };
-  if (x.selesaiKontrak && x.selesaiKontrak < jmData.today) return { k: 'habis', t: 'kontrak habis ' + d + ' (status masih Aktif, belum diperpanjang / diakhiri)' };
-  return { k: 'aktif', t: 'masih sewa' + (d ? ' s/d ' + d : '') };
+  var l = x.lunasSd || '', eff = l > (x.selesaiKontrak || '') ? l : x.selesaiKontrak;   // already paid ahead = still renting
+  if (eff && eff < jmData.today) return { k: 'habis', t: 'kontrak habis ' + d + ' (status masih Aktif, belum diperpanjang / diakhiri)' };
+  return { k: 'aktif', t: 'masih sewa' + (l && l > (x.selesaiKontrak || '') ? ' · lunas s/d ' + dmy(parseIso(l)) : d ? ' s/d ' + d : '') };
 }
 function jmKembali(x) { var r = x.req; return r ? r.kembali : x.jaminan; }
 function renderJaminan() {
